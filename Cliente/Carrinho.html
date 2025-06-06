@@ -1326,398 +1326,184 @@
                         </div>
 
                         <!-- Cart Items -->
-                        <div class="space-y-4">
-                            <!-- Item 1 -->
-                            <div class="cart-item flex items-center p-3 rounded-lg border border-gray-100">
-                                <div class="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500"
-                                        viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-grow">
-                                    <h3 class="font-medium">Whopper</h3>
-                                    <p class="text-sm text-gray-500">Hambúrguer, queijo, alface, tomate, cebola, picles,
-                                        ketchup e maionese</p>
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="flex items-center mr-6">
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(1, -1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M20 12H4"></path>
-                                            </svg>
-                                        </button>
-                                        <span class="mx-3 w-4 text-center" id="quantity-1">1</span>
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(1, 1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-medium">R$ 32,90</div>
-                                        <button class="text-red-500 text-sm hover:underline"
-                                            onclick="removeItem(1)">Remover</button>
-                                    </div>
-                                </div>
-                            </div>
+                        <div id="itens-do-carrinho" class="space-y-4">
+                        </div>
 
-                            <!-- Item 2 -->
-                            <div class="cart-item flex items-center p-3 rounded-lg border border-gray-100">
-                                <div class="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500"
-                                        viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-grow">
-                                    <h3 class="font-medium">Batata Frita Grande</h3>
-                                    <p class="text-sm text-gray-500">Batatas fritas crocantes</p>
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="flex items-center mr-6">
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(2, -1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M20 12H4"></path>
-                                            </svg>
-                                        </button>
-                                        <span class="mx-3 w-4 text-center" id="quantity-2">1</span>
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(2, 1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-medium">R$ 15,90</div>
-                                        <button class="text-red-500 text-sm hover:underline"
-                                            onclick="removeItem(2)">Remover</button>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Suggestions Section (Hidden by default) -->
+                        <div id="suggestions" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden fade-in">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">Sugestões para você</h2>
 
-                            <!-- Item 3 -->
-                            <div class="cart-item flex items-center p-3 rounded-lg border border-gray-100">
-                                <div class="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500"
-                                        viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-grow">
-                                    <h3 class="font-medium">Refrigerante 500ml</h3>
-                                    <p class="text-sm text-gray-500">Coca-Cola</p>
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="flex items-center mr-6">
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(3, -1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M20 12H4"></path>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                <!-- Suggestion 1 -->
+                                <div class="suggestion-card bg-gray-50 rounded-lg p-4">
+                                    <div class="flex items-center mb-3">
+                                        <div
+                                            class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500"
+                                                viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                                    clip-rule="evenodd"></path>
                                             </svg>
-                                        </button>
-                                        <span class="mx-3 w-4 text-center" id="quantity-3">1</span>
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(3, 1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium">Onion Rings</h3>
+                                            <p class="text-sm text-gray-500">Anéis de cebola empanados</p>
+                                        </div>
                                     </div>
-                                    <div class="text-right">
-                                        <div class="font-medium">R$ 9,90</div>
-                                        <button class="text-red-500 text-sm hover:underline"
-                                            onclick="removeItem(3)">Remover</button>
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-medium">R$ 14,90</span>
+                                        <button class="btn-primary px-3 py-1 rounded-lg text-sm font-medium"
+                                            onclick="addSuggestion('Onion Rings')">Adicionar</button>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Item 4 -->
-                            <div class="cart-item flex items-center p-3 rounded-lg border border-gray-100">
-                                <div class="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500"
-                                        viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-grow">
-                                    <h3 class="font-medium">Sundae de Chocolate</h3>
-                                    <p class="text-sm text-gray-500">Sorvete de baunilha com calda de chocolate</p>
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="flex items-center mr-6">
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(4, -1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M20 12H4"></path>
+                                <!-- Suggestion 2 -->
+                                <div class="suggestion-card bg-gray-50 rounded-lg p-4">
+                                    <div class="flex items-center mb-3">
+                                        <div
+                                            class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500"
+                                                viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                                    clip-rule="evenodd"></path>
                                             </svg>
-                                        </button>
-                                        <span class="mx-3 w-4 text-center" id="quantity-4">1</span>
-                                        <button
-                                            class="quantity-btn h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center"
-                                            onclick="updateQuantity(4, 1)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium">Chicken Nuggets</h3>
+                                            <p class="text-sm text-gray-500">8 unidades</p>
+                                        </div>
                                     </div>
-                                    <div class="text-right">
-                                        <div class="font-medium">R$ 12,90</div>
-                                        <button class="text-red-500 text-sm hover:underline"
-                                            onclick="removeItem(4)">Remover</button>
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-medium">R$ 16,90</span>
+                                        <button class="btn-primary px-3 py-1 rounded-lg text-sm font-medium"
+                                            onclick="addSuggestion('Chicken Nuggets')">Adicionar</button>
+                                    </div>
+                                </div>
+
+                                <!-- Suggestion 3 -->
+                                <div class="suggestion-card bg-gray-50 rounded-lg p-4">
+                                    <div class="flex items-center mb-3">
+                                        <div
+                                            class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500"
+                                                viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium">Milkshake</h3>
+                                            <p class="text-sm text-gray-500">Chocolate, Morango ou Baunilha</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-medium">R$ 13,90</span>
+                                        <button class="btn-primary px-3 py-1 rounded-lg text-sm font-medium"
+                                            onclick="addSuggestion('Milkshake')">Adicionar</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Add More Items -->
-                        <div class="mt-6 pt-6 border-t border-gray-200">
-                            <button class="flex items-center text-primary font-medium hover:underline"
-                                onclick="showSuggestions()">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Adicionar mais itens
-                            </button>
+                        <!-- Notes Section -->
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <h2 class="text-lg font-bold text-gray-800 mb-4">Observações</h2>
+                            <textarea
+                                class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                rows="3"
+                                placeholder="Alguma observação para o seu pedido? Ex: sem cebola, sem picles, etc."></textarea>
                         </div>
                     </div>
 
-                    <!-- Suggestions Section (Hidden by default) -->
-                    <div id="suggestions" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden fade-in">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">Sugestões para você</h2>
+                    <!-- Coluna direita - Resumo do pedido -->
+                    <div class="lg:w-1/3">
+                        <div class="bg-white rounded-xl shadow-md p-6 sticky top-24">
+                            <h2 class="text-xl font-bold text-gray-800 mb-6">Resumo do Pedido</h2>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                            <!-- Suggestion 1 -->
-                            <div class="suggestion-card bg-gray-50 rounded-lg p-4">
-                                <div class="flex items-center mb-3">
-                                    <div class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium">Onion Rings</h3>
-                                        <p class="text-sm text-gray-500">Anéis de cebola empanados</p>
-                                    </div>
+                            <!-- Resumo do pedido -->
+                            <div id="resumo-pedido" class="space-y-3 mb-6">
+                            </div>
+                            <!-- Adicionar cupom -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Cupom de desconto</label>
+                                <div class="flex">
+                                    <input type="text" id="coupon-input"
+                                        class="coupon-input flex-grow px-4 py-2 rounded-l-lg bg-white focus:outline-none"
+                                        placeholder="Digite seu cupom">
+                                    <button class="btn-primary px-4 py-2 rounded-r-lg font-medium"
+                                        onclick="applyCoupon()">Aplicar</button>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium">R$ 14,90</span>
-                                    <button class="btn-primary px-3 py-1 rounded-lg text-sm font-medium"
-                                        onclick="addSuggestion('Onion Rings')">Adicionar</button>
-                                </div>
+                                <div id="coupon-message" class="mt-2 text-sm hidden"></div>
                             </div>
 
-                            <!-- Suggestion 2 -->
-                            <div class="suggestion-card bg-gray-50 rounded-lg p-4">
-                                <div class="flex items-center mb-3">
-                                    <div class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium">Chicken Nuggets</h3>
-                                        <p class="text-sm text-gray-500">8 unidades</p>
-                                    </div>
+                            <!-- Progresso de frete grátis -->
+                            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                            </div>
+
+                            <div class="space-y-3 mb-6 pt-3 border-t border-gray-200">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Subtotal</span>
+                                    <span id="subtotal-valor">R$ 0,00</span>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium">R$ 16,90</span>
-                                    <button class="btn-primary px-3 py-1 rounded-lg text-sm font-medium"
-                                        onclick="addSuggestion('Chicken Nuggets')">Adicionar</button>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Taxa de entrega</span>
+                                    <span class="text-green-600">Grátis</span>
                                 </div>
                             </div>
 
-                            <!-- Suggestion 3 -->
-                            <div class="suggestion-card bg-gray-50 rounded-lg p-4">
-                                <div class="flex items-center mb-3">
-                                    <div class="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium">Milkshake</h3>
-                                        <p class="text-sm text-gray-500">Chocolate, Morango ou Baunilha</p>
-                                    </div>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium">R$ 13,90</span>
-                                    <button class="btn-primary px-3 py-1 rounded-lg text-sm font-medium"
-                                        onclick="addSuggestion('Milkshake')">Adicionar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notes Section -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h2 class="text-lg font-bold text-gray-800 mb-4">Observações</h2>
-                        <textarea
-                            class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                            rows="3"
-                            placeholder="Alguma observação para o seu pedido? Ex: sem cebola, sem picles, etc."></textarea>
-                    </div>
-                </div>
-
-                <!-- Right Column - Order Summary -->
-                <div class="lg:w-1/3">
-                    <div class="bg-white rounded-xl shadow-md p-6 sticky top-24">
-                        <h2 class="text-xl font-bold text-gray-800 mb-6">Resumo do Pedido</h2>
-
-                        <!-- Order Items Summary -->
-                        <div class="space-y-3 mb-6">
-                            <div class="flex justify-between text-sm">
-                                <span>1x Whopper</span>
-                                <span>R$ 32,90</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span>1x Batata Frita Grande</span>
-                                <span>R$ 15,90</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span>1x Refrigerante 500ml</span>
-                                <span>R$ 9,90</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span>1x Sundae de Chocolate</span>
-                                <span>R$ 12,90</span>
-                            </div>
-                        </div>
-
-                        <!-- Coupon Input -->
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Cupom de desconto</label>
-                            <div class="flex">
-                                <input type="text" id="coupon-input"
-                                    class="coupon-input flex-grow px-4 py-2 rounded-l-lg bg-white focus:outline-none"
-                                    placeholder="Digite seu cupom">
-                                <button class="btn-primary px-4 py-2 rounded-r-lg font-medium"
-                                    onclick="applyCoupon()">Aplicar</button>
-                            </div>
-                            <div id="coupon-message" class="mt-2 text-sm hidden"></div>
-                        </div>
-
-                        <!-- Free Shipping Progress -->
-                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium">Frete Grátis</span>
-                                <span class="text-sm font-medium">R$ 71,60 / R$ 50,00</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%;"></div>
-                            </div>
-                            <div class="mt-2 text-sm text-green-600 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                Você ganhou frete grátis!
-                            </div>
-                        </div>
-
-                        <!-- Order Total -->
-                        <div class="space-y-3 mb-6">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Subtotal</span>
-                                <span>R$ 71,60</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Taxa de entrega</span>
-                                <span class="text-green-600">Grátis</span>
-                            </div>
+                            <!-- Total do pedido -->
                             <div class="flex justify-between font-bold text-lg pt-3 border-t border-gray-200">
                                 <span>Total</span>
-                                <span>R$ 71,60</span>
+                                <span id="total-pedido">R$ 0,00</span>
                             </div>
-                        </div>
 
-                        <!-- Checkout Button -->
-                        <button class="btn-primary w-full py-3 rounded-lg font-medium text-lg mb-4"
-                            onclick="checkout()">
-                            Finalizar Pedido
-                        </button>
-
-                        <!-- Continue Shopping -->
-                        <button class="btn-outline w-full py-2 rounded-lg font-medium" onclick="continueShopping()">
-                            Continuar Comprando
-                        </button>
-
-                        <!-- Delivery Info -->
-                        <div class="mt-6 pt-6 border-t border-gray-200">
-                            <div class="flex items-center mb-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 mr-2" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                    </path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                <div>
-                                    <h3 class="font-medium text-sm">Entregar em</h3>
-                                    <p class="text-sm text-gray-500">Av. Paulista, 1000, Apto 123 - São Paulo, SP</p>
-                                </div>
-                            </div>
-                            <button class="text-primary text-sm font-medium hover:underline flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                    </path>
-                                </svg>
-                                Alterar endereço
+                            <!-- Finalizar pedido -->
+                            <button class="btn-primary w-full py-3 rounded-lg font-medium text-lg mt-6 mb-4"
+                                onclick="checkout()">
+                                Finalizar Pedido
                             </button>
+
                         </div>
+                    </div>
+
+                    <!-- Continue Shopping -->
+                    <button class="btn-outline w-full py-2 rounded-lg font-medium" onclick="continueShopping()">
+                        Continuar Comprando
+                    </button>
+
+                    <!-- Delivery Info -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-center mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 mr-2" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-medium text-sm">Entregar em</h3>
+                                <p class="text-sm text-gray-500">Av. Paulista, 1000, Apto 123 - São Paulo, SP
+                                </p>
+                            </div>
+                        </div>
+                        <button class="text-primary text-sm font-medium hover:underline flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                                </path>
+                            </svg>
+                            Alterar endereço
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </main>
 
@@ -1841,146 +1627,8 @@
             </svg>
         </button>
     </div>
-
-    <script>
-        // Cart functionality
-        function updateQuantity(itemId, change) {
-            const quantityElement = document.getElementById(`quantity-${itemId}`);
-            let quantity = parseInt(quantityElement.innerText);
-            quantity += change;
-
-            if (quantity < 1) {
-                // Show confirmation dialog
-                if (confirm('Deseja remover este item do carrinho?')) {
-                    removeItem(itemId);
-                }
-                return;
-            }
-
-            quantityElement.innerText = quantity;
-            updateCartTotal();
-        }
-
-        function removeItem(itemId) {
-            const item = document.getElementById(`quantity-${itemId}`).closest('.cart-item');
-            item.classList.add('fade-in');
-            item.style.opacity = '0';
-            setTimeout(() => {
-                item.remove();
-                updateCartTotal();
-                showToast('Item removido', 'O item foi removido do seu carrinho.', 'error');
-            }, 300);
-        }
-
-        function updateCartTotal() {
-            // In a real app, this would recalculate the cart total
-            // For this demo, we'll just show a toast
-            showToast('Carrinho atualizado', 'Os valores foram atualizados.', 'success');
-        }
-
-        function showSuggestions() {
-            const suggestionsSection = document.getElementById('suggestions');
-            suggestionsSection.classList.remove('hidden');
-        }
-
-        function addSuggestion(itemName) {
-            showToast('Item adicionado', `${itemName} foi adicionado ao seu carrinho.`, 'success');
-        }
-
-        function applyCoupon() {
-            const couponInput = document.getElementById('coupon-input');
-            const couponMessage = document.getElementById('coupon-message');
-
-            if (couponInput.value.trim() === '') {
-                couponMessage.innerText = 'Por favor, digite um cupom válido.';
-                couponMessage.classList.remove('hidden', 'text-green-600');
-                couponMessage.classList.add('text-red-500');
-                couponInput.classList.add('shake');
-                setTimeout(() => {
-                    couponInput.classList.remove('shake');
-                }, 500);
-                return;
-            }
-
-            // Simulate coupon validation
-            if (couponInput.value.toUpperCase() === 'FRETEGRATIS') {
-                couponMessage.innerText = 'Cupom aplicado com sucesso!';
-                couponMessage.classList.remove('hidden', 'text-red-500');
-                couponMessage.classList.add('text-green-600');
-                showToast('Cupom aplicado', 'Seu cupom de frete grátis foi aplicado.', 'success');
-            } else if (couponInput.value.toUpperCase() === 'NOVO50') {
-                couponMessage.innerText = 'Cupom aplicado com sucesso!';
-                couponMessage.classList.remove('hidden', 'text-red-500');
-                couponMessage.classList.add('text-green-600');
-                showToast('Cupom aplicado', 'Seu cupom de 50% de desconto foi aplicado.', 'success');
-            } else {
-                couponMessage.innerText = 'Cupom inválido ou expirado.';
-                couponMessage.classList.remove('hidden', 'text-green-600');
-                couponMessage.classList.add('text-red-500');
-                couponInput.classList.add('shake');
-                setTimeout(() => {
-                    couponInput.classList.remove('shake');
-                }, 500);
-            }
-        }
-
-        function checkout() {
-            showToast('Pedido finalizado', 'Seu pedido foi enviado com sucesso!', 'success');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 2000);
-        }
-
-        function continueShopping() {
-            window.location.href = 'index.html';
-        }
-
-        // Toast notification
-        function showToast(title, message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastTitle = document.getElementById('toast-title');
-            const toastMessage = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastTitle.innerText = title;
-            toastMessage.innerText = message;
-
-            if (type === 'error') {
-                toastIcon.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                `;
-                toastIcon.classList.remove('text-green-500');
-                toastIcon.classList.add('text-red-500');
-            } else {
-                toastIcon.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                `;
-                toastIcon.classList.remove('text-red-500');
-                toastIcon.classList.add('text-green-500');
-            }
-
-            toast.classList.remove('hidden');
-
-            // Auto hide after 3 seconds
-            setTimeout(hideToast, 3000);
-        }
-
-        function hideToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.add('hidden');
-        }
-
-        // Initialize progress bar
-        document.addEventListener('DOMContentLoaded', function () {
-            const progressFill = document.querySelector('.progress-fill');
-            progressFill.style.width = '100%';
-        });
-    </script>
-
+      
+    <script src="js/carrinho.js"></script>
 
 </body>
 
