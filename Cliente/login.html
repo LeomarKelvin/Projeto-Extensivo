@@ -1078,9 +1078,8 @@
 
     <!-- Main Content -->
     <main class="flex-grow py-12">
-        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-center">
-            <!-- Left Column - App Promo -->
-            <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+        <div class="container mx-auto px-4 flex flex-col lg:flex-row items-center justify-center">
+            <div class="lg:w-5/12 mb-8 md:mb-0 md:pr-8">
                 <div class="max-w-md mx-auto">
                     <h1 class="text-4xl font-bold mb-4">Peça o que quiser, quando quiser!</h1>
                     <p class="text-lg text-gray-600 mb-6">Comida, mercado, farmácia e muito mais. Tudo na palma da sua
@@ -1134,10 +1133,10 @@
                 </div>
             </div>
 
-            <!-- Right Column - Login Form -->
-            <div class="md:w-1/2">
-                <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
-                    <!-- Tabs -->
+            <!-- Coluna direita - Formulário de login -->
+            <div class="lg:w-7/12">
+                <div class="bg-white rounded-xl shadow-lg p-8 max-w-lg mx-auto">
+                    <!-- Botões -->
                     <div class="flex border-b border-gray-200 mb-6">
                         <button id="login-tab" class="tab tab-active py-3 px-4 font-medium text-lg flex-1 text-center"
                             onclick="switchTab('login')">Entrar</button>
@@ -1146,7 +1145,7 @@
                             onclick="switchTab('register')">Cadastrar</button>
                     </div>
 
-                    <!-- Login Form -->
+                    <!-- Formulário de login -->
                     <div id="login-form" class="fade-in">
                         <div class="mb-6">
                             <label for="login-email" class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
@@ -1210,11 +1209,11 @@
                         </div>
                     </div>
 
-                    <!-- Register Form -->
+                    <!-- Formulário de registro -->
                     <div id="register-form" class="hidden fade-in">
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de conta</label>
-                            <div class="grid grid-cols-2 gap-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quero me cadastrar como:</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div id="user-type"
                                     class="account-type-option account-type-selected rounded-lg p-4 cursor-pointer"
                                     onclick="selectAccountType('user')">
@@ -1225,9 +1224,9 @@
                                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
                                             </path>
                                         </svg>
-                                        <span class="font-medium">Usuário</span>
+                                        <span class="font-medium">Cliente</span>
                                     </div>
-                                    <p class="text-xs text-gray-500">Para pedir comida e produtos</p>
+                                    <p class="text-xs text-gray-500">Para fazer pedidos na sua cidade.</p>
                                 </div>
                                 <div id="store-type" class="account-type-option rounded-lg p-4 cursor-pointer"
                                     onclick="selectAccountType('store')">
@@ -1240,7 +1239,20 @@
                                         </svg>
                                         <span class="font-medium">Loja</span>
                                     </div>
-                                    <p class="text-xs text-gray-500">Para vender seus produtos</p>
+                                    <p class="text-xs text-gray-500">Para vender seus produtos.</p>
+                                </div>
+                                <div id="delivery-type" class="account-type-option rounded-lg p-4 cursor-pointer"
+                                    onclick="selectAccountType('delivery')">
+                                    <div class="flex items-center mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0">
+                                            </path>
+                                        </svg>
+                                        <span class="font-medium">Entregador</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500">Para fazer entregas e ganhar.</p>
                                 </div>
                             </div>
                         </div>
@@ -1252,7 +1264,6 @@
                                 class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
                                 placeholder="Seu nome completo">
                         </div>
-
                         <div class="mb-6">
                             <label for="register-email"
                                 class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
@@ -1260,7 +1271,6 @@
                                 class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
                                 placeholder="Seu e-mail">
                         </div>
-
                         <div class="mb-6">
                             <label for="register-phone"
                                 class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
@@ -1269,7 +1279,6 @@
                                 placeholder="(00) 00000-0000">
                         </div>
 
-                        <!-- Store-specific fields (hidden by default) -->
                         <div id="store-fields" class="hidden">
                             <div class="mb-6">
                                 <label for="store-name" class="block text-sm font-medium text-gray-700 mb-2">Nome da
@@ -1278,13 +1287,12 @@
                                     class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
                                     placeholder="Nome da sua loja">
                             </div>
-
                             <div class="mb-6">
                                 <label for="store-category"
                                     class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
                                 <select id="store-category"
                                     class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none">
-                                    <option value="" disabled="" selected="">Selecione uma categoria</option>
+                                    <option value="" disabled selected>Selecione uma categoria</option>
                                     <option value="restaurant">Restaurante</option>
                                     <option value="market">Mercado</option>
                                     <option value="pharmacy">Farmácia</option>
@@ -1292,13 +1300,40 @@
                                     <option value="other">Outro</option>
                                 </select>
                             </div>
-
                             <div class="mb-6">
                                 <label for="store-cnpj"
                                     class="block text-sm font-medium text-gray-700 mb-2">CNPJ</label>
                                 <input type="text" id="store-cnpj"
                                     class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
                                     placeholder="00.000.000/0000-00">
+                            </div>
+                        </div>
+
+                        <div id="delivery-fields" class="hidden">
+                            <div class="mb-6">
+                                <label for="delivery-cnh" class="block text-sm font-medium text-gray-700 mb-2">Número da
+                                    CNH</label>
+                                <input type="text" id="delivery-cnh"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
+                                    placeholder="Número da sua Carteira de Habilitação">
+                            </div>
+                            <div class="mb-6">
+                                <label for="delivery-vehicle" class="block text-sm font-medium text-gray-700 mb-2">Tipo
+                                    de Veículo</label>
+                                <select id="delivery-vehicle"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none">
+                                    <option value="" disabled selected>Selecione seu veículo</option>
+                                    <option value="moto">Moto</option>
+                                    <option value="carro">Carro</option>
+                                    <option value="bicicleta">Bicicleta</option>
+                                </select>
+                            </div>
+                            <div class="mb-6">
+                                <label for="delivery-plate" class="block text-sm font-medium text-gray-700 mb-2">Placa
+                                    do Veículo (se aplicável)</label>
+                                <input type="text" id="delivery-plate"
+                                    class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
+                                    placeholder="AAA-1234">
                             </div>
                         </div>
 
@@ -1309,7 +1344,6 @@
                                 class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
                                 placeholder="Crie uma senha">
                         </div>
-
                         <div class="mb-6">
                             <label for="register-password-confirm"
                                 class="block text-sm font-medium text-gray-700 mb-2">Confirmar senha</label>
@@ -1317,22 +1351,15 @@
                                 class="form-input w-full px-4 py-3 rounded-lg bg-gray-50 focus:outline-none"
                                 placeholder="Confirme sua senha">
                         </div>
-
                         <div class="mb-6 flex items-start">
                             <input type="checkbox" id="terms" class="mt-1 mr-2">
                             <label for="terms" class="text-sm text-gray-600">Eu concordo com os <a href="#"
                                     class="text-primary hover:underline">Termos de Uso</a> e <a href="#"
                                     class="text-primary hover:underline">Política de Privacidade</a>.</label>
                         </div>
-
                         <div class="mb-6">
-                            <button class="btn-primary w-full py-3 rounded-lg font-medium text-lg"
-                                onclick="register()">Cadastrar</button>
+                            <button class="btn-primary w-full py-3 rounded-lg font-medium text-lg">Cadastrar</button>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </main>
 
     <!-- Footer -->
@@ -1456,189 +1483,9 @@
         </button>
     </div>
 
-    <script>
-        // Tab switching
-        function switchTab(tab) {
-            const loginTab = document.getElementById('login-tab');
-            const registerTab = document.getElementById('register-tab');
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('register-form');
+    </footer>
 
-            if (tab === 'login') {
-                loginTab.classList.add('tab-active');
-                loginTab.classList.remove('text-gray-500');
-                registerTab.classList.remove('tab-active');
-                registerTab.classList.add('text-gray-500');
-
-                registerForm.classList.add('hidden');
-                loginForm.classList.remove('hidden');
-                loginForm.classList.add('fade-in');
-            } else {
-                registerTab.classList.add('tab-active');
-                registerTab.classList.remove('text-gray-500');
-                loginTab.classList.remove('tab-active');
-                loginTab.classList.add('text-gray-500');
-
-                loginForm.classList.add('hidden');
-                registerForm.classList.remove('hidden');
-                registerForm.classList.add('fade-in');
-            }
-        }
-
-        // Account type selection
-        function selectAccountType(type) {
-            const userType = document.getElementById('user-type');
-            const storeType = document.getElementById('store-type');
-            const storeFields = document.getElementById('store-fields');
-
-            if (type === 'user') {
-                userType.classList.add('account-type-selected');
-                storeType.classList.remove('account-type-selected');
-                storeFields.classList.add('hidden');
-            } else {
-                storeType.classList.add('account-type-selected');
-                userType.classList.remove('account-type-selected');
-                storeFields.classList.remove('hidden');
-                storeFields.classList.add('fade-in');
-            }
-        }
-
-        // Login function
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            if (!email || !password) {
-                showToast('Erro', 'Por favor, preencha todos os campos.', 'error');
-                return;
-            }
-
-            // Simulate login success
-            showToast('Sucesso', 'Login realizado com sucesso!', 'success');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
-        }
-
-        // Register function
-        function register() {
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
-            const phone = document.getElementById('register-phone').value;
-            const password = document.getElementById('register-password').value;
-            const passwordConfirm = document.getElementById('register-password-confirm').value;
-            const terms = document.getElementById('terms').checked;
-
-            // Check if store type is selected
-            const isStore = document.getElementById('store-type').classList.contains('account-type-selected');
-
-            if (!name || !email || !phone || !password || !passwordConfirm) {
-                showToast('Erro', 'Por favor, preencha todos os campos obrigatórios.', 'error');
-                return;
-            }
-
-            if (password !== passwordConfirm) {
-                showToast('Erro', 'As senhas não coincidem.', 'error');
-                return;
-            }
-
-            if (!terms) {
-                showToast('Erro', 'Você precisa aceitar os termos de uso.', 'error');
-                return;
-            }
-
-            // Additional validation for store
-            if (isStore) {
-                const storeName = document.getElementById('store-name').value;
-                const storeCategory = document.getElementById('store-category').value;
-                const storeCnpj = document.getElementById('store-cnpj').value;
-
-                if (!storeName || !storeCategory || !storeCnpj) {
-                    showToast('Erro', 'Por favor, preencha todos os campos da loja.', 'error');
-                    return;
-                }
-
-                showToast('Sucesso', 'Loja cadastrada com sucesso! Aguarde a aprovação.', 'success');
-            } else {
-                showToast('Sucesso', 'Cadastro realizado com sucesso!', 'success');
-            }
-
-            setTimeout(() => {
-                switchTab('login');
-            }, 1500);
-        }
-
-        // Toast notification
-        function showToast(title, message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastTitle = document.getElementById('toast-title');
-            const toastMessage = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastTitle.innerText = title;
-            toastMessage.innerText = message;
-
-            if (type === 'error') {
-                toastIcon.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                `;
-                toastIcon.classList.remove('text-green-500');
-                toastIcon.classList.add('text-red-500');
-            } else {
-                toastIcon.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                `;
-                toastIcon.classList.remove('text-red-500');
-                toastIcon.classList.add('text-green-500');
-            }
-
-            toast.classList.remove('hidden');
-
-            // Auto hide after 3 seconds
-            setTimeout(hideToast, 3000);
-        }
-
-        function hideToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.add('hidden');
-        }
-
-        // Phone number formatting
-        document.getElementById('register-phone').addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
-
-            if (value.length > 2 && value.length <= 6) {
-                value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
-            } else if (value.length > 6) {
-                value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
-            }
-
-            e.target.value = value;
-        });
-
-        // CNPJ formatting
-        document.getElementById('store-cnpj')?.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 14) value = value.slice(0, 14);
-
-            if (value.length > 2 && value.length <= 5) {
-                value = `${value.slice(0, 2)}.${value.slice(2)}`;
-            } else if (value.length > 5 && value.length <= 8) {
-                value = `${value.slice(0, 2)}.${value.slice(2, 5)}.${value.slice(5)}`;
-            } else if (value.length > 8 && value.length <= 12) {
-                value = `${value.slice(0, 2)}.${value.slice(2, 5)}.${value.slice(5, 8)}/${value.slice(8)}`;
-            } else if (value.length > 12) {
-                value = `${value.slice(0, 2)}.${value.slice(2, 5)}.${value.slice(5, 8)}/${value.slice(8, 12)}-${value.slice(12)}`;
-            }
-
-            e.target.value = value;
-        });
-    </script>
+    <script src="js/login.js"></script>
 
 </body>
 
