@@ -23,15 +23,37 @@ app.get('/api/lojas', async (req, res) => {
 
 // ROTA PARA REGISTRAR USUÁRIO
 app.post('/api/register', async (req, res) => {
-    const { nome, email, password, role } = req.body;
+    const { nome, email, password, role, store_name, store_category } = req.body;
+
     if (!email || !password || !nome || !role) {
         return res.status(400).json({ error: 'Dados incompletos.' });
     }
-    const { data, error } = await supabase.auth.signUp({
+
+    // 1. Cria o usuário primeiro
+    const { data: authData, error: authError } = await supabase.auth.signUp({
         email, password, options: { data: { full_name: nome, role: role } }
     });
-    if (error) { return res.status(400).json({ error: error.message }); }
-    res.status(200).json({ message: "Cadastro realizado com sucesso!", user: data.user });
+    if (authError) return res.status(400).json({ error: authError.message });
+    if (!authData.user) return res.status(500).json({ error: 'Usuário não foi criado.' });
+    
+    // 2. SE o usuário for uma loja, cria a loja no banco de dados
+    if (role === 'store') {
+        const { error: storeError } = await supabase
+            .from('lojas')
+            .insert({ 
+                nome: store_name, 
+                categoria: store_category, 
+                owner_id: authData.user.id // Vincula o usuário recém-criado como dono
+            });
+
+        if (storeError) {
+            // O ideal seria apagar o usuário que foi criado, mas vamos manter simples
+            console.error("Erro ao criar loja para o novo usuário:", storeError.message);
+            return res.status(400).json({ error: 'Usuário foi criado, mas houve um erro ao registrar a loja.' });
+        }
+    }
+    
+    res.status(200).json({ message: "Cadastro realizado com sucesso!", user: authData.user });
 });
 
 // ROTA PARA FAZER LOGIN

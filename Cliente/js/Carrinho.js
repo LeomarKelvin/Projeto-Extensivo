@@ -1,31 +1,38 @@
 document.addEventListener('DOMContentLoaded', function() {
     const checkoutButton = document.getElementById('checkout-button');
     if (checkoutButton) {
-        checkoutButton.addEventListener('click', handleFinalizarPedido);
+        checkoutButton.addEventListener('click', handleCheckout);
     }
     exibirItensDoCarrinho();
 });
 
 async function handleCheckout() {
     const user = getUser();
-    if (!user) {
-        return showToast('Erro', 'Você precisa estar logado para finalizar um pedido.', 'error');
-    }
+    if (!user) { return showToast('Erro', 'Você precisa estar logado para finalizar um pedido.', 'error'); }
+
     const cartItems = JSON.parse(localStorage.getItem('carrinho')) || [];
-    if (cartItems.length === 0) {
-        return showToast('Atenção', 'Seu carrinho está vazio.', 'error');
+    if (cartItems.length === 0) { return showToast('Atenção', 'Seu carrinho está vazio.', 'error'); }
+
+    const session = getSession(); // Pega a sessão inteira que tem a chave de acesso
+    if (!session || !session.access_token) {
+        return showToast('Erro', 'Sua sessão expirou. Por favor, faça login novamente.', 'error');
     }
+
     const totalPrice = cartItems.reduce((total, item) => total + (item.preco * item.quantidade), 0);
     const orderData = {
-        user_id: user.id,
         loja_id: cartItems[0].lojaId,
         total_price: totalPrice,
         items: cartItems
     };
+
     try {
         const response = await fetch('http://localhost:3000/api/pedidos', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                // A LINHA MAIS IMPORTANTE: Enviando a "credencial" (token)
+                'Authorization': `Bearer ${session.access_token}`
+            },
             body: JSON.stringify(orderData)
         });
         const result = await response.json();
@@ -42,31 +49,31 @@ async function handleCheckout() {
     }
 }
 
+// Função para exibir os itens do carrinho na tela
 function exibirItensDoCarrinho() {
     const containerItens = document.getElementById('itens-do-carrinho');
     const resumoPedido = document.getElementById('resumo-pedido');
     const totalPedido = document.getElementById('total-pedido');
     const subtotalValor = document.getElementById('subtotal-valor');
 
-    if (!containerItens || !resumoPedido || !totalPedido) return;
+    if (!containerItens) return;
 
     const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
     containerItens.innerHTML = '';
-    resumoPedido.innerHTML = '';
+    if(resumoPedido) resumoPedido.innerHTML = '';
     let subtotal = 0;
 
     if (carrinho.length === 0) {
         containerItens.innerHTML = '<p class="text-gray-600 p-4">Seu carrinho está vazio.</p>';
-        totalPedido.innerText = 'R$ 0,00';
-        if (subtotalValor) subtotalValor.innerText = 'R$ 0,00';
-        updateHeader(); // Atualiza o header se o carrinho ficar vazio
+        if(totalPedido) totalPedido.innerText = 'R$ 0,00';
+        if(subtotalValor) subtotalValor.innerText = 'R$ 0,00';
+        updateHeader();
         return;
     }
 
     carrinho.forEach((item, index) => {
         subtotal += item.preco * item.quantidade;
-
-        // O Molde HTML para cada item no carrinho
+        
         containerItens.innerHTML += `
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <div class="flex items-center">
@@ -78,9 +85,9 @@ function exibirItensDoCarrinho() {
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="flex items-center border border-gray-300 rounded-lg">
-                        <button class="px-3 py-1 text-lg" onclick="mudarQuantidade(${index}, -1)">-</button>
+                        <button class="px-3 py-1 text-lg font-bold" onclick="mudarQuantidade(${index}, -1)">-</button>
                         <span class="px-3">${item.quantidade}</span>
-                        <button class="px-3 py-1 text-lg" onclick="mudarQuantidade(${index}, 1)">+</button>
+                        <button class="px-3 py-1 text-lg font-bold" onclick="mudarQuantidade(${index}, 1)">+</button>
                     </div>
                     <p class="font-semibold w-20 text-right">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</p>
                     <button class="text-gray-400 hover:text-red-500" onclick="removerDoCarrinho(${index})">
@@ -89,21 +96,17 @@ function exibirItensDoCarrinho() {
                 </div>
             </div>
         `;
-
-        // O Molde para o resumo
-        resumoPedido.innerHTML += `
-            <div class="flex justify-between text-sm text-gray-600">
-                <span>${item.quantidade}x ${item.nome}</span>
-                <span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
-            </div>
-        `;
+        
+        if(resumoPedido) {
+            resumoPedido.innerHTML += `<div class="flex justify-between text-sm text-gray-600"><span>${item.quantidade}x ${item.nome}</span><span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span></div>`;
+        }
     });
-
-    totalPedido.innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
-    if (subtotalValor) subtotalValor.innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
-    updateHeader();
+    
+    if(totalPedido) totalPedido.innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+    if(subtotalValor) subtotalValor.innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
 }
 
+// Funções de remover e mudar quantidade
 function removerDoCarrinho(index) {
     let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
     carrinho.splice(index, 1);

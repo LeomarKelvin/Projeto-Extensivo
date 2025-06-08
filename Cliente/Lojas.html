@@ -1145,9 +1145,6 @@
             </div>
         </section>
 
-        <button onclick="adicionarAoCarrinho('Pizza de Teste', 49.90)" class="btn-primary p-2">Adicionar Pizza</button>
-        <button onclick="adicionarAoCarrinho('Refrigerante', 8.50)" class="btn-primary p-2">Adicionar Refri</button>
-
         <!-- Search and Filter Section -->
         <section class="mb-8">
             <div class="bg-white rounded-xl shadow-md p-6">
@@ -1234,13 +1231,24 @@
             </button>
         </div>
 
-        <script src="js/app.js"></script>
-
-        <script src="js/lojas.js"></script>
+        <div id="confirmation-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full mx-4 fade-in">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Confirmar Ação</h3>
+                <p id="modal-message" class="text-gray-600 mb-6">Você tem certeza que quer fazer isso?</p>
+                <div class="flex justify-end space-x-4">
+                    <button id="modal-cancel-btn"
+                        class="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 font-medium">Não</button>
+                    <button id="modal-confirm-btn" class="btn-primary px-6 py-2 rounded-lg font-medium">Sim</button>
+                </div>
+            </div>
+        </div>
 
         <script src="js/auth.js"></script>
-
         <script src="js/notifications.js"></script>
+        <script src="js/modal.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/lojas.js"></script>
 
 </body>
 
