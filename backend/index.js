@@ -15,60 +15,91 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 
 // ROTA PARA BUSCAR LOJAS
-app.post('/api/pedidos', async (req, res) => {
-    // ==== 1) Captura o JWT enviado no header "Authorization" ====
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(401).json({ error: 'Token não encontrado.' });
-    }
-    const token = authHeader.split(' ')[1];
-
-    // ==== 2) Cria um cliente Supabase “autenticado” para essa requisição ====
-    // (usa o mesmo URL e KEY, mas injeta o JWT nos headers globais)
-    const supabaseUser = createClient(supabaseUrl, supabaseKey, {
-        global: {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    });
-
-    // ==== 3) Seu código original de inserção de pedido passa a usar supabaseUser ====
-    const { user_id, total_price, items } = req.body;
-
-    // 3.a) Insere o pedido na tabela "pedidos"
-    const { data: pedidoData, error: pedidoError } = await supabaseUser
-        .from('pedidos')
-        .insert([{ user_id, total_price, status: 'Pendente' }])
-        .select()      // agora em v2 é preciso chamar .select() para retornar dados
-        .single();
-
-    if (pedidoError) {
-        console.error('Erro ao criar pedido:', pedidoError.message);
-        return res.status(400).json({ error: pedidoError.message });
-    }
-
-    // 3.b) Insere os itens na tabela "pedido_itens"
-    const pedidoId = pedidoData.id;
-    const itensParaInserir = items.map(item => ({
-        pedido_id: pedidoId,
-        nome_produto: item.nome,
-        quantidade: item.quantidade,
-        preco_unidade: item.preco
-    }));
-    const { error: itensError } = await supabaseUser
-        .from('pedido_itens')
-        .insert(itensParaInserir);
-
-    if (itensError) {
-        console.error('Erro ao inserir itens:', itensError.message);
-        return res.status(400).json({ error: itensError.message });
-    }
-
-    // ==== 4) Retorna sucesso ao front ====
-    res.status(200).json({ message: 'Pedido realizado com sucesso!', pedido_id: pedidoId });
+app.get('/api/lojas', async (req, res) => {
+    const { data, error } = await supabase.from('lojas').select('*');
+    if (error) { return res.status(500).json({ error: error.message }); }
+    res.json(data);
 });
 
+// ROTA PARA REGISTRAR USUÁRIO
+app.post('/api/register', async (req, res) => {
+    const { nome, email, password, role } = req.body;
+    if (!email || !password || !nome || !role) {
+        return res.status(400).json({ error: 'Dados incompletos.' });
+    }
+    const { data, error } = await supabase.auth.signUp({
+        email, password, options: { data: { full_name: nome, role: role } }
+    });
+    if (error) { return res.status(400).json({ error: error.message }); }
+    res.status(200).json({ message: "Cadastro realizado com sucesso!", user: data.user });
+});
+
+// ROTA PARA FAZER LOGIN
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+    }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { return res.status(401).json({ error: 'E-mail ou senha inválidos.' }); }
+    res.status(200).json({ message: "Login realizado com sucesso!", data });
+});
+
+// ROTA PARA CRIAR PEDIDOS
+app.post('/api/pedidos', async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        if (!token) throw new Error('Nenhum token fornecido.');
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        if (userError) throw userError;
+        const { loja_id, total_price, items } = req.body;
+        const { data: pedidoData, error: pedidoError } = await supabase.from('pedidos').insert([{ user_id: user.id, loja_id, total_price, status: 'Pendente' }]).select().single();
+        if (pedidoError) throw pedidoError;
+        const pedidoId = pedidoData.id;
+        const itensParaInserir = items.map(item => ({ pedido_id: pedidoId, nome_produto: item.nome, quantidade: item.quantidade, preco_unidade: item.preco }));
+        const { error: itensError } = await supabase.from('pedido_itens').insert(itensParaInserir);
+        if (itensError) throw itensError;
+        res.status(200).json({ message: 'Pedido realizado com sucesso!', pedido_id: pedidoId });
+    } catch (error) {
+        res.status(400).json({ error: "Falha ao processar o pedido: " + error.message });
+    }
+});
+
+// --- NOVA ROTA PARA BUSCAR O HISTÓRICO DE PEDIDOS DO USUÁRIO ---
+app.get('/api/meus-pedidos', async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        if (!token) throw new Error('Nenhum token fornecido.');
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        if (userError || !user) throw new Error('Token inválido.');
+
+        const { status } = req.query;
+
+        let query = supabase
+            .from('pedidos')
+            .select(`id,created_at,total_price,status,pedido_itens(nome_produto,quantidade,preco_unidade)`)
+            .eq('user_id', user.id);
+
+        // Lógica de filtro atualizada
+        if (status && status !== 'Todos os pedidos') {
+            // Se o filtro for 'Pendente', busca 'Pendente' E 'Em preparo'
+            if (status === 'Pendente') {
+                query = query.in('status', ['Pendente', 'Em preparo']);
+            } else {
+                query = query.eq('status', status);
+            }
+        }
+
+        const { data: pedidos, error: pedidosError } = await query.order('created_at', { ascending: false });
+        if (pedidosError) throw pedidosError;
+
+        res.status(200).json(pedidos);
+
+    } catch (error) {
+        res.status(400).json({ error: 'Falha ao buscar pedidos: ' + error.message });
+    }
+});
 
 // Inicia o servidor
 app.listen(port, () => {
