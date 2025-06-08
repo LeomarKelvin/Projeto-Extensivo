@@ -1110,19 +1110,7 @@
                 <span class="ml-2 text-2xl font-bold text-primary">PedeAí</span>
             </a>
 
-            <div class="flex items-center space-x-4">
-                <a href="Inicio.html" class="text-white hover:text-primary transition-colors">Início</a>
-                <a href="Lojas.html" class="text-primary font-medium">Lojas</a>
-                <a href="Pedidos.html" class="text-white hover:text-primary transition-colors">Pedidos</a>
-                <a href="Perfil.html" class="text-white hover:text-primary transition-colors">Perfil</a>
-                <button id="btn-carrinho" class="bg-primary text-secondary rounded-full p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
-                        </path>
-                    </svg>
-                </button>
+            <div id="user-navigation" class="flex items-center space-x-4">
             </div>
         </div>
     </header>
@@ -1229,10 +1217,30 @@
             <div id="lojas-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             </div>
         </section>
-        
+
+        <div id="toast"
+            class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 flex items-center max-w-xs hidden z-50">
+            <div id="toast-icon" class="mr-3"></div>
+            <div>
+                <h3 class="font-medium" id="toast-title"></h3>
+                <p class="text-sm text-gray-600" id="toast-message"></p>
+            </div>
+            <button class="ml-4 text-gray-400 hover:text-gray-600" onclick="hideToast()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
         <script src="js/app.js"></script>
 
         <script src="js/lojas.js"></script>
+
+        <script src="js/auth.js"></script>
+
+        <script src="js/notifications.js"></script>
 
 </body>
 

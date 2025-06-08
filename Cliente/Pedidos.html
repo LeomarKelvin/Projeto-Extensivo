@@ -1143,19 +1143,7 @@
                 <span class="ml-2 text-2xl font-bold text-primary">PedeAí</span>
             </a>
 
-            <div class="flex items-center space-x-4">
-                <a href="Inicio.html" class="text-white hover:text-primary transition-colors">Início</a>
-                <a href="Lojas.html" class="text-white hover:text-primary transition-colors">Lojas</a>
-                <a href="Pedidos.html" class="text-primary font-medium">Pedidos</a>
-                <a href="Perfil.html" class="text-white hover:text-primary transition-colors">Perfil</a>
-                <button id="btn-carrinho" class="bg-primary text-secondary rounded-full p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
-                        </path>
-                    </svg>
-                </button>
+            <div id="user-navigation" class="flex items-center space-x-4">
             </div>
         </div>
     </header>
@@ -1710,14 +1698,32 @@
                     <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA0OCAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSJ3aGl0ZSIvPjxwYXRoIGQ9Ik0zMy4xMTQgMTMuOTQ4SDI5LjYwNFYyMS45MzZIMzMuMTE0VjEzLjk0OFoiIGZpbGw9IiNGRjVGMDAiLz48cGF0aCBkPSJNMzAuMDg2IDEyLjEwNEMzMS4zNzQgMTIuMTA0IDMyLjQxNiAxMy4wNTIgMzIuNjMzIDE0LjI4OEMzMi43NDcgMTMuODQ4IDMyLjgwOCAxMy4zODQgMzIuODA4IDEyLjkwNEMzMi44MDggMTAuOTM2IDMxLjIxNCA5LjM0NCAyOS4yNDYgOS4zNDRDMjcuMjc4IDkuMzQ0IDI1LjY4NCAxMC45MzYgMjUuNjg0IDEyLjkwNEMyNS42ODQgMTMuMzg0IDI1Ljc0NSAxMy44NDggMjUuODU5IDE0LjI4OEMyNi4wNzYgMTMuMDUyIDI3LjExOCAxMi4xMDQgMjguNDA2IDEyLjEwNEgzMC4wODZaIiBmaWxsPSIjRUI1OTFDIi8+PHBhdGggZD0iTTQyLjM1IDE1LjkzNlY1LjYwOEg0MC4wNDZWMTUuOTM2SDQyLjM1WiIgZmlsbD0iIzAwNTc5RiIvPjxwYXRoIGQ9Ik0yMy4zOCA1LjYwOEgyMS4wNzZDMjAuMTI4IDUuNjA4IDE5LjM5NiA2LjA0IDE4Ljk3MiA2LjcyTDE0LjQgMTUuOTM2SDE3LjA1MkwxNy43MzIgMTQuMTkySDIyLjA3NkwyMi40NTIgMTUuOTM2SDI0LjgwNEwyMy4zOCA1LjYwOFpNMTguNTk2IDEyLjE4OEwyMC4zNCA3LjY4TDIxLjM5NiAxMi4xODhIMTguNTk2WiIgZmlsbD0iIzAwNTc5RiIvPjxwYXRoIGQ9Ik0zNi4zMzQgNS42MDhIMzQuMDNDMzMuMDgyIDUuNjA4IDMyLjM1IDYuMDQgMzEuOTI2IDYuNzJMMjcuMzU0IDE1LjkzNkgzMC4wMDZMMzAuNjg2IDE0LjE5MkgzNS4wM0wzNS40MDYgMTUuOTM2SDM3Ljc1OEwzNi4zMzQgNS42MDhaTTMxLjU1IDEyLjE4OEwzMy4yOTQgNy42OEwzNC4zNSAxMi4xODhIMzEuNTVaIiBmaWxsPSIjMDA1NzlGIi8+PHBhdGggZD0iTTM4LjY5NCAxNS45MzZMMzUuNTUgNS42MDhIMzMuMjQ2TDM2LjM5IDE1LjkzNkgzOC42OTRaIiBmaWxsPSIjMDA1NzlGIi8+PHBhdGggZD0iTTE0LjQgNS42MDhIMTAuMjU0QzguNTEgNS42MDggNy4yMDYgNi45MTIgNy4yMDYgOC42NTZDNy4yMDYgMTAuNCAxLjk5OCAxMC4xNjggMS45OTggMTIuMTJDMS45OTggMTQuMDcyIDcuMjA2IDEzLjg0IDcuMjA2IDE1LjU4NEM3LjIwNiAxNy4zMjggOC41MSAxOC42MzIgMTAuMjU0IDE4LjYzMkgxNC40VjE2LjMyOEgxMC4yNTRDOS43OSAxNi4zMjggOS40MTQgMTUuOTUyIDkuNDEgMTUuNDg4QzkuNDEgMTUuMDI0IDkuNzkgMTQuNjQ4IDEwLjI1NCAxNC42NDhIMTEuNzAyQzEzLjQ0NiAxNC42NDggMTQuNzUgMTMuMzQ0IDE0Ljc1IDExLjZDMTQuNzUgOS44NTYgMTMuNDQ2IDguNTUyIDExLjcwMiA4LjU1MkgxMC4yNTRDOS43OSA4LjU1MiA5LjQxNCA4LjE3NiA5LjQxIDcuNzEyQzkuNDEgNy4yNDggOS43OSA2Ljg3MiAxMC4yNTQgNi44NzJIMTQuNFY1LjYwOFoiIGZpbGw9IiMwMDU3OUYiLz48L3N2Zz4="
                         alt="Visa" class="h-6">
                     <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA0OCAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSJ3aGl0ZSIvPjxwYXRoIGQ9Ik0xNy4yMTYgMjEuNzkySDMwLjc4NFYxMC4yMDhIMTcuMjE2VjIxLjc5MloiIGZpbGw9IiNGRjVGMDAiLz48cGF0aCBkPSJNMTcuOTUyIDEuNkMxMy4xMjggMS42IDkuMiA0LjU0NCA5LjIgOC4xNkM5LjIgMTEuNzc2IDEzLjEyOCAxNC43MiAxNy45NTIgMTQuNzJDMjIuNzc2IDE0LjcyIDI2LjcwNCAxMS43NzYgMjYuNzA0IDguMTZDMjYuNzA0IDQuNTQ0IDIyLjc3NiAxLjYgMTcuOTUyIDEuNloiIGZpbGw9IiNFQjAwMUIiLz48cGF0aCBkPSJNMzAuMDQ4IDEuNkMyNS4yMjQgMS42IDIxLjI5NiA0LjU0NCAyMS4yOTYgOC4xNkMyMS4yOTYgMTEuNzc2IDI1LjIyNCAxNC43MiAzMC4wNDggMTQuNzJDMzQuODcyIDE0LjcyIDM4LjggMTEuNzc2IDM4LjggOC4xNkMzOC44IDQuNTQ0IDM0Ljg3MiAxLjYgMzAuMDQ4IDEuNloiIGZpbGw9IiNGNzlFMUIiLz48cGF0aCBkPSJNMjQgMS42QzIxLjU4NCAxLjYgMTkuMzI4IDIuMzM2IDE3LjYgMy42QzE3LjM5MiAzLjc3NiAxNy4xODQgMy45NTIgMTcuMDA4IDQuMTI4QzE5LjA4OCA2LjA4IDIwLjQgOS4wMjQgMjAuNCAxMi4zMkMyMC40IDE1LjYxNiAxOS4wODggMTguNTYgMTcuMDA4IDIwLjUxMkMxNy4xODQgMjAuNjg4IDE3LjM5MiAyMC44NjQgMTcuNiAyMS4wNEMxOS4zMjggMjIuMzA0IDIx
-                        window.__cf$cv$params="{r:'94a9933643c881d6',t:'MTc0OTA2MjU5OC4wMDAwMDA='};var"
-                        a="document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);&quot;;b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var"
+                        window.__cf$cv$params=" {r:'94a9933643c881d6',t:'MTc0OTA2MjU5OC4wMDAwMDA='};var"
+                        a="document.createElement(' script');a.nonce=''
+                        ;a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js'
+                        ;document.getElementsByTagName('head')[0].appendChild(a);&quot;;b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var"
                         if(window.addeventlistener)document.addeventlistener('domcontentloaded',c);else{var=""
                         e="document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&amp;&amp;(document.onreadystatechange=e,c())}}}})();</script">
                 </div>
             </div>
         </div>
     </footer>
+
+    <div id="toast"
+        class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 flex items-center max-w-xs hidden z-50">
+        <div id="toast-icon" class="mr-3"></div>
+        <div>
+            <h3 class="font-medium" id="toast-title"></h3>
+            <p class="text-sm text-gray-600" id="toast-message"></p>
+        </div>
+        <button class="ml-4 text-gray-400 hover:text-gray-600" onclick="hideToast()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
     <script>
         const botaoCarrinho = document.getElementById('btn-carrinho');
         if (botaoCarrinho) {
@@ -1726,6 +1732,11 @@
             });
         };
     </script>
+
+    <script src="js/auth.js"></script>
+
+    <script src="js/notifications.js"></script>
+
 </body>
 
 </html>

@@ -1,10 +1,10 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     buscarLojas();
 });
 
 async function buscarLojas() {
     const containerLojas = document.getElementById('lojas-container');
-    
+
     try {
         const response = await fetch('http://localhost:3000/api/lojas');
         const lojas = await response.json();
@@ -15,11 +15,11 @@ async function buscarLojas() {
             containerLojas.innerHTML = '<p>Nenhuma loja encontrada no momento.</p>';
             return;
         }
-        
+
         lojas.forEach(loja => {
             // No futuro, dados como avaliação, distância e tempo virão do banco de dados também.
             // Por enquanto, vou deixar valores fixos para manter o design.
-            const rating = 4.8; 
+            const rating = 4.8;
             const distance = "2.5 km";
             const deliveryTime = "25-35 min";
 
@@ -62,7 +62,9 @@ async function buscarLojas() {
                         
                         <div class="mt-4 flex justify-between items-center">
                             <span class="text-green-600 font-medium text-sm"></span>
-                            <a href="#" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">Ver cardápio</a>
+                            <button onclick="adicionarAoCarrinho('${loja.nome} (Teste)', 15.00, '${loja.id}')" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">
+                                 Adicionar Item Teste
+                            </button>
                         </div>
                     </div>
                 </div>
