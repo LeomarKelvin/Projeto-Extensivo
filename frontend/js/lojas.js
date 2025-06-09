@@ -1,17 +1,14 @@
 import { getLojas } from './api/lojasApi.js';
 
-// Função para criar o HTML de um card de loja
+// Função para criar o HTML de um card de loja (seu código original)
 function criarCardLoja(loja) {
-  // Valores de exemplo que podem vir do banco de dados no futuro
-  const rating = 4.9;
-  const reviewCount = 254;
-  const distance = "2.5 km";
-  const deliveryTime = "25-35 min";
-  const deliveryFee = "R$ 5,99";
-  const promoText = ""; // Deixe vazio se não houver promoção
+    const rating = 4.9;
+    const reviewCount = 254;
+    const distance = "2.5 km";
+    const deliveryTime = "25-35 min";
+    const deliveryFee = "R$ 5,99";
 
-  // Adaptei o HTML para ser exatamente igual ao do seu arquivo original
-  return `
+    return `
       <div class="store-card bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
           <div class="relative">
               <img src="${loja.url_imagem || 'https://placehold.co/400x200'}" alt="Imagem da ${loja.nome}" class="w-full h-40 object-cover">
@@ -41,37 +38,67 @@ function criarCardLoja(loja) {
   `;
 }
 
-
-// Quando a página carregar, executa esta função principal
+// Função principal que carrega as lojas (seu código original)
 async function carregarLojas() {
-    // 1. Encontra o lugar no HTML onde os cards das lojas devem entrar
     const containerLojas = document.getElementById('lojas-container');
     if (!containerLojas) {
         console.error('O elemento com ID "lojas-container" não foi encontrado no seu HTML.');
         return;
     }
 
-    // 2. Mostra uma mensagem de "Carregando..."
     containerLojas.innerHTML = '<p class="text-center text-gray-500">Carregando lojas...</p>';
-
-    // 3. Pede ao nosso "ajudante" para buscar as lojas na API
     const lojas = await getLojas();
 
-    // 4. Verifica o que o ajudante retornou
     if (lojas.length === 0) {
         containerLojas.innerHTML = '<p class="text-center text-gray-500">Nenhuma loja encontrada no momento.</p>';
         return;
     }
-
-    // 5. Limpa a mensagem de "Carregando..."
     containerLojas.innerHTML = '';
-
-    // 6. Para cada loja que o ajudante trouxe, cria um card e adiciona na página
     lojas.forEach(loja => {
         const cardHtml = criarCardLoja(loja);
         containerLojas.innerHTML += cardHtml;
     });
 }
 
+// ===== LÓGICA DO BOTÃO DE TESTE ADICIONADA AQUI =====
+function setupTestButton() {
+    const testButton = document.getElementById('add-test-item-btn');
+    if (!testButton) return;
+
+    testButton.addEventListener('click', () => {
+        // Define um item de teste
+        const testItem = {
+            id: `prod_${Date.now()}`, // ID único para não agrupar sempre o mesmo
+            nome: 'X-Burger Teste',
+            preco: 25.50,
+            loja_id: '12345', // ID da loja fictícia
+            loja_nome: 'Lanchonete do Zé'
+        };
+
+        // Pega o carrinho atual, adiciona o item e salva de volta
+        const cart = JSON.parse(localStorage.getItem('pedeai_cart')) || [];
+
+        // Lógica para adicionar ou incrementar
+        const itemExistente = cart.find(item => item.id === testItem.id);
+        if (itemExistente) {
+            itemExistente.quantidade++;
+        } else {
+            testItem.quantidade = 1;
+            cart.push(testItem);
+        }
+        
+        localStorage.setItem('pedeai_cart', JSON.stringify(cart));
+
+        // Mostra a notificação de sucesso
+        showToast('Sucesso!', `${testItem.nome} foi adicionado ao carrinho.`);
+
+        // Força a atualização do header para mostrar o contador
+        window.location.reload(); 
+    });
+}
+
 // O evento que dispara tudo quando a página é carregada
-document.addEventListener('DOMContentLoaded', carregarLojas);
+document.addEventListener('DOMContentLoaded', () => {
+    carregarLojas();
+    setupTestButton(); // Ativa nosso novo botão
+});

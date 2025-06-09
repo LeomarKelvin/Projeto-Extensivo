@@ -1,0 +1,1225 @@
+<html lang="pt-BR"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações da Loja - PedeAí</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1A1A1A;
+            --secondary: #FFD100;
+            --text-light: #FFFFFF;
+            --text-dark: #1A1A1A;
+            --gray-light: #F5F5F5;
+            --gray-medium: #E0E0E0;
+            --gray-dark: #9E9E9E;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+        }
+        
+        .sidebar {
+            background-color: var(--primary);
+            color: var(--text-light);
+            height: 100vh;
+            position: fixed;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-collapsed {
+            width: 80px;
+        }
+        
+        .sidebar-expanded {
+            width: 250px;
+        }
+        
+        .nav-item {
+            border-radius: 8px;
+            margin: 4px 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item.active {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+        }
+        
+        .nav-item.active svg {
+            color: var(--text-dark);
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+        }
+        
+        .tab-button {
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab-button.active {
+            border-bottom: 2px solid var(--secondary);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #E6BC00;
+        }
+        
+        .btn-outline {
+            border: 1px solid var(--gray-dark);
+            transition: all 0.2s;
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--gray-light);
+        }
+        
+        #map {
+            height: 400px;
+            border-radius: 12px;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #FF5252;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-input {
+            border: 1px solid var(--gray-medium);
+            border-radius: 8px;
+            padding: 10px 12px;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 209, 0, 0.2);
+        }
+        
+        .form-select {
+            border: 1px solid var(--gray-medium);
+            border-radius: 8px;
+            padding: 10px 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239E9E9E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            appearance: none;
+        }
+        
+        .form-select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 209, 0, 0.2);
+        }
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+            
+            .mobile-menu {
+                display: block !important;
+            }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.absolute{position:absolute}.relative{position:relative}.left-3{left:0.75rem}.top-2\.5{top:0.625rem}.z-20{z-index:20}.mx-4{margin-left:1rem;margin-right:1rem}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.ml-2{margin-left:0.5rem}.ml-4{margin-left:1rem}.mr-2{margin-right:0.5rem}.mr-3{margin-right:0.75rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-12{height:3rem}.h-24{height:6rem}.h-3{height:0.75rem}.h-32{height:8rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-8{height:2rem}.w-10{width:2.5rem}.w-12{width:3rem}.w-20{width:5rem}.w-24{width:6rem}.w-3{width:0.75rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-full{width:100%}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-r-lg{border-top-right-radius:0.5rem;border-bottom-right-radius:0.5rem}.rounded-r-none{border-top-right-radius:0px;border-bottom-right-radius:0px}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.bg-blue-100{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.bg-gray-300{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-green-100{--tw-bg-opacity:1;background-color:rgb(220 252 231 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-orange-100{--tw-bg-opacity:1;background-color:rgb(255 237 213 / var(--tw-bg-opacity, 1))}.bg-purple-100{--tw-bg-opacity:1;background-color:rgb(243 232 255 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-yellow-500{--tw-bg-opacity:1;background-color:rgb(234 179 8 / var(--tw-bg-opacity, 1))}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pl-10{padding-left:2.5rem}.pr-4{padding-right:1rem}.text-2xl{font-size:1.5rem;line-height:2rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.hover\:bg-gray-100:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-300:hover{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-700:hover{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.hover\:text-gray-700:hover{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.focus\:border-yellow-400:focus{--tw-border-opacity:1;border-color:rgb(250 204 21 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 768px){.md\:col-span-2{grid-column:span 2 / span 2}.md\:mt-0{margin-top:0px}.md\:hidden{display:none}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}</style></head>
+<body>
+    <div class="flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar sidebar-expanded z-20">
+            <div class="p-4 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="logo-icon mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FFD100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold sidebar-text">PedeAí</span>
+                </div>
+                <button id="toggle-sidebar" class="text-white p-1 rounded-full hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                        <path d="M15 18l-6-6 6-6"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mt-6">
+                <div class="px-4 py-2">
+                    <p class="text-xs uppercase text-gray-400 sidebar-text">Principal</p>
+                </div>
+                
+                <div class="nav-item p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span class="sidebar-text">Dashboard</span>
+                </div>
+                
+                <div class="nav-item p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                    <span class="sidebar-text">Pedidos</span>
+                </div>
+                
+                <div class="nav-item p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span class="sidebar-text">Produtos e Promoções</span>
+                </div>
+                
+                <div class="px-4 py-2 mt-6">
+                    <p class="text-xs uppercase text-gray-400 sidebar-text">Gerenciamento</p>
+                </div>
+                
+                <div class="nav-item p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span class="sidebar-text">Perfil da Loja</span>
+                </div>
+                
+                <div class="nav-item p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <span class="sidebar-text">Financeiro</span>
+                </div>
+                
+                <div class="nav-item p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                    </svg>
+                    <span class="sidebar-text">Avaliações</span>
+                </div>
+                
+                <div class="nav-item p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span class="sidebar-text">Relatórios</span>
+                </div>
+                
+                <div class="nav-item active p-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span class="sidebar-text">Configurações</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="content-wrapper" class="flex-1 content-wrapper transition-all duration-300" style="margin-left: 250px;">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm">
+                <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+                    <div class="flex items-center md:hidden">
+                        <button id="mobile-menu-button" class="p-2 rounded-md text-gray-700 hover:bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 max-w-md mx-4">
+                        <div class="relative">
+                            <input type="text" placeholder="Buscar..." class="w-full py-2 pl-10 pr-4 rounded-full border border-gray-300 focus:outline-none focus:border-yellow-400">
+                            <div class="absolute left-3 top-2.5 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <span class="mr-2 text-sm font-medium">Loja Fechada</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="store-status">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="ml-2 text-sm font-medium">Loja Aberta</span>
+                        </div>
+                        
+                        <div class="relative">
+                            <button class="p-2 rounded-full hover:bg-gray-100 relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                </svg>
+                                <span class="notification-badge">3</span>
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <button class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content Area -->
+            <main class="container mx-auto px-4 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold">Configurações da Loja</h1>
+                        <p class="text-gray-600">Gerencie todas as configurações da sua loja</p>
+                    </div>
+                    <button class="btn-primary px-4 py-2 rounded-lg mt-2 md:mt-0 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        Salvar Alterações
+                    </button>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="mb-6 border-b">
+                    <div class="flex overflow-x-auto">
+                        <button class="tab-button active px-4 py-3 text-sm font-medium" data-tab="profile">
+                            Perfil da Loja
+                        </button>
+                        <button class="tab-button px-4 py-3 text-sm font-medium" data-tab="hours">
+                            Horários de Funcionamento
+                        </button>
+                        <button class="tab-button px-4 py-3 text-sm font-medium" data-tab="delivery">
+                            Zonas de Entrega
+                        </button>
+                        <button class="tab-button px-4 py-3 text-sm font-medium" data-tab="payment">
+                            Métodos de Pagamento
+                        </button>
+                        <button class="tab-button px-4 py-3 text-sm font-medium" data-tab="integrations">
+                            Integrações
+                        </button>
+                        <button class="tab-button px-4 py-3 text-sm font-medium" data-tab="notifications">
+                            Notificações
+                        </button>
+                        <button class="tab-button px-4 py-3 text-sm font-medium" data-tab="banking">
+                            Dados Bancários
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Perfil da Loja -->
+                    <div id="profile" class="tab-pane active">
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Informações Básicas</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Loja</label>
+                                    <input type="text" class="form-input w-full" value="Restaurante Sabor Caseiro">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                                    <select class="form-select w-full">
+                                        <option>Restaurante</option>
+                                        <option>Lanchonete</option>
+                                        <option>Farmácia</option>
+                                        <option>Mercado</option>
+                                        <option>Petshop</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                                    <textarea class="form-input w-full h-24" placeholder="Descreva sua loja...">Comida caseira com sabor de mãe. Pratos executivos, marmitas e refeições completas com entrega rápida.</textarea>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                                    <input type="text" class="form-input w-full" value="(11) 98765-4321">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" class="form-input w-full" value="contato@saborcaseiro.com.br">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Endereço</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                                    <input type="text" class="form-input w-full" value="12345-678">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Rua</label>
+                                    <input type="text" class="form-input w-full" value="Rua das Flores">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                                    <input type="text" class="form-input w-full" value="123">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
+                                    <input type="text" class="form-input w-full" value="Sala 45">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+                                    <input type="text" class="form-input w-full" value="Centro">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                                    <input type="text" class="form-input w-full" value="Cidade Pequena">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                    <select class="form-select w-full">
+                                        <option>SP</option>
+                                        <option>RJ</option>
+                                        <option>MG</option>
+                                        <option>RS</option>
+                                        <option>PR</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Imagens</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Logo da Loja</label>
+                                    <div class="mt-1 flex items-center">
+                                        <div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-gray-400">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                <polyline points="21 15 16 10 5 21"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="file-input-container">
+                                                <button class="btn-outline px-3 py-2 rounded-lg text-sm">
+                                                    Alterar Logo
+                                                </button>
+                                                <input type="file" class="file-input" accept="image/*">
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">JPG, PNG ou GIF. Máximo 2MB.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Imagem de Capa</label>
+                                    <div class="mt-1">
+                                        <div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-gray-400">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                <polyline points="21 15 16 10 5 21"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="file-input-container">
+                                                <button class="btn-outline px-3 py-2 rounded-lg text-sm">
+                                                    Alterar Capa
+                                                </button>
+                                                <input type="file" class="file-input" accept="image/*">
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">Recomendado: 1200 x 400px. JPG, PNG ou GIF. Máximo 5MB.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Horários de Funcionamento -->
+                    <div id="hours" class="tab-pane hidden">
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Horários de Funcionamento</h2>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Segunda-feira</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Abertura</label>
+                                        <input type="time" class="form-input w-full" value="08:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Fechamento</label>
+                                        <input type="time" class="form-input w-full" value="18:00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Terça-feira</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Abertura</label>
+                                        <input type="time" class="form-input w-full" value="08:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Fechamento</label>
+                                        <input type="time" class="form-input w-full" value="18:00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Quarta-feira</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Abertura</label>
+                                        <input type="time" class="form-input w-full" value="08:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Fechamento</label>
+                                        <input type="time" class="form-input w-full" value="18:00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Quinta-feira</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Abertura</label>
+                                        <input type="time" class="form-input w-full" value="08:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Fechamento</label>
+                                        <input type="time" class="form-input w-full" value="18:00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Sexta-feira</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Abertura</label>
+                                        <input type="time" class="form-input w-full" value="08:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Fechamento</label>
+                                        <input type="time" class="form-input w-full" value="20:00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Sábado</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Abertura</label>
+                                        <input type="time" class="form-input w-full" value="10:00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Fechamento</label>
+                                        <input type="time" class="form-input w-full" value="22:00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Domingo</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Abertura</label>
+                                        <input type="time" class="form-input w-full" disabled="">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Fechamento</label>
+                                        <input type="time" class="form-input w-full" disabled="">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Feriados</h2>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-sm font-medium text-gray-700">Funcionamento em feriados</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <p class="text-sm text-gray-500">Quando desativado, sua loja estará fechada em todos os feriados nacionais.</p>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button class="btn-outline px-4 py-2 rounded-lg text-sm flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Adicionar Feriado Personalizado
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6">
+                            <h2 class="text-lg font-semibold mb-4">Tempo de Preparo</h2>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tempo médio de preparo dos pedidos</label>
+                                <div class="flex items-center">
+                                    <input type="number" class="form-input w-20" value="30">
+                                    <span class="ml-2 text-gray-700">minutos</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Este tempo será informado aos clientes no momento do pedido.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Zonas de Entrega -->
+                    <div id="delivery" class="tab-pane hidden">
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Zonas de Entrega</h2>
+                            
+                            <div class="mb-6">
+                                <div id="map"></div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Raio máximo de entrega</label>
+                                <div class="flex items-center">
+                                    <input type="number" class="form-input w-20" value="5">
+                                    <span class="ml-2 text-gray-700">km</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="text-md font-medium mb-2">Faixas de Distância</h3>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                            <span class="text-sm font-medium">Até 2 km</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-sm font-medium mr-2">R$ 5,00</span>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                                            <span class="text-sm font-medium">2 km a 4 km</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-sm font-medium mr-2">R$ 8,00</span>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                            <span class="text-sm font-medium">4 km a 5 km</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-sm font-medium mr-2">R$ 12,00</span>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <button class="btn-outline px-4 py-2 rounded-lg text-sm flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                        Adicionar Faixa de Distância
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Tipos de Taxa de Entrega</h2>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center mb-3">
+                                    <input type="radio" id="fixed-fee" name="delivery-fee-type" class="mr-2" checked="">
+                                    <label for="fixed-fee" class="text-sm font-medium">Taxa fixa</label>
+                                </div>
+                                
+                                <div class="flex items-center mb-3">
+                                    <input type="radio" id="distance-fee" name="delivery-fee-type" class="mr-2">
+                                    <label for="distance-fee" class="text-sm font-medium">Taxa por km</label>
+                                </div>
+                                
+                                <div class="flex items-center mb-3">
+                                    <input type="radio" id="zone-fee" name="delivery-fee-type" class="mr-2">
+                                    <label for="zone-fee" class="text-sm font-medium">Taxa por bairro</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Valor da taxa fixa</label>
+                                <div class="flex items-center">
+                                    <span class="mr-2 text-gray-700">R$</span>
+                                    <input type="number" step="0.01" class="form-input w-20" value="5.00">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between">
+                                    <label class="block text-sm font-medium text-gray-700">Entrega grátis</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="mt-2">
+                                    <label class="block text-xs text-gray-500 mb-1">Valor mínimo para entrega grátis</label>
+                                    <div class="flex items-center">
+                                        <span class="mr-2 text-gray-700">R$</span>
+                                        <input type="number" step="0.01" class="form-input w-24" value="50.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6">
+                            <h2 class="text-lg font-semibold mb-4">Retirada na Loja</h2>
+                            
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between">
+                                    <label class="block text-sm font-medium text-gray-700">Permitir retirada na loja</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Os clientes poderão optar por retirar o pedido diretamente na loja.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tempo médio para retirada</label>
+                                <div class="flex items-center">
+                                    <input type="number" class="form-input w-20" value="20">
+                                    <span class="ml-2 text-gray-700">minutos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Métodos de Pagamento -->
+                    <div id="payment" class="tab-pane hidden">
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Métodos de Pagamento Online</h2>
+                            
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3">
+                                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                                        </svg>
+                                        <div>
+                                            <h3 class="text-md font-medium">Cartão de Crédito/Débito</h3>
+                                            <p class="text-sm text-gray-500">Aceite pagamentos com cartão diretamente pelo app</p>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Gateway de Pagamento</label>
+                                        <select class="form-select w-full">
+                                            <option>Mercado Pago</option>
+                                            <option>PagSeguro</option>
+                                            <option>Stripe</option>
+                                            <option>Cielo</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Chave de API</label>
+                                        <input type="text" class="form-input w-full" value="sk_test_51H7bbSGh3Ky8NrJDjdXXXXXXXXXXXXXXXXXXXXXXXXXXX" placeholder="Insira sua chave de API">
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Chave Secreta</label>
+                                        <input type="password" class="form-input w-full" value="••••••••••••••••••••••••••••••" placeholder="Insira sua chave secreta">
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Parcelamento</label>
+                                        <select class="form-select w-full">
+                                            <option>Não permitir parcelamento</option>
+                                            <option>Até 3x sem juros</option>
+                                            <option selected="">Até 6x sem juros</option>
+                                            <option>Até 12x com juros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3">
+                                            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                                            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                                            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+                                        </svg>
+                                        <div>
+                                            <h3 class="text-md font-medium">Pix</h3>
+                                            <p class="text-sm text-gray-500">Receba pagamentos instantâneos via Pix</p>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Chave Pix</label>
+                                        <input type="text" class="form-input w-full" value="12345678900" placeholder="CPF, CNPJ, E-mail ou Chave Aleatória">
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Chave</label>
+                                        <select class="form-select w-full">
+                                            <option>CPF</option>
+                                            <option selected="">CNPJ</option>
+                                            <option>E-mail</option>
+                                            <option>Telefone</option>
+                                            <option>Chave Aleatória</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Beneficiário</label>
+                                        <input type="text" class="form-input w-full" value="Restaurante Sabor Caseiro LTDA" placeholder="Nome completo ou Razão Social">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6">
+                            <h2 class="text-lg font-semibold mb-4">Métodos de Pagamento Offline</h2>
+                            
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3">
+                                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                            <path d="M7 15h0M2 9.5h20"></path>
+                                        </svg>
+                                        <div>
+                                            <h3 class="text-md font-medium">Dinheiro</h3>
+                                            <p class="text-sm text-gray-500">Cliente paga em dinheiro na entrega</p>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <div class="mb-4">
+                                        <div class="flex items-center justify-between">
+                                            <label class="block text-sm font-medium text-gray-700">Troco</label>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" checked="">
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        <p class="text-sm text-gray-500 mt-1">Permitir que o cliente solicite troco</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3">
+                                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                                        </svg>
+                                        <div>
+                                            <h3 class="text-md font-medium">Cartão na Entrega</h3>
+                                            <p class="text-sm text-gray-500">Cliente paga com cartão na entrega</p>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked="">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Bandeiras aceitas</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="visa" class="mr-2" checked="">
+                                                <label for="visa" class="text-sm">Visa</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="mastercard" class="mr-2" checked="">
+                                                <label for="mastercard" class="text-sm">Mastercard</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="amex" class="mr-2" checked="">
+                                                <label for="amex" class="text-sm">American Express</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="elo" class="mr-2" checked="">
+                                                <label for="elo" class="text-sm">Elo</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <button class="btn-outline px-4 py-2 rounded-lg text-sm flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Adicionar Método de Pagamento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Integrações -->
+                    <div id="integrations" class="tab-pane hidden">
+                        <div class="card p-6 mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Integrações Disponíveis</h2>
+                            
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                                <path d="M20 7h-9"></path>
+                                                <path d="M14 17H5"></path>
+                                                <circle cx="17" cy="17" r="3"></circle>
+                                                <circle cx="7" cy="7" r="3"></circle>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-md font-medium">Sistema ERP</h3>
+                                            <p class="text-sm text-gray-500">Integre com seu sistema de gestão empresarial</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn-outline px-3 py-1 rounded-lg text-sm">
+                                        Configurar
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-md font-medium">Gestão de Estoque</h3>
+                                            <p class="text-sm text-gray-500">Controle automático de estoque com seus pedidos</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn-outline px-3 py-1 rounded-lg text-sm">
+                                        Configurar
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-md font-medium">Impressora Fiscal</h3>
+                                            <p class="text-sm text-gray-500">Emissão automática de notas fiscais</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn-outline px-3 py-1 rounded-lg text-sm">
+                                        Configurar
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-md font-medium">CRM</h3>
+                                            <p class="text-sm text-gray-500">Integre com seu sistema de gestão de clientes</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn-outline px-3 py-1 rounded-lg text-sm">
+                                        Configurar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6">
+                            <h2 class="text-lg font-semibold mb-4">API e Webhooks</h2>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Chave de API</label>
+                                <div class="flex">
+                                    <input type="text" class="form-input w-full rounded-r-none" value="pk_test_TYooMQauvdEDq54NiTphI7jx" readonly="">
+                                    <button class="px-4 py-2 bg-gray-200 rounded-r-lg hover:bg-gray-300 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Use esta chave para acessar nossa API.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">URL de Webhook</label>
+                                <input type="text" class="form-input w-full" placeholder="https://seu-site.com/webhook">
+                                <p class="text-sm text-gray-500 mt-1">Receba notificações de eventos em tempo real.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Eventos</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="event-order" class="mr-2" checked="">
+                                        <label for="event-order" class="text-sm">Novos pedidos</label><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94d2ba60a4b6f1dd',t:'MTc0OTQ5NDExOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></div></div></div></div></div></div></main></div></div><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe></body></html>

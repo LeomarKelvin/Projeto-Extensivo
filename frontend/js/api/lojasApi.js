@@ -1,36 +1,17 @@
-// frontend/js/api/pedidosApi.js
+const API_BASE_URL = 'http://localhost:3000/api';
 
-import { supabase } from '../shared/auth.js'; // Importamos o supabase para pegar o token
-
-const API_URL = 'http://localhost:3000/api';
-
-export async function fetchPedidos() {
-  try {
-    // Pegamos a sessão atual para obter o token de acesso (nosso crachá)
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      console.log('Nenhum usuário logado para buscar pedidos.');
-      return []; // Retorna vazio se não há ninguém logado
+/**
+ * Busca a lista de todas as lojas cadastradas no backend.
+ */
+export async function getLojas() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/lojas`);
+        if (!response.ok) {
+            throw new Error('A resposta da rede não foi boa.');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Houve um problema ao buscar as lojas:', error);
+        return []; // Retorna uma lista vazia para não quebrar a página.
     }
-
-    const token = session.access_token;
-
-    const response = await fetch(`${API_URL}/pedidos`, {
-      headers: {
-        // Enviamos o crachá no cabeçalho da requisição
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Não foi possível buscar os pedidos.');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error("Erro ao buscar pedidos:", error);
-    return []; // Retorna um array vazio em caso de erro
-  }
 }

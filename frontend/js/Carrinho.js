@@ -1,12 +1,10 @@
 // frontend/js/Carrinho.js
 
-// Importa as funções do nosso novo serviço de carrinho
+// Mantive as importações que você já usa
 import { getCart, removeItemFromCart, updateItemQuantity, getSubtotal, clearCart } from './services/cartService.js';
-// Importa a função para criar o pedido na API
 import { createOrder } from './api/pedidosApi.js'; 
 
 function renderizarItensCarrinho() {
-    // ... toda a sua função renderizarItensCarrinho continua exatamente igual ...
     const cart = getCart();
     const container = document.getElementById('itens-do-carrinho');
     const resumoContainer = document.getElementById('resumo-pedido');
@@ -70,7 +68,6 @@ function renderizarItensCarrinho() {
 }
 
 function adicionarEventos() {
-    // ... sua função adicionarEventos continua igual ...
     document.querySelectorAll('.quantity-btn').forEach(button => {
         button.addEventListener('click', () => {
             const itemId = button.dataset.itemId;
@@ -81,6 +78,7 @@ function adicionarEventos() {
                 const novaQuantidade = item.quantidade + change;
                 updateItemQuantity(itemId, novaQuantidade);
                 renderizarItensCarrinho();
+                montarHeader(); // ===== CORREÇÃO 1: ATUALIZA O HEADER =====
             }
         });
     });
@@ -91,11 +89,11 @@ function adicionarEventos() {
             if (confirm('Tem certeza que deseja remover este item?')) {
                 removeItemFromCart(itemId);
                 renderizarItensCarrinho();
+                montarHeader(); // ===== CORREÇÃO 2: ATUALIZA O HEADER =====
             }
         });
     });
 }
-
 
 async function finalizarPedido() {
     const cart = getCart();
@@ -104,8 +102,6 @@ async function finalizarPedido() {
         return;
     }
     
-    // Supondo que todos os itens do carrinho são da mesma loja
-    // Em um app real, você precisaria de uma lógica mais robusta aqui
     const loja_id = cart[0].loja_id; 
     const total = getSubtotal();
 
@@ -123,6 +119,7 @@ async function finalizarPedido() {
 
     if (result && !result.error) {
         clearCart();
+        montarHeader(); // ===== CORREÇÃO 3: ATUALIZA O HEADER APÓS FINALIZAR =====
         alert('Pedido realizado com sucesso!');
         window.location.href = '/frontend/Pedidos.html';
     } else {
@@ -132,8 +129,6 @@ async function finalizarPedido() {
     }
 }
 
-
-// Função principal que é executada quando a página carrega
 document.addEventListener('DOMContentLoaded', () => {
     renderizarItensCarrinho();
 

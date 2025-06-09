@@ -1,0 +1,2220 @@
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PedeAí - Relatórios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1A1A1A',
+                        secondary: '#FFD100',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sidebar-item.active {
+            border-left: 4px solid #FFD100;
+            background-color: rgba(255, 209, 0, 0.1);
+        }
+
+        .tab.active {
+            border-bottom: 3px solid #FFD100;
+            color: #1A1A1A;
+            font-weight: 600;
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .sparkline {
+            fill: none;
+            stroke: #FFD100;
+            stroke-width: 2;
+        }
+
+        .heatmap-cell {
+            transition: all 0.2s ease;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                position: fixed;
+                z-index: 40;
+                height: 100vh;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+    <style>
+        *,
+        ::before,
+        ::after {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        ::backdrop {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        /* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */
+        *,
+        ::after,
+        ::before {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb
+        }
+
+        ::after,
+        ::before {
+            --tw-content: ''
+        }
+
+        :host,
+        html {
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+            -moz-tab-size: 4;
+            tab-size: 4;
+            font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        body {
+            margin: 0;
+            line-height: inherit
+        }
+
+        hr {
+            height: 0;
+            color: inherit;
+            border-top-width: 1px
+        }
+
+        abbr:where([title]) {
+            -webkit-text-decoration: underline dotted;
+            text-decoration: underline dotted
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-size: inherit;
+            font-weight: inherit
+        }
+
+        a {
+            color: inherit;
+            text-decoration: inherit
+        }
+
+        b,
+        strong {
+            font-weight: bolder
+        }
+
+        code,
+        kbd,
+        pre,
+        samp {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            font-size: 1em
+        }
+
+        small {
+            font-size: 80%
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        table {
+            text-indent: 0;
+            border-color: inherit;
+            border-collapse: collapse
+        }
+
+        button,
+        input,
+        optgroup,
+        select,
+        textarea {
+            font-family: inherit;
+            font-feature-settings: inherit;
+            font-variation-settings: inherit;
+            font-size: 100%;
+            font-weight: inherit;
+            line-height: inherit;
+            letter-spacing: inherit;
+            color: inherit;
+            margin: 0;
+            padding: 0
+        }
+
+        button,
+        select {
+            text-transform: none
+        }
+
+        button,
+        input:where([type=button]),
+        input:where([type=reset]),
+        input:where([type=submit]) {
+            -webkit-appearance: button;
+            background-color: transparent;
+            background-image: none
+        }
+
+        :-moz-focusring {
+            outline: auto
+        }
+
+        :-moz-ui-invalid {
+            box-shadow: none
+        }
+
+        progress {
+            vertical-align: baseline
+        }
+
+        ::-webkit-inner-spin-button,
+        ::-webkit-outer-spin-button {
+            height: auto
+        }
+
+        [type=search] {
+            -webkit-appearance: textfield;
+            outline-offset: -2px
+        }
+
+        ::-webkit-search-decoration {
+            -webkit-appearance: none
+        }
+
+        ::-webkit-file-upload-button {
+            -webkit-appearance: button;
+            font: inherit
+        }
+
+        summary {
+            display: list-item
+        }
+
+        blockquote,
+        dd,
+        dl,
+        figure,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        hr,
+        p,
+        pre {
+            margin: 0
+        }
+
+        fieldset {
+            margin: 0;
+            padding: 0
+        }
+
+        legend {
+            padding: 0
+        }
+
+        menu,
+        ol,
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0
+        }
+
+        dialog {
+            padding: 0
+        }
+
+        textarea {
+            resize: vertical
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            opacity: 1;
+            color: #9ca3af
+        }
+
+        [role=button],
+        button {
+            cursor: pointer
+        }
+
+        :disabled {
+            cursor: default
+        }
+
+        audio,
+        canvas,
+        embed,
+        iframe,
+        img,
+        object,
+        svg,
+        video {
+            display: block;
+            vertical-align: middle
+        }
+
+        img,
+        video {
+            max-width: 100%;
+            height: auto
+        }
+
+        [hidden]:where(:not([hidden=until-found])) {
+            display: none
+        }
+
+        .absolute {
+            position: absolute
+        }
+
+        .relative {
+            position: relative
+        }
+
+        .-right-1 {
+            right: -0.25rem
+        }
+
+        .-top-1 {
+            top: -0.25rem
+        }
+
+        .left-3 {
+            left: 0.75rem
+        }
+
+        .right-0 {
+            right: 0px
+        }
+
+        .top-2\.5 {
+            top: 0.625rem
+        }
+
+        .z-10 {
+            z-index: 10
+        }
+
+        .mx-2 {
+            margin-left: 0.5rem;
+            margin-right: 0.5rem
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto
+        }
+
+        .-mb-px {
+            margin-bottom: -1px
+        }
+
+        .mb-1 {
+            margin-bottom: 0.25rem
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem
+        }
+
+        .ml-1 {
+            margin-left: 0.25rem
+        }
+
+        .ml-2 {
+            margin-left: 0.5rem
+        }
+
+        .mr-1 {
+            margin-right: 0.25rem
+        }
+
+        .mr-2 {
+            margin-right: 0.5rem
+        }
+
+        .mr-3 {
+            margin-right: 0.75rem
+        }
+
+        .mt-1 {
+            margin-top: 0.25rem
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem
+        }
+
+        .mt-4 {
+            margin-top: 1rem
+        }
+
+        .flex {
+            display: flex
+        }
+
+        .grid {
+            display: grid
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .h-10 {
+            height: 2.5rem
+        }
+
+        .h-12 {
+            height: 3rem
+        }
+
+        .h-16 {
+            height: 4rem
+        }
+
+        .h-3 {
+            height: 0.75rem
+        }
+
+        .h-4 {
+            height: 1rem
+        }
+
+        .h-5 {
+            height: 1.25rem
+        }
+
+        .h-6 {
+            height: 1.5rem
+        }
+
+        .h-64 {
+            height: 16rem
+        }
+
+        .h-8 {
+            height: 2rem
+        }
+
+        .h-full {
+            height: 100%
+        }
+
+        .h-screen {
+            height: 100vh
+        }
+
+        .w-10 {
+            width: 2.5rem
+        }
+
+        .w-12 {
+            width: 3rem
+        }
+
+        .w-16 {
+            width: 4rem
+        }
+
+        .w-20 {
+            width: 5rem
+        }
+
+        .w-3 {
+            width: 0.75rem
+        }
+
+        .w-4 {
+            width: 1rem
+        }
+
+        .w-48 {
+            width: 12rem
+        }
+
+        .w-5 {
+            width: 1.25rem
+        }
+
+        .w-6 {
+            width: 1.5rem
+        }
+
+        .w-64 {
+            width: 16rem
+        }
+
+        .w-8 {
+            width: 2rem
+        }
+
+        .w-full {
+            width: 100%
+        }
+
+        .min-w-full {
+            min-width: 100%
+        }
+
+        .max-w-7xl {
+            max-width: 80rem
+        }
+
+        .max-w-md {
+            max-width: 28rem
+        }
+
+        .flex-1 {
+            flex: 1 1 0%
+        }
+
+        .flex-shrink-0 {
+            flex-shrink: 0
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr))
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr))
+        }
+
+        .grid-cols-7 {
+            grid-template-columns: repeat(7, minmax(0, 1fr))
+        }
+
+        .flex-col {
+            flex-direction: column
+        }
+
+        .flex-wrap {
+            flex-wrap: wrap
+        }
+
+        .items-center {
+            align-items: center
+        }
+
+        .justify-center {
+            justify-content: center
+        }
+
+        .justify-between {
+            justify-content: space-between
+        }
+
+        .gap-1 {
+            gap: 0.25rem
+        }
+
+        .gap-2 {
+            gap: 0.5rem
+        }
+
+        .gap-4 {
+            gap: 1rem
+        }
+
+        .gap-6 {
+            gap: 1.5rem
+        }
+
+        .space-x-2> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+            margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-x-6> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(1.5rem * var(--tw-space-x-reverse));
+            margin-left: calc(1.5rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-x-8> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(2rem * var(--tw-space-x-reverse));
+            margin-left: calc(2rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-y-2> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.5rem * var(--tw-space-y-reverse))
+        }
+
+        .divide-y> :not([hidden])~ :not([hidden]) {
+            --tw-divide-y-reverse: 0;
+            border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+            border-bottom-width: calc(1px * var(--tw-divide-y-reverse))
+        }
+
+        .divide-gray-200> :not([hidden])~ :not([hidden]) {
+            --tw-divide-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-divide-opacity, 1))
+        }
+
+        .overflow-hidden {
+            overflow: hidden
+        }
+
+        .overflow-x-auto {
+            overflow-x: auto
+        }
+
+        .overflow-y-auto {
+            overflow-y: auto
+        }
+
+        .whitespace-nowrap {
+            white-space: nowrap
+        }
+
+        .rounded {
+            border-radius: 0.25rem
+        }
+
+        .rounded-full {
+            border-radius: 9999px
+        }
+
+        .rounded-lg {
+            border-radius: 0.5rem
+        }
+
+        .rounded-md {
+            border-radius: 0.375rem
+        }
+
+        .border {
+            border-width: 1px
+        }
+
+        .border-2 {
+            border-width: 2px
+        }
+
+        .border-b {
+            border-bottom-width: 1px
+        }
+
+        .border-b-2 {
+            border-bottom-width: 2px
+        }
+
+        .border-gray-200 {
+            --tw-border-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-border-opacity, 1))
+        }
+
+        .border-gray-300 {
+            --tw-border-opacity: 1;
+            border-color: rgb(209 213 219 / var(--tw-border-opacity, 1))
+        }
+
+        .border-gray-700 {
+            --tw-border-opacity: 1;
+            border-color: rgb(55 65 81 / var(--tw-border-opacity, 1))
+        }
+
+        .border-secondary {
+            --tw-border-opacity: 1;
+            border-color: rgb(255 209 0 / var(--tw-border-opacity, 1))
+        }
+
+        .border-transparent {
+            border-color: transparent
+        }
+
+        .bg-blue-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-200 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-primary {
+            --tw-bg-opacity: 1;
+            background-color: rgb(26 26 26 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-red-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-red-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-secondary {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 209 0 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-white {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-200 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 240 138 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-300 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(253 224 71 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-400 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(250 204 21 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-600 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(202 138 4 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-700 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(161 98 7 / var(--tw-bg-opacity, 1))
+        }
+
+        .object-cover {
+            object-fit: cover
+        }
+
+        .p-2 {
+            padding: 0.5rem
+        }
+
+        .p-4 {
+            padding: 1rem
+        }
+
+        .px-1 {
+            padding-left: 0.25rem;
+            padding-right: 0.25rem
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem
+        }
+
+        .py-1 {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem
+        }
+
+        .py-3 {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem
+        }
+
+        .py-4 {
+            padding-top: 1rem;
+            padding-bottom: 1rem
+        }
+
+        .pl-10 {
+            padding-left: 2.5rem
+        }
+
+        .pr-4 {
+            padding-right: 1rem
+        }
+
+        .text-left {
+            text-align: left
+        }
+
+        .text-center {
+            text-align: center
+        }
+
+        .text-right {
+            text-align: right
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem
+        }
+
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem
+        }
+
+        .font-bold {
+            font-weight: 700
+        }
+
+        .font-medium {
+            font-weight: 500
+        }
+
+        .uppercase {
+            text-transform: uppercase
+        }
+
+        .tracking-wider {
+            letter-spacing: 0.05em
+        }
+
+        .text-gray-300 {
+            --tw-text-opacity: 1;
+            color: rgb(209 213 219 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-500 {
+            --tw-text-opacity: 1;
+            color: rgb(107 114 128 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-600 {
+            --tw-text-opacity: 1;
+            color: rgb(75 85 99 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-700 {
+            --tw-text-opacity: 1;
+            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-900 {
+            --tw-text-opacity: 1;
+            color: rgb(17 24 39 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-600 {
+            --tw-text-opacity: 1;
+            color: rgb(22 163 74 / var(--tw-text-opacity, 1))
+        }
+
+        .text-primary {
+            --tw-text-opacity: 1;
+            color: rgb(26 26 26 / var(--tw-text-opacity, 1))
+        }
+
+        .text-red-600 {
+            --tw-text-opacity: 1;
+            color: rgb(220 38 38 / var(--tw-text-opacity, 1))
+        }
+
+        .text-secondary {
+            --tw-text-opacity: 1;
+            color: rgb(255 209 0 / var(--tw-text-opacity, 1))
+        }
+
+        .text-white {
+            --tw-text-opacity: 1;
+            color: rgb(255 255 255 / var(--tw-text-opacity, 1))
+        }
+
+        .text-yellow-400 {
+            --tw-text-opacity: 1;
+            color: rgb(250 204 21 / var(--tw-text-opacity, 1))
+        }
+
+        .shadow-lg {
+            --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .shadow-sm {
+            --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .transition-colors {
+            transition-property: color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms
+        }
+
+        .hover\:border-gray-300:hover {
+            --tw-border-opacity: 1;
+            border-color: rgb(209 213 219 / var(--tw-border-opacity, 1))
+        }
+
+        .hover\:border-secondary:hover {
+            --tw-border-opacity: 1;
+            border-color: rgb(255 209 0 / var(--tw-border-opacity, 1))
+        }
+
+        .hover\:bg-gray-100:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-200:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-50:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-800:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(31 41 55 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:text-gray-700:hover {
+            --tw-text-opacity: 1;
+            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
+        }
+
+        .focus\:border-transparent:focus {
+            border-color: transparent
+        }
+
+        .focus\:outline-none:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px
+        }
+
+        .focus\:ring-2:focus {
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)
+        }
+
+        .focus\:ring-secondary:focus {
+            --tw-ring-opacity: 1;
+            --tw-ring-color: rgb(255 209 0 / var(--tw-ring-opacity, 1))
+        }
+
+        @media (min-width: 640px) {
+            .sm\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .sm\:flex-row {
+                flex-direction: row
+            }
+
+            .sm\:space-x-2> :not([hidden])~ :not([hidden]) {
+                --tw-space-x-reverse: 0;
+                margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+                margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))
+            }
+
+            .sm\:space-y-0> :not([hidden])~ :not([hidden]) {
+                --tw-space-y-reverse: 0;
+                margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
+                margin-bottom: calc(0px * var(--tw-space-y-reverse))
+            }
+        }
+
+        @media (min-width: 768px) {
+            .md\:mb-0 {
+                margin-bottom: 0px
+            }
+
+            .md\:mt-0 {
+                margin-top: 0px
+            }
+
+            .md\:hidden {
+                display: none
+            }
+
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .md\:flex-row {
+                flex-direction: row
+            }
+
+            .md\:items-center {
+                align-items: center
+            }
+
+            .md\:justify-between {
+                justify-content: space-between
+            }
+
+            .md\:px-8 {
+                padding-left: 2rem;
+                padding-right: 2rem
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:col-span-1 {
+                grid-column: span 1 / span 1
+            }
+
+            .lg\:col-span-2 {
+                grid-column: span 2 / span 2
+            }
+
+            .lg\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .lg\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr))
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar / Navigation -->
+        <aside id="sidebar" class="sidebar bg-primary text-white w-64 flex-shrink-0 h-full overflow-y-auto">
+            <!-- Logo -->
+            <div class="flex items-center justify-center p-4 border-b border-gray-700">
+                <div class="relative">
+                    <div class="w-10 h-10 rounded-full border-2 border-secondary flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <span class="ml-2 text-xl font-bold">PedeAí</span>
+            </div>
+
+            <!-- Menu Principal -->
+            <div class="p-4">
+                <p class="text-xs uppercase tracking-wider text-gray-400 mb-2">Principal</p>
+                <nav>
+                    <a href="#" class="sidebar-item flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                            </path>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                            </path>
+                        </svg>
+                        Pedidos
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        Produtos e Promoções
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Menu Gerenciamento -->
+            <div class="p-4">
+                <p class="text-xs uppercase tracking-wider text-gray-400 mb-2">Gerenciamento</p>
+                <nav>
+                    <a href="#" class="sidebar-item flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            </path>
+                        </svg>
+                        Perfil da Loja
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+                        Financeiro
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
+                            </path>
+                        </svg>
+                        Avaliações
+                    </a>
+                    <a href="#"
+                        class="sidebar-item active flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                            </path>
+                        </svg>
+                        Relatórios
+                    </a>
+                    <a href="#" class="sidebar-item flex items-center py-2 px-4 rounded-lg mb-1 hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Configurações
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Header -->
+            <header class="bg-white border-b border-gray-200 flex items-center justify-between p-4">
+                <div class="flex items-center md:hidden">
+                    <button id="menuToggle" class="text-gray-600 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex-1 px-4 md:px-8">
+                    <div class="relative max-w-md">
+                        <input type="text" placeholder="Buscar..."
+                            class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                        <div class="absolute left-3 top-2.5 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <div class="flex items-center">
+                        <span class="mr-2 text-sm font-medium">Loja Aberta</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked="">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="relative">
+                        <button class="text-gray-600 focus:outline-none">
+                            <div class="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                                    </path>
+                                </svg>
+                                <span
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"
+                            class="h-8 w-8 rounded-full object-cover">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto bg-gray-50 p-4">
+                <div class="max-w-7xl mx-auto">
+                    <!-- Breadcrumb -->
+                    <div class="flex items-center text-sm text-gray-500 mb-6">
+                        <a href="#" class="hover:text-gray-700">Home</a>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                        <span class="text-gray-700 font-medium">Relatórios</span>
+                    </div>
+
+                    <!-- Page Title -->
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Relatórios</h1>
+                            <p class="mt-1 text-sm text-gray-500">Analise o desempenho do seu negócio com dados
+                                detalhados</p>
+                        </div>
+
+                        <div class="mt-4 md:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                            <div class="relative">
+                                <button id="exportBtn"
+                                    class="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
+                                    Exportar
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div id="exportMenu"
+                                    class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                                    <div class="py-1">
+                                        <a href="#"
+                                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <svg class="h-4 w-4 mr-2 text-gray-500" viewBox="0 0 24 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M7 18H17V16H7V18Z" fill="currentColor"></path>
+                                                <path d="M17 14H7V12H17V14Z" fill="currentColor"></path>
+                                                <path d="M7 10H11V8H7V10Z" fill="currentColor"></path>
+                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                    d="M6 2C4.34315 2 3 3.34315 3 5V19C3 20.6569 4.34315 22 6 22H18C19.6569 22 21 20.6569 21 19V9C21 5.13401 17.866 2 14 2H6ZM6 4H13V9H19V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V5C5 4.44772 5.44772 4 6 4ZM15 4.10002C16.6113 4.4271 17.9413 5.52906 18.584 7H15V4.10002Z"
+                                                    fill="currentColor"></path>
+                                            </svg>
+                                            Exportar como PDF
+                                        </a>
+                                        <a href="#"
+                                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <svg class="h-4 w-4 mr-2 text-gray-500" viewBox="0 0 24 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M13.5 1.5H5.25C4.65326 1.5 4.08097 1.73705 3.65901 2.15901C3.23705 2.58097 3 3.15326 3 3.75V20.25C3 20.8467 3.23705 21.419 3.65901 21.841C4.08097 22.2629 4.65326 22.5 5.25 22.5H18.75C19.3467 22.5 19.919 22.2629 20.341 21.841C20.7629 21.419 21 20.8467 21 20.25V9L13.5 1.5Z"
+                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                                    stroke-linejoin="round"></path>
+                                                <path d="M13.5 1.5V9H21" stroke="currentColor" stroke-width="1.5"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                                <path d="M16.5 16.5H7.5" stroke="currentColor" stroke-width="1.5"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                                <path d="M16.5 12H7.5" stroke="currentColor" stroke-width="1.5"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                                <path d="M9 7.5H7.5" stroke="currentColor" stroke-width="1.5"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                            </svg>
+                                            Exportar como Excel
+                                        </a>
+                                        <a href="#"
+                                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <svg class="h-4 w-4 mr-2 text-gray-500" viewBox="0 0 24 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M14 3V7C14 7.26522 14.1054 7.51957 14.2929 7.70711C14.4804 7.89464 14.7348 8 15 8H19"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round"></path>
+                                                <path
+                                                    d="M17 21H7C6.46957 21 5.96086 20.7893 5.58579 20.4142C5.21071 20.0391 5 19.5304 5 19V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H14L19 8V19C19 19.5304 18.7893 20.0391 18.4142 20.4142C18.0391 20.7893 17.5304 21 17 21Z"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round"></path>
+                                                <path d="M9 17H15" stroke="currentColor" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                                <path d="M9 13H15" stroke="currentColor" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                            </svg>
+                                            Exportar como CSV
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="scheduleBtn"
+                                class="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Agendar Relatórios
+                            </button>
+
+                            <button id="saveTemplateBtn"
+                                class="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                                    </path>
+                                </svg>
+                                Salvar Template
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Date Range Selector -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div class="flex flex-wrap gap-2 mb-4 md:mb-0">
+                                <button
+                                    class="px-4 py-2 bg-secondary text-primary font-medium rounded-md text-sm">Hoje</button>
+                                <button
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md text-sm hover:bg-gray-200">Ontem</button>
+                                <button
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md text-sm hover:bg-gray-200">Últimos
+                                    7 dias</button>
+                                <button
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md text-sm hover:bg-gray-200">Mês
+                                    Atual</button>
+                                <button
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-md text-sm hover:bg-gray-200">Mês
+                                    Anterior</button>
+                            </div>
+
+                            <div class="flex items-center">
+                                <div class="relative">
+                                    <input type="text" id="dateRangePicker" placeholder="Período personalizado"
+                                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                                    <div class="absolute left-3 top-2.5 text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <!-- Total de Pedidos -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 card">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Total de Pedidos</p>
+                                    <p class="text-2xl font-bold text-gray-900 mt-1">247</p>
+                                    <p class="text-xs text-green-600 flex items-center mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                        </svg>
+                                        12.5% vs. período anterior
+                                    </p>
+                                </div>
+                                <div class="w-16 h-16">
+                                    <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
+                                        <path class="sparkline"
+                                            d="M0,15 L10,12 L20,18 L30,10 L40,20 L50,15 L60,18 L70,5 L80,10 L90,7 L100,15"
+                                            vector-effect="non-scaling-stroke"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Receita Bruta -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 card">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Receita Bruta</p>
+                                    <p class="text-2xl font-bold text-gray-900 mt-1">R$ 8.547,32</p>
+                                    <p class="text-xs text-green-600 flex items-center mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                        </svg>
+                                        8.2% vs. período anterior
+                                    </p>
+                                </div>
+                                <div class="w-16 h-16">
+                                    <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
+                                        <path class="sparkline"
+                                            d="M0,20 L10,18 L20,22 L30,15 L40,17 L50,10 L60,14 L70,5 L80,8 L90,12 L100,10"
+                                            vector-effect="non-scaling-stroke"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Receita Líquida -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 card">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Receita Líquida</p>
+                                    <p class="text-2xl font-bold text-gray-900 mt-1">R$ 7.235,22</p>
+                                    <p class="text-xs text-green-600 flex items-center mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                        </svg>
+                                        6.8% vs. período anterior
+                                    </p>
+                                </div>
+                                <div class="w-16 h-16">
+                                    <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
+                                        <path class="sparkline"
+                                            d="M0,18 L10,15 L20,20 L30,12 L40,15 L50,8 L60,12 L70,5 L80,10 L90,8 L100,12"
+                                            vector-effect="non-scaling-stroke"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Médio -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 card">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Ticket Médio</p>
+                                    <p class="text-2xl font-bold text-gray-900 mt-1">R$ 34,60</p>
+                                    <p class="text-xs text-red-600 flex items-center mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                        </svg>
+                                        2.1% vs. período anterior
+                                    </p>
+                                </div>
+                                <div class="w-16 h-16">
+                                    <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
+                                        <path class="sparkline"
+                                            d="M0,10 L10,12 L20,8 L30,14 L40,10 L50,16 L60,12 L70,18 L80,14 L90,16 L100,12"
+                                            vector-effect="non-scaling-stroke"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="mb-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex -mb-px space-x-8 overflow-x-auto">
+                                <a href="#"
+                                    class="tab active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    Vendas
+                                </a>
+                                <a href="#"
+                                    class="tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Performance de Produtos
+                                </a>
+                                <a href="#"
+                                    class="tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Promoções e Cupons
+                                </a>
+                                <a href="#"
+                                    class="tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Operação
+                                </a>
+                                <a href="#"
+                                    class="tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Avaliações
+                                </a>
+                                <a href="#"
+                                    class="tab whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Relatório Customizado
+                                </a>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Main Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Tendência de Vendas -->
+                        <div class="bg-white rounded-lg shadow-sm p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Tendência de Vendas</h3>
+                                <div class="relative">
+                                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="salesTrendChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Vendas por Categoria -->
+                        <div class="bg-white rounded-lg shadow-sm p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Vendas por Categoria</h3>
+                                <div class="relative">
+                                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Products & Heatmap -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <!-- Top 10 Produtos -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 lg:col-span-1">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Top 10 Produtos</h3>
+                                <div class="relative">
+                                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr>
+                                            <th
+                                                class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Produto</th>
+                                            <th
+                                                class="px-4 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Qtd.</th>
+                                            <th
+                                                class="px-4 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Receita</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                X-Tudo</td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">87
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">R$
+                                                1.740,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                Açaí 500ml</td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">65
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">R$
+                                                975,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                Combo Família</td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">42
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">R$
+                                                1.890,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                Batata Frita G</td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">38
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">R$
+                                                570,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                Refrigerante 2L</td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">36
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">R$
+                                                324,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                Milk Shake</td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">29
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">R$
+                                                290,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                X-Salada</td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">27
+                                            </td>
+                                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 text-right">R$
+                                                405,00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Heatmap de Pedidos -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 lg:col-span-2">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Heatmap de Pedidos</h3>
+                                <div class="relative">
+                                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <div class="min-w-full">
+                                    <div class="flex mb-2">
+                                        <div class="w-20"></div>
+                                        <div
+                                            class="flex-1 grid grid-cols-7 gap-1 text-xs text-center font-medium text-gray-500">
+                                            <div>Dom</div>
+                                            <div>Seg</div>
+                                            <div>Ter</div>
+                                            <div>Qua</div>
+                                            <div>Qui</div>
+                                            <div>Sex</div>
+                                            <div>Sáb</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="heatmap-row flex mb-1">
+                                        <div class="w-20 text-xs font-medium text-gray-500 flex items-center">
+                                            Manhã<br>(6h-12h)</div>
+                                        <div class="flex-1 grid grid-cols-7 gap-1">
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-100 rounded flex items-center justify-center text-xs font-medium">
+                                                8</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-200 rounded flex items-center justify-center text-xs font-medium">
+                                                12</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-200 rounded flex items-center justify-center text-xs font-medium">
+                                                14</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-300 rounded flex items-center justify-center text-xs font-medium">
+                                                18</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-200 rounded flex items-center justify-center text-xs font-medium">
+                                                15</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-300 rounded flex items-center justify-center text-xs font-medium">
+                                                17</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-400 rounded flex items-center justify-center text-xs font-medium">
+                                                22</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="heatmap-row flex mb-1">
+                                        <div class="w-20 text-xs font-medium text-gray-500 flex items-center">
+                                            Tarde<br>(12h-18h)</div>
+                                        <div class="flex-1 grid grid-cols-7 gap-1">
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-400 rounded flex items-center justify-center text-xs font-medium">
+                                                24</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-300 rounded flex items-center justify-center text-xs font-medium">
+                                                19</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-300 rounded flex items-center justify-center text-xs font-medium">
+                                                17</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-300 rounded flex items-center justify-center text-xs font-medium">
+                                                16</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-300 rounded flex items-center justify-center text-xs font-medium">
+                                                18</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-400 rounded flex items-center justify-center text-xs font-medium">
+                                                23</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-500 rounded flex items-center justify-center text-xs font-medium">
+                                                28</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="heatmap-row flex">
+                                        <div class="w-20 text-xs font-medium text-gray-500 flex items-center">
+                                            Noite<br>(18h-0h)</div>
+                                        <div class="flex-1 grid grid-cols-7 gap-1">
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-500 rounded flex items-center justify-center text-xs font-medium">
+                                                26</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-300 rounded flex items-center justify-center text-xs font-medium">
+                                                16</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-400 rounded flex items-center justify-center text-xs font-medium">
+                                                21</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-400 rounded flex items-center justify-center text-xs font-medium">
+                                                22</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-500 rounded flex items-center justify-center text-xs font-medium">
+                                                27</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-600 rounded flex items-center justify-center text-xs font-medium text-white">
+                                                35</div>
+                                            <div
+                                                class="heatmap-cell h-12 bg-yellow-700 rounded flex items-center justify-center text-xs font-medium text-white">
+                                                42</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-center">
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-xs text-gray-500">Menos</div>
+                                    <div class="w-4 h-4 bg-yellow-100 rounded"></div>
+                                    <div class="w-4 h-4 bg-yellow-200 rounded"></div>
+                                    <div class="w-4 h-4 bg-yellow-300 rounded"></div>
+                                    <div class="w-4 h-4 bg-yellow-400 rounded"></div>
+                                    <div class="w-4 h-4 bg-yellow-500 rounded"></div>
+                                    <div class="w-4 h-4 bg-yellow-600 rounded"></div>
+                                    <div class="w-4 h-4 bg-yellow-700 rounded"></div>
+                                    <div class="text-xs text-gray-500">Mais</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Curva ABC & Avaliações -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Curva ABC -->
+                        <div class="bg-white rounded-lg shadow-sm p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Análise Curva ABC</h3>
+                                <div class="relative">
+                                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="abcChart"></canvas>
+                            </div>
+                            <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+                                <div class="bg-blue-100 p-2 rounded">
+                                    <p class="text-xs text-gray-500">Classe A</p>
+                                    <p class="font-medium">20% dos produtos</p>
+                                    <p class="text-sm font-bold">80% da receita</p>
+                                </div>
+                                <div class="bg-green-100 p-2 rounded">
+                                    <p class="text-xs text-gray-500">Classe B</p>
+                                    <p class="font-medium">30% dos produtos</p>
+                                    <p class="text-sm font-bold">15% da receita</p>
+                                </div>
+                                <div class="bg-red-100 p-2 rounded">
+                                    <p class="text-xs text-gray-500">Classe C</p>
+                                    <p class="font-medium">50% dos produtos</p>
+                                    <p class="text-sm font-bold">5% da receita</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Avaliações -->
+                        <div class="bg-white rounded-lg shadow-sm p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Distribuição de Avaliações</h3>
+                                <div class="relative">
+                                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex mb-6">
+                                <div class="flex-1 text-center">
+                                    <div class="text-4xl font-bold text-gray-900">4.7</div>
+                                    <div class="flex justify-center mt-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                            </path>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                            </path>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                            </path>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                            </path>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div class="text-sm text-gray-500 mt-1">Baseado em 183 avaliações</div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <div class="w-12 text-sm text-gray-600">5 ★</div>
+                                    <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="bg-secondary h-full" style="width: 75%"></div>
+                                    </div>
+                                    <div class="w-12 text-sm text-gray-600 text-right">75%</div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-12 text-sm text-gray-600">4 ★</div>
+                                    <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="bg-secondary h-full" style="width: 18%"></div>
+                                    </div>
+                                    <div class="w-12 text-sm text-gray-600 text-right">18%</div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-12 text-sm text-gray-600">3 ★</div>
+                                    <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="bg-secondary h-full" style="width: 5%"></div>
+                                    </div>
+                                    <div class="w-12 text-sm text-gray-600 text-right">5%</div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-12 text-sm text-gray-600">2 ★</div>
+                                    <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="bg-secondary h-full" style="width: 1%"></div>
+                                    </div>
+                                    <div class="w-12 text-sm text-gray-600 text-right">1%</div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-12 text-sm text-gray-600">1 ★</div>
+                                    <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="bg-secondary h-full" style="width: 1%"></div>
+                                    </div>
+                                    <div class="w-12 text-sm text-gray-600 text-right">1%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Relatório Customizado -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Relatório Customizado</h3>
+                            <button class="px-4 py-2 bg-secondary text-primary font-medium rounded-md text-sm">Criar
+                                Novo</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-secondary transition-colors">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-medium">Dimensões</h4>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="dim1"
+                                            class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded">
+                                        <label for="dim1" class="ml-2 text-sm text-gray-700">Categoria</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="dim2"
+                                            class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded">
+                                        <label for="dim2" class="ml-2 text-sm text-gray-700">Tag</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="dim3"
+                                            class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded"
+                                            checked="">
+                                        <label for="dim3" class="ml-2 text-sm text-gray-700">Faixa de Preço</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="dim4"
+                                            class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded"
+                                            checked="">
+                                        <label for="dim4" class="ml-2 text-sm text-gray-700">Zona de Entrega</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-secondary transition-colors">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-medium">Filtros</h4>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="filter1"
+                                            class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded"
+                                            checked="">
+                                        <label for="filter1" class="ml-2 text-sm text-gray-700">Forma de
+                                            Pagamento</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="filter2"
+                                            class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded">
+                                        <label for="filter2" class="ml-2 text-sm text-gray-700">Canal de Pedido</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="filter3"
+                                            class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded">
+                                        <label for="filter3" class="ml-2 text-sm text-gray-700">Cupom Utilizado</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-secondary transition-colors">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-medium">Templates Salvos</h4>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap<script="">(function(){function c(){var
+                                            b=a.contentDocument||a.contentWindow.document;if(b){var
+                                            d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94d2b8248494f1dd',t:'MTc0OTQ5NDAyNy4wMDAwMDA='};var
+                                            a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var
+                                            a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else
+                                            if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var
+                                            e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&amp;&amp;(document.onreadystatechange=e,c())}}}})();
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>
