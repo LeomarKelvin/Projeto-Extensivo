@@ -1,12 +1,10 @@
-import { Router } from 'express';
-import { buscarPedidosDaLoja, atualizarStatusPedido } from '../controllers/lojaDashboardController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
-
-const router = Router();
+const express = require('express');
+const router = express.Router();
+const { buscarPedidosDaLoja, atualizarStatusPedido } = require('../controllers/lojaDashboardController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware);
-
 router.get('/pedidos', buscarPedidosDaLoja);
-router.post('/pedidos/update-status', atualizarStatusPedido);
+router.put('/pedidos/:id', atualizarStatusPedido);
 
-export default router;
+module.exports = router;

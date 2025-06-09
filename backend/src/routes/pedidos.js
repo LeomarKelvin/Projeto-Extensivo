@@ -1,12 +1,9 @@
-import { Router } from 'express';
-import { buscarPedidosDoUsuario, criarPedido } from '../controllers/pedidoController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+const express = require('express');
+const router = express.Router();
+const { criarPedido, buscarMeusPedidos } = require('../controllers/pedidoController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-const router = Router();
+router.post('/', authMiddleware, criarPedido);
+router.get('/meus-pedidos', authMiddleware, buscarMeusPedidos);
 
-router.use(authMiddleware);
-
-router.get('/', buscarPedidosDoUsuario); // Rota para buscar pedidos
-router.post('/', criarPedido);          // Rota para criar um novo pedido
-
-export default router;
+module.exports = router;

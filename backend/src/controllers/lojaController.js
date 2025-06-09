@@ -1,15 +1,21 @@
-import { supabase } from '../config/supabaseClient.js';
+const supabase = require('../config/supabaseClient');
 
-export const buscarLojas = async (req, res) => {
-    const { data, error } = await supabase
-        .from('lojas')
-        .select('*');
+const buscarLojas = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('lojas')
+            .select('*');
 
-    if (error) {
-        console.error('Erro ao buscar lojas:', error);
-        return res.status(500).json({ error: 'Erro ao buscar lojas.' });
+        if (error) {
+            throw error;
+        }
+
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar lojas.' });
     }
-
-    res.json(data);
 };
 
+module.exports = {
+    buscarLojas,
+};

@@ -1,13 +1,11 @@
-import { Router } from 'express';
-import { buscarPerfil, atualizarPerfil } from '../controllers/perfilController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js'; // Nosso novo middleware
+const express = require('express');
+const router = express.Router();
+const { register, login, getProfile, updateProfile } = require('../controllers/perfilController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-const router = Router();
+router.post('/register', register);
+router.post('/login', login);
+router.get('/', authMiddleware, getProfile);
+router.put('/', authMiddleware, updateProfile);
 
-// Todas as rotas aqui dentro usarão o middleware de autenticação
-router.use(authMiddleware);
-
-router.get('/', buscarPerfil);       // Rota para buscar o perfil
-router.post('/update', atualizarPerfil); // Rota para atualizar o perfil
-
-export default router;
+module.exports = router;
