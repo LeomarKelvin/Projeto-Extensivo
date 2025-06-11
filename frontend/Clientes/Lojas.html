@@ -13,7 +13,7 @@
                 extend: {
                     colors: {
                         primary: '#FFD100',
-                        secondary: '#000000',
+                        secondary: '#1A1A1A', // <-- CORRIGIDO AQUI
                         detail: '#FFFFFF',
                         gray: {
                             100: '#f7f7f7',
@@ -1096,11 +1096,10 @@
     </style>
 </head>
 
-<body>
-    <header class="bg-gray-900 text-white p-4 shadow-md z-50 relative">
+<body class="min-h-screen flex flex-col">
+    <header id="main-header" class="bg-secondary text-white p-4 shadow-md z-50 relative">
         <div class="container mx-auto px-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center">
-                <!-- Logotipo: raio com contorno amarelo arredondado e interior preto -->
+            <a href="Inicio.html" class="flex items-center">
                 <svg class="h-10 w-10 lightning-logo" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="11" fill="#FFD100"></circle>
                     <circle cx="12" cy="12" r="9" fill="#1A1A1A"></circle>
@@ -1108,34 +1107,22 @@
                 </svg>
                 <span class="ml-2 text-2xl font-bold text-primary">PedeAí</span>
             </a>
-
             <div id="user-navigation" class="flex items-center space-x-4">
                 <a href="Inicio.html" class="text-white hover:text-primary transition-colors">Início</a>
                 <a href="Lojas.html" class="text-white hover:text-primary transition-colors">Lojas</a>
-
                 <a href="login.html" class="bg-primary text-secondary font-medium py-2 px-4 rounded-full">Entrar</a>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-grow container mx-auto px-4 py-8">
-        <!-- Hero Section -->
         <section class="mb-10">
-            <div class="bg-gray-900 text-white p-4 shadow-md z-50 relative">
-                <div class="absolute inset-0 bg-gradient-to-r from-secondary via-secondary to-transparent"></div>
-                <div class="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center">
+            <div class="relative bg-secondary rounded-xl overflow-hidden shadow-lg">
+                <div class="absolute inset-0 bg-gradient-to-r from-secondary via-secondary to-transparent z-10"></div>
+                <div class="relative z-20 p-8 md:p-12 flex flex-col md:flex-row items-center">
                     <div class="md:w-1/2 mb-6 md:mb-0">
-                        <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Encontre as melhores lojas perto de
-                            você</h1>
-                        <p class="text-gray-300 mb-6">Restaurantes, mercados, farmácias e muito mais com entrega rápida.
-                        </p>
-                        <div class="flex flex-wrap gap-3">
-                            <button class="btn-primary px-6 py-3 rounded-full font-medium">Explorar agora</button>
-                            <button
-                                class="bg-white bg-opacity-20 text-white px-6 py-3 rounded-full font-medium hover:bg-opacity-30 transition-all">Ver
-                                ofertas</button>
-                        </div>
+                        <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Encontre as melhores lojas perto de você</h1>
+                        <p class="text-gray-300 mb-6">Restaurantes, mercados, farmácias e muito mais com entrega rápida.</p>
                     </div>
                     <div class="md:w-1/2 flex justify-end">
                         <svg class="h-48 w-48 text-primary opacity-90" viewBox="0 0 24 24" fill="currentColor">
@@ -1148,115 +1135,113 @@
             </div>
         </section>
 
-        <!-- Search and Filter Section -->
         <section class="mb-8">
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="flex-grow relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
+                            <i data-feather="search" class="h-5 w-5 text-gray-400"></i>
                         </div>
                         <input type="text"
                             class="search-input w-full pl-10 pr-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none"
                             placeholder="Buscar lojas, produtos ou categorias...">
                     </div>
                     <div class="flex gap-2">
-                        <button class="btn-secondary px-4 py-2 rounded-lg flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
-                                </path>
-                            </svg>
-                            Filtros
+                        <button class="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center">
+                            <i data-feather="sliders" class="h-5 w-5 mr-2"></i> Filtros
                         </button>
-                        <button class="btn-secondary px-4 py-2 rounded-lg flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                </path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Localização
+                        <button class="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center">
+                            <i data-feather="map-pin" class="h-5 w-5 mr-2"></i> Localização
                         </button>
                     </div>
                 </div>
-
-                <!-- Categories -->
                 <div id="category-buttons" class="mt-6 flex flex-wrap gap-2">
-                    <button
-                        class="category-pill active px-4 py-2 bg-primary text-secondary rounded-full font-medium">Todos</button>
-                    <button
-                        class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Restaurantes</button>
-                    <button
-                        class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Mercados</button>
-                    <button
-                        class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Farmácias</button>
-                    <button
-                        class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Bebidas</button>
-                    <button class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Pet
-                        Shop</button>
-                    <button
-                        class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Conveniência</button>
+                    <button class="category-pill active px-4 py-2 bg-primary text-secondary rounded-full font-medium">Todos</button>
+                    <button class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Restaurantes</button>
+                    <button class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Mercados</button>
+                    <button class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Farmácias</button>
+                    <button class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Bebidas</button>
+                    <button class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Pet Shop</button>
+                    <button class="category-pill px-4 py-2 bg-gray-200 text-gray-700 rounded-full font-medium">Conveniência</button>
                 </div>
             </div>
         </section>
-
         <section class="mb-10">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Nossas Lojas</h2>
-                <a href="#" class="text-primary font-medium hover:underline">Ver todas</a>
-            </div>
-
-            <div class="text-center mb-8">
-            <button id="add-test-item-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
-                Adicionar Item de Teste ao Carrinho
-            </button>
-        </div>
-
             <div id="lojas-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            </div>
+                </div>
         </section>
+    </main>
 
-        <div id="toast"
-            class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 flex items-center max-w-xs hidden z-50">
-            <div id="toast-icon" class="mr-3"></div>
-            <div>
-                <h3 class="font-medium" id="toast-title"></h3>
-                <p class="text-sm text-gray-600" id="toast-message"></p>
+    <div class="text-center mb-8">
+                <button id="add-test-item-btn"
+                    class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+                    Adicionar Item de Teste ao Carrinho
+                </button>
             </div>
-            <button class="ml-4 text-gray-400 hover:text-gray-600" onclick="hideToast()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-        </div>
 
-        <div id="confirmation-modal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-            <div class="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full mx-4 fade-in">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Confirmar Ação</h3>
-                <p id="modal-message" class="text-gray-600 mb-6">Você tem certeza que quer fazer isso?</p>
-                <div class="flex justify-end space-x-4">
-                    <button id="modal-cancel-btn"
-                        class="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 font-medium">Não</button>
-                    <button id="modal-confirm-btn" class="btn-primary px-6 py-2 rounded-lg font-medium">Sim</button>
+    <footer class="bg-secondary text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-6">
+                        <div class="mr-2">
+                            <svg class="h-10 w-10 lightning-logo" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="11" fill="#FFD100"></circle>
+                                <circle cx="12" cy="12" r="9" fill="#000000"></circle>
+                                <path d="M13 6L7 14h4v4l6-8h-4V6z" fill="#FFD100"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold">Pede<span class="text-primary">Aí</span></h2>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        Entregando o melhor da cidade para você, com rapidez e qualidade.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Categorias</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Restaurantes</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Mercados</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Farmácias</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Bebidas</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Pet Shop</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Informações</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Sobre nós</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Seja um parceiro</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Trabalhe conosco</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Termos de uso</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Política de privacidade</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Contato</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i data-feather="mail" class="h-5 w-5 mr-2 text-primary"></i>
+                            <span class="text-gray-400">contato@pedeai.com.br</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-feather="phone" class="h-5 w-5 mr-2 text-primary"></i>
+                            <span class="text-gray-400">(11) 99999-9999</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-400 text-sm">© 2024 PedeAí. Todos os direitos reservados.</p>
+            </div>
         </div>
+    </footer>
+
 
         <script src="/frontend/js/notifications.js"></script>
         <script src="/frontend/js/shared/header.js"></script>
         <script type="module" src="/frontend/js/lojas.js"></script>
-        
+
 
 </body>
 

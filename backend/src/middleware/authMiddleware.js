@@ -1,4 +1,3 @@
-// CORREÇÃO: Importando o cliente 'supabase' de forma desestruturada
 const { supabase } = require('../config/supabaseClient');
 
 async function authMiddleware(req, res, next) {
@@ -17,7 +16,7 @@ async function authMiddleware(req, res, next) {
             return res.status(403).json({ error: 'Token inválido ou expirado.' });
         }
 
-        // Busca o perfil e anexa à requisição
+        // CORREÇÃO: Garante que estamos buscando da tabela "perfis" com 'p' minúsculo.
         const { data: perfil, error: perfilError } = await supabase
             .from('perfis')
             .select('*')

@@ -3,8 +3,10 @@ const router = express.Router();
 const lojaDashboardController = require('../controllers/lojaDashboardController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Rota GET para /api/dashboard/loja/stats
-// É protegida pelo authMiddleware, garantindo que apenas um usuário logado pode acessá-la.
 router.get('/stats', authMiddleware, lojaDashboardController.getDashboardStats);
+router.get('/vendas', authMiddleware, lojaDashboardController.getSalesChartData);
+router.get('/pedidos-recentes', authMiddleware, lojaDashboardController.getRecentOrders);
+router.get('/produtos', authMiddleware, lojaDashboardController.getProdutosDaLoja);
+
 
 module.exports = router;
