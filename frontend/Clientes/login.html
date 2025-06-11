@@ -17,15 +17,8 @@
                         secondary: '#212121',
                         detail: '#FFFFFF',
                         gray: {
-                            100: '#f7f7f7',
-                            200: '#e6e6e6',
-                            300: '#d5d5d5',
-                            400: '#b4b4b4',
-                            500: '#9e9e9e',
-                            600: '#757575',
-                            700: '#616161',
-                            800: '#424242',
-                            900: '#212121',
+                            100: '#f7f7f7', 200: '#e6e6e6', 300: '#d5d5d5', 400: '#b4b4b4',
+                            500: '#9e9e9e', 600: '#757575', 700: '#616161', 800: '#424242', 900: '#212121',
                         }
                     }
                 }
@@ -156,19 +149,19 @@
                         <div class="mb-6"><label for="login-email"
                                 class="block text-sm font-medium text-gray-700 mb-2">E-mail</label><input type="email"
                                 id="login-email" class="w-full px-4 py-3 rounded-lg bg-gray-50"
-                                placeholder="Seu e-mail"></div>
+                                placeholder="Seu e-mail" required></div>
                         <div class="mb-6"><label for="login-password"
                                 class="block text-sm font-medium text-gray-700 mb-2">Senha</label><input type="password"
                                 id="login-password" class="w-full px-4 py-3 rounded-lg bg-gray-50"
-                                placeholder="Sua senha"></div>
-                        <div class="mb-6"><button
+                                placeholder="Sua senha" required></div>
+                        <div class="mb-6"><button type="submit"
                                 class="btn-primary w-full py-3 rounded-lg font-medium text-lg">Entrar</button></div>
                         <div class="relative flex items-center justify-center mb-6">
                             <div class="border-t border-gray-300 absolute w-full"></div><span
                                 class="bg-white px-3 text-sm text-gray-500 relative">ou continue com</span>
                         </div>
                         <div class="grid grid-cols-3 gap-3">
-                            <button class="btn-outline flex justify-center items-center py-2 rounded-lg"><svg
+                            <button type="button" class="btn-outline flex justify-center items-center py-2 rounded-lg"><svg
                                     xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24">
                                     <path
                                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -183,13 +176,13 @@
                                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                                         fill="#EA4335"></path>
                                 </svg></button>
-                            <button class="btn-outline flex justify-center items-center py-2 rounded-lg"><svg
+                            <button type="button" class="btn-outline flex justify-center items-center py-2 rounded-lg"><svg
                                     xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24">
                                     <path
                                         d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"
                                         fill="#1877F2"></path>
                                 </svg></button>
-                            <button class="btn-outline flex justify-center items-center py-2 rounded-lg"><svg
+                            <button type="button" class="btn-outline flex justify-center items-center py-2 rounded-lg"><svg
                                     xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24">
                                     <path
                                         d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
@@ -198,13 +191,12 @@
                         </div>
                     </form>
 
-                    <div id="register-form" class="hidden">
+                    <form id="register-form" class="hidden">
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Quero me cadastrar como:</label>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div id="user-type"
-                                    class="account-type-option account-type-selected rounded-lg p-4 cursor-pointer text-center"
-                                    onclick="selectAccountType('user')">
+                                    class="account-type-option account-type-selected rounded-lg p-4 cursor-pointer text-center">
                                     <div class="inline-block bg-primary bg-opacity-20 p-3 rounded-full mb-2"><svg
                                             xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
@@ -215,8 +207,7 @@
                                     <p class="font-medium">Cliente</p>
                                 </div>
                                 <div id="store-type"
-                                    class="account-type-option rounded-lg p-4 cursor-pointer text-center"
-                                    onclick="selectAccountType('store')">
+                                    class="account-type-option rounded-lg p-4 cursor-pointer text-center">
                                     <div class="inline-block bg-primary bg-opacity-20 p-3 rounded-full mb-2"><svg
                                             xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
@@ -227,8 +218,7 @@
                                     <p class="font-medium">Loja</p>
                                 </div>
                                 <div id="delivery-type"
-                                    class="account-type-option rounded-lg p-4 cursor-pointer text-center"
-                                    onclick="selectAccountType('delivery')">
+                                    class="account-type-option rounded-lg p-4 cursor-pointer text-center">
                                     <div class="inline-block bg-primary bg-opacity-20 p-3 rounded-full mb-2"><svg
                                             xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -311,9 +301,9 @@
                                     class="text-primary hover:underline">Política de Privacidade</a>.</label>
                         </div>
                         <div class="mb-6">
-                            <button class="btn-primary w-full py-3 rounded-lg font-medium text-lg">Cadastrar</button>
+                            <button type="submit" class="btn-primary w-full py-3 rounded-lg font-medium text-lg">Cadastrar</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -433,8 +423,8 @@
         </button>
     </div>
 
-    <script src="/frontend/js/notifications.js"></script>
-    <script type="module" src="/frontend/js/login.js?v=5"></script>
+    <script src="/frontend/js/notifications.js" defer></script>
+    <script src="/frontend/js/login.js?v=5" defer></script>
 
 </body>
 

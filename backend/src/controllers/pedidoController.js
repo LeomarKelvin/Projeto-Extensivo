@@ -18,11 +18,19 @@ const criarPedido = async (req, res) => {
     }
 };
 
-const buscarMeusPedidos = async (req, res) => {
+const buscarPedidos = async (req, res) => {
     const user = req.user;
+    const perfil = req.perfil; // Fornecido pelo nosso authMiddleware
     const { status } = req.query;
     try {
-        let query = supabase.from('pedidos').select(`id, created_at, total, status, lojas ( nome )`).eq('user_id', user.id).order('created_at', { ascending: false });
+        // Corrigido: 'lojas(nome_fantasia)' para buscar o nome correto da loja
+        let query = supabase.from('pedidos').select(`id, created_at, total, status, lojas ( nome_fantasia )`).order('created_at', { ascending: false });
+
+        // Se o usuário não for admin, ele só vê os próprios pedidos
+        if (perfil.tipo !== 'admin') {
+            query = query.eq('user_id', user.id);
+        }
+
         if (status && status !== 'Todos os pedidos') {
             query = query.eq('status', status);
         }
@@ -34,4 +42,4 @@ const buscarMeusPedidos = async (req, res) => {
     }
 };
 
-module.exports = { criarPedido, buscarMeusPedidos };
+module.exports = { criarPedido, buscarPedidos: buscarPedidos };

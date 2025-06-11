@@ -1,1612 +1,230 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PedeAí - Gerenciamento de Pedidos</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
         rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#FFD100',
-                        secondary: '#000000',
-                        detail: '#FFFFFF',
-                        success: '#10B981',
-                        warning: '#F59E0B',
-                        danger: '#EF4444',
-                        info: '#3B82F6'
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <style>
+        :root {
+            --primary: #1A1A1A;
+            --secondary: #FFD100;
+        }
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f7f7f7;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
         }
-
-        .lightning-logo {
-            filter: drop-shadow(0 0 8px rgba(255, 209, 0, 0.5));
-        }
-
-        .btn-primary {
-            background-color: #FFD100;
-            color: #000000;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #e6bc00;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-secondary {
-            background-color: #000000;
-            color: #FFFFFF;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary:hover {
-            background-color: #333333;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            color: #000000;
-            border: 2px solid #000000;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline:hover {
-            background-color: #f0f0f0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar-link {
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-link:hover {
-            background-color: rgba(255, 209, 0, 0.1);
-        }
-
-        .sidebar-link.active {
-            background-color: #FFD100;
-            color: #000000;
-        }
-
-        .card {
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .slide-in {
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            width: 120px;
-            background-color: #000;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -60px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .order-status {
-            position: relative;
-            padding-left: 20px;
-        }
-
-        .order-status::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .status-new::before {
-            background-color: #3B82F6;
-        }
-
-        .status-preparing::before {
-            background-color: #F59E0B;
-        }
-
-        .status-ready::before {
-            background-color: #8B5CF6;
-        }
-
-        .status-delivering::before {
-            background-color: #10B981;
-        }
-
-        .status-delivered::before {
-            background-color: #10B981;
-        }
-
-        .status-cancelled::before {
-            background-color: #EF4444;
-        }
-
-        .modal {
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-content {
-            transition: transform 0.3s ease;
-        }
-
-        .modal.hidden .modal-content {
-            transform: translateY(-50px);
-        }
-
-        .tab {
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            border-bottom: 3px solid #FFD100;
-            color: #000000;
-            font-weight: 500;
-        }
-
-        .tab:hover:not(.active) {
-            background-color: #f3f4f6;
-        }
-
-        .timeline-item {
-            position: relative;
-            padding-left: 28px;
-            padding-bottom: 24px;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
+        .sidebar {
+            background-color: var(--primary);
+            min-height: 100vh;
+            transition: all 0.3s;
+            position: fixed;
             left: 0;
             top: 0;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #FFD100;
-            z-index: 1;
+            bottom: 0;
+            z-index: 50;
         }
-
-        .timeline-item::after {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 12px;
-            width: 2px;
-            height: calc(100% - 12px);
-            background-color: #e5e7eb;
+        .sidebar-link {
+            border-left: 4px solid transparent;
         }
-
-        .timeline-item:last-child::after {
-            display: none;
+        .sidebar-link.active {
+            border-left: 4px solid var(--secondary);
+            background-color: rgba(255, 209, 0, 0.1);
         }
-
-        .timeline-item.completed::before {
-            background-color: #10B981;
+        .sidebar-link:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.05);
         }
-
-        .timeline-item.current::before {
-            background-color: #FFD100;
-            animation: pulse 2s infinite;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
-
-        .timeline-item.pending::before {
-            background-color: #e5e7eb;
-        }
-    </style>
-    <style>
-        *,
-        ::before,
-        ::after {
-            --tw-border-spacing-x: 0;
-            --tw-border-spacing-y: 0;
-            --tw-translate-x: 0;
-            --tw-translate-y: 0;
-            --tw-rotate: 0;
-            --tw-skew-x: 0;
-            --tw-skew-y: 0;
-            --tw-scale-x: 1;
-            --tw-scale-y: 1;
-            --tw-pan-x: ;
-            --tw-pan-y: ;
-            --tw-pinch-zoom: ;
-            --tw-scroll-snap-strictness: proximity;
-            --tw-gradient-from-position: ;
-            --tw-gradient-via-position: ;
-            --tw-gradient-to-position: ;
-            --tw-ordinal: ;
-            --tw-slashed-zero: ;
-            --tw-numeric-figure: ;
-            --tw-numeric-spacing: ;
-            --tw-numeric-fraction: ;
-            --tw-ring-inset: ;
-            --tw-ring-offset-width: 0px;
-            --tw-ring-offset-color: #fff;
-            --tw-ring-color: rgb(59 130 246 / 0.5);
-            --tw-ring-offset-shadow: 0 0 #0000;
-            --tw-ring-shadow: 0 0 #0000;
-            --tw-shadow: 0 0 #0000;
-            --tw-shadow-colored: 0 0 #0000;
-            --tw-blur: ;
-            --tw-brightness: ;
-            --tw-contrast: ;
-            --tw-grayscale: ;
-            --tw-hue-rotate: ;
-            --tw-invert: ;
-            --tw-saturate: ;
-            --tw-sepia: ;
-            --tw-drop-shadow: ;
-            --tw-backdrop-blur: ;
-            --tw-backdrop-brightness: ;
-            --tw-backdrop-contrast: ;
-            --tw-backdrop-grayscale: ;
-            --tw-backdrop-hue-rotate: ;
-            --tw-backdrop-invert: ;
-            --tw-backdrop-opacity: ;
-            --tw-backdrop-saturate: ;
-            --tw-backdrop-sepia: ;
-            --tw-contain-size: ;
-            --tw-contain-layout: ;
-            --tw-contain-paint: ;
-            --tw-contain-style:
-        }
-
-        ::backdrop {
-            --tw-border-spacing-x: 0;
-            --tw-border-spacing-y: 0;
-            --tw-translate-x: 0;
-            --tw-translate-y: 0;
-            --tw-rotate: 0;
-            --tw-skew-x: 0;
-            --tw-skew-y: 0;
-            --tw-scale-x: 1;
-            --tw-scale-y: 1;
-            --tw-pan-x: ;
-            --tw-pan-y: ;
-            --tw-pinch-zoom: ;
-            --tw-scroll-snap-strictness: proximity;
-            --tw-gradient-from-position: ;
-            --tw-gradient-via-position: ;
-            --tw-gradient-to-position: ;
-            --tw-ordinal: ;
-            --tw-slashed-zero: ;
-            --tw-numeric-figure: ;
-            --tw-numeric-spacing: ;
-            --tw-numeric-fraction: ;
-            --tw-ring-inset: ;
-            --tw-ring-offset-width: 0px;
-            --tw-ring-offset-color: #fff;
-            --tw-ring-color: rgb(59 130 246 / 0.5);
-            --tw-ring-offset-shadow: 0 0 #0000;
-            --tw-ring-shadow: 0 0 #0000;
-            --tw-shadow: 0 0 #0000;
-            --tw-shadow-colored: 0 0 #0000;
-            --tw-blur: ;
-            --tw-brightness: ;
-            --tw-contrast: ;
-            --tw-grayscale: ;
-            --tw-hue-rotate: ;
-            --tw-invert: ;
-            --tw-saturate: ;
-            --tw-sepia: ;
-            --tw-drop-shadow: ;
-            --tw-backdrop-blur: ;
-            --tw-backdrop-brightness: ;
-            --tw-backdrop-contrast: ;
-            --tw-backdrop-grayscale: ;
-            --tw-backdrop-hue-rotate: ;
-            --tw-backdrop-invert: ;
-            --tw-backdrop-opacity: ;
-            --tw-backdrop-saturate: ;
-            --tw-backdrop-sepia: ;
-            --tw-contain-size: ;
-            --tw-contain-layout: ;
-            --tw-contain-paint: ;
-            --tw-contain-style:
-        }
-
-        /* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */
-        *,
-        ::after,
-        ::before {
-            box-sizing: border-box;
-            border-width: 0;
-            border-style: solid;
-            border-color: #e5e7eb
-        }
-
-        ::after,
-        ::before {
-            --tw-content: ''
-        }
-
-        :host,
-        html {
-            line-height: 1.5;
-            -webkit-text-size-adjust: 100%;
-            -moz-tab-size: 4;
-            tab-size: 4;
-            font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            font-feature-settings: normal;
-            font-variation-settings: normal;
-            -webkit-tap-highlight-color: transparent
-        }
-
-        body {
-            margin: 0;
-            line-height: inherit
-        }
-
-        hr {
-            height: 0;
-            color: inherit;
-            border-top-width: 1px
-        }
-
-        abbr:where([title]) {
-            -webkit-text-decoration: underline dotted;
-            text-decoration: underline dotted
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            font-size: inherit;
-            font-weight: inherit
-        }
-
-        a {
-            color: inherit;
-            text-decoration: inherit
-        }
-
-        b,
-        strong {
-            font-weight: bolder
-        }
-
-        code,
-        kbd,
-        pre,
-        samp {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-feature-settings: normal;
-            font-variation-settings: normal;
-            font-size: 1em
-        }
-
-        small {
-            font-size: 80%
-        }
-
-        sub,
-        sup {
-            font-size: 75%;
-            line-height: 0;
+        .toggle-switch {
             position: relative;
-            vertical-align: baseline
+            display: inline-block;
+            width: 50px;
+            height: 24px;
         }
-
-        sub {
-            bottom: -.25em
-        }
-
-        sup {
-            top: -.5em
-        }
-
-        table {
-            text-indent: 0;
-            border-color: inherit;
-            border-collapse: collapse
-        }
-
-        button,
-        input,
-        optgroup,
-        select,
-        textarea {
-            font-family: inherit;
-            font-feature-settings: inherit;
-            font-variation-settings: inherit;
-            font-size: 100%;
-            font-weight: inherit;
-            line-height: inherit;
-            letter-spacing: inherit;
-            color: inherit;
-            margin: 0;
-            padding: 0
-        }
-
-        button,
-        select {
-            text-transform: none
-        }
-
-        button,
-        input:where([type=button]),
-        input:where([type=reset]),
-        input:where([type=submit]) {
-            -webkit-appearance: button;
-            background-color: transparent;
-            background-image: none
-        }
-
-        :-moz-focusring {
-            outline: auto
-        }
-
-        :-moz-ui-invalid {
-            box-shadow: none
-        }
-
-        progress {
-            vertical-align: baseline
-        }
-
-        ::-webkit-inner-spin-button,
-        ::-webkit-outer-spin-button {
-            height: auto
-        }
-
-        [type=search] {
-            -webkit-appearance: textfield;
-            outline-offset: -2px
-        }
-
-        ::-webkit-search-decoration {
-            -webkit-appearance: none
-        }
-
-        ::-webkit-file-upload-button {
-            -webkit-appearance: button;
-            font: inherit
-        }
-
-        summary {
-            display: list-item
-        }
-
-        blockquote,
-        dd,
-        dl,
-        figure,
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        hr,
-        p,
-        pre {
-            margin: 0
-        }
-
-        fieldset {
-            margin: 0;
-            padding: 0
-        }
-
-        legend {
-            padding: 0
-        }
-
-        menu,
-        ol,
-        ul {
-            list-style: none;
-            margin: 0;
-            padding: 0
-        }
-
-        dialog {
-            padding: 0
-        }
-
-        textarea {
-            resize: vertical
-        }
-
-        input::placeholder,
-        textarea::placeholder {
-            opacity: 1;
-            color: #9ca3af
-        }
-
-        [role=button],
-        button {
-            cursor: pointer
-        }
-
-        :disabled {
-            cursor: default
-        }
-
-        audio,
-        canvas,
-        embed,
-        iframe,
-        img,
-        object,
-        svg,
-        video {
-            display: block;
-            vertical-align: middle
-        }
-
-        img,
-        video {
-            max-width: 100%;
-            height: auto
-        }
-
-        [hidden]:where(:not([hidden=until-found])) {
-            display: none
-        }
-
-        .container {
-            width: 100%
-        }
-
-        @media (min-width: 640px) {
-            .container {
-                max-width: 640px
-            }
-        }
-
-        @media (min-width: 768px) {
-            .container {
-                max-width: 768px
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .container {
-                max-width: 1024px
-            }
-        }
-
-        @media (min-width: 1280px) {
-            .container {
-                max-width: 1280px
-            }
-        }
-
-        @media (min-width: 1536px) {
-            .container {
-                max-width: 1536px
-            }
-        }
-
-        .sr-only {
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
             position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0
-        }
-
-        .pointer-events-none {
-            pointer-events: none
-        }
-
-        .absolute {
-            position: absolute
-        }
-
-        .relative {
-            position: relative
-        }
-
-        .inset-y-0 {
-            top: 0px;
-            bottom: 0px
-        }
-
-        .left-0 {
-            left: 0px
-        }
-
-        .right-0 {
-            right: 0px
-        }
-
-        .top-0 {
-            top: 0px
-        }
-
-        .z-0 {
-            z-index: 0
-        }
-
-        .z-10 {
-            z-index: 10
-        }
-
-        .mx-auto {
-            margin-left: auto;
-            margin-right: auto
-        }
-
-        .mb-2 {
-            margin-bottom: 0.5rem
-        }
-
-        .mb-3 {
-            margin-bottom: 0.75rem
-        }
-
-        .mb-4 {
-            margin-bottom: 1rem
-        }
-
-        .mb-6 {
-            margin-bottom: 1.5rem
-        }
-
-        .mb-8 {
-            margin-bottom: 2rem
-        }
-
-        .ml-1 {
-            margin-left: 0.25rem
-        }
-
-        .ml-2 {
-            margin-left: 0.5rem
-        }
-
-        .ml-3 {
-            margin-left: 0.75rem
-        }
-
-        .ml-auto {
-            margin-left: auto
-        }
-
-        .mr-1\.5 {
-            margin-right: 0.375rem
-        }
-
-        .mr-2 {
-            margin-right: 0.5rem
-        }
-
-        .mr-3 {
-            margin-right: 0.75rem
-        }
-
-        .mr-4 {
-            margin-right: 1rem
-        }
-
-        .mt-4 {
-            margin-top: 1rem
-        }
-
-        .mt-auto {
-            margin-top: auto
-        }
-
-        .inline-block {
-            display: inline-block
-        }
-
-        .flex {
-            display: flex
-        }
-
-        .inline-flex {
-            display: inline-flex
-        }
-
-        .grid {
-            display: grid
-        }
-
-        .hidden {
-            display: none
-        }
-
-        .h-10 {
-            height: 2.5rem
-        }
-
-        .h-2 {
-            height: 0.5rem
-        }
-
-        .h-4 {
-            height: 1rem
-        }
-
-        .h-5 {
-            height: 1.25rem
-        }
-
-        .h-6 {
-            height: 1.5rem
-        }
-
-        .h-8 {
-            height: 2rem
-        }
-
-        .min-h-screen {
-            min-height: 100vh
-        }
-
-        .w-10 {
-            width: 2.5rem
-        }
-
-        .w-2 {
-            width: 0.5rem
-        }
-
-        .w-4 {
-            width: 1rem
-        }
-
-        .w-5 {
-            width: 1.25rem
-        }
-
-        .w-6 {
-            width: 1.5rem
-        }
-
-        .w-8 {
-            width: 2rem
-        }
-
-        .w-full {
-            width: 100%
-        }
-
-        .min-w-full {
-            min-width: 100%
-        }
-
-        .flex-1 {
-            flex: 1 1 0%
-        }
-
-        .flex-grow {
-            flex-grow: 1
-        }
-
-        .cursor-pointer {
-            cursor: pointer
-        }
-
-        .grid-cols-1 {
-            grid-template-columns: repeat(1, minmax(0, 1fr))
-        }
-
-        .flex-col {
-            flex-direction: column
-        }
-
-        .flex-wrap {
-            flex-wrap: wrap
-        }
-
-        .items-center {
-            align-items: center
-        }
-
-        .justify-center {
-            justify-content: center
-        }
-
-        .justify-between {
-            justify-content: space-between
-        }
-
-        .gap-2 {
-            gap: 0.5rem
-        }
-
-        .gap-3 {
-            gap: 0.75rem
-        }
-
-        .gap-4 {
-            gap: 1rem
-        }
-
-        .gap-6 {
-            gap: 1.5rem
-        }
-
-        .-space-x-px> :not([hidden])~ :not([hidden]) {
-            --tw-space-x-reverse: 0;
-            margin-right: calc(-1px * var(--tw-space-x-reverse));
-            margin-left: calc(-1px * calc(1 - var(--tw-space-x-reverse)))
-        }
-
-        .space-x-2> :not([hidden])~ :not([hidden]) {
-            --tw-space-x-reverse: 0;
-            margin-right: calc(0.5rem * var(--tw-space-x-reverse));
-            margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))
-        }
-
-        .space-x-4> :not([hidden])~ :not([hidden]) {
-            --tw-space-x-reverse: 0;
-            margin-right: calc(1rem * var(--tw-space-x-reverse));
-            margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)))
-        }
-
-        .divide-y> :not([hidden])~ :not([hidden]) {
-            --tw-divide-y-reverse: 0;
-            border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
-            border-bottom-width: calc(1px * var(--tw-divide-y-reverse))
-        }
-
-        .divide-gray-200> :not([hidden])~ :not([hidden]) {
-            --tw-divide-opacity: 1;
-            border-color: rgb(229 231 235 / var(--tw-divide-opacity, 1))
-        }
-
-        .overflow-x-auto {
-            overflow-x: auto
-        }
-
-        .whitespace-nowrap {
-            white-space: nowrap
-        }
-
-        .rounded {
-            border-radius: 0.25rem
-        }
-
-        .rounded-full {
-            border-radius: 9999px
-        }
-
-        .rounded-lg {
-            border-radius: 0.5rem
-        }
-
-        .rounded-md {
-            border-radius: 0.375rem
-        }
-
-        .rounded-xl {
-            border-radius: 0.75rem
-        }
-
-        .rounded-l-md {
-            border-top-left-radius: 0.375rem;
-            border-bottom-left-radius: 0.375rem
-        }
-
-        .border {
-            border-width: 1px
-        }
-
-        .border-2 {
-            border-width: 2px
-        }
-
-        .border-b {
-            border-bottom-width: 1px
-        }
-
-        .border-t {
-            border-top-width: 1px
-        }
-
-        .border-gray-200 {
-            --tw-border-opacity: 1;
-            border-color: rgb(229 231 235 / var(--tw-border-opacity, 1))
-        }
-
-        .border-gray-300 {
-            --tw-border-opacity: 1;
-            border-color: rgb(209 213 219 / var(--tw-border-opacity, 1))
-        }
-
-        .border-primary {
-            --tw-border-opacity: 1;
-            border-color: rgb(255 209 0 / var(--tw-border-opacity, 1))
-        }
-
-        .bg-blue-100 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-gray-100 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-gray-50 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-green-100 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-primary {
-            --tw-bg-opacity: 1;
-            background-color: rgb(255 209 0 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-purple-100 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-red-100 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-red-500 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-secondary {
-            --tw-bg-opacity: 1;
-            background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-white {
-            --tw-bg-opacity: 1;
-            background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-yellow-100 {
-            --tw-bg-opacity: 1;
-            background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1))
-        }
-
-        .bg-opacity-10 {
-            --tw-bg-opacity: 0.1
-        }
-
-        .bg-opacity-20 {
-            --tw-bg-opacity: 0.2
-        }
-
-        .p-2 {
-            padding: 0.5rem
-        }
-
-        .p-3 {
-            padding: 0.75rem
-        }
-
-        .p-4 {
-            padding: 1rem
-        }
-
-        .p-6 {
-            padding: 1.5rem
-        }
-
-        .px-2 {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem
-        }
-
-        .px-2\.5 {
-            padding-left: 0.625rem;
-            padding-right: 0.625rem
-        }
-
-        .px-3 {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem
-        }
-
-        .px-4 {
-            padding-left: 1rem;
-            padding-right: 1rem
-        }
-
-        .px-6 {
-            padding-left: 1.5rem;
-            padding-right: 1.5rem
-        }
-
-        .py-0\.5 {
-            padding-top: 0.125rem;
-            padding-bottom: 0.125rem
-        }
-
-        .py-1 {
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem
-        }
-
-        .py-2 {
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem
-        }
-
-        .py-3 {
-            padding-top: 0.75rem;
-            padding-bottom: 0.75rem
-        }
-
-        .py-4 {
-            padding-top: 1rem;
-            padding-bottom: 1rem
-        }
-
-        .pl-10 {
-            padding-left: 2.5rem
-        }
-
-        .pl-3 {
-            padding-left: 0.75rem
-        }
-
-        .pr-4 {
-            padding-right: 1rem
-        }
-
-        .text-left {
-            text-align: left
-        }
-
-        .text-center {
-            text-align: center
-        }
-
-        .text-2xl {
-            font-size: 1.5rem;
-            line-height: 2rem
-        }
-
-        .text-3xl {
-            font-size: 1.875rem;
-            line-height: 2.25rem
-        }
-
-        .text-sm {
-            font-size: 0.875rem;
-            line-height: 1.25rem
-        }
-
-        .text-xs {
-            font-size: 0.75rem;
-            line-height: 1rem
-        }
-
-        .font-bold {
-            font-weight: 700
-        }
-
-        .font-medium {
-            font-weight: 500
-        }
-
-        .font-semibold {
-            font-weight: 600
-        }
-
-        .uppercase {
-            text-transform: uppercase
-        }
-
-        .leading-5 {
-            line-height: 1.25rem
-        }
-
-        .tracking-wider {
-            letter-spacing: 0.05em
-        }
-
-        .text-blue-600 {
-            --tw-text-opacity: 1;
-            color: rgb(37 99 235 / var(--tw-text-opacity, 1))
-        }
-
-        .text-blue-700 {
-            --tw-text-opacity: 1;
-            color: rgb(29 78 216 / var(--tw-text-opacity, 1))
-        }
-
-        .text-blue-800 {
-            --tw-text-opacity: 1;
-            color: rgb(30 64 175 / var(--tw-text-opacity, 1))
-        }
-
-        .text-gray-400 {
-            --tw-text-opacity: 1;
-            color: rgb(156 163 175 / var(--tw-text-opacity, 1))
-        }
-
-        .text-gray-500 {
-            --tw-text-opacity: 1;
-            color: rgb(107 114 128 / var(--tw-text-opacity, 1))
-        }
-
-        .text-gray-600 {
-            --tw-text-opacity: 1;
-            color: rgb(75 85 99 / var(--tw-text-opacity, 1))
-        }
-
-        .text-gray-700 {
-            --tw-text-opacity: 1;
-            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
-        }
-
-        .text-green-500 {
-            --tw-text-opacity: 1;
-            color: rgb(34 197 94 / var(--tw-text-opacity, 1))
-        }
-
-        .text-green-600 {
-            --tw-text-opacity: 1;
-            color: rgb(22 163 74 / var(--tw-text-opacity, 1))
-        }
-
-        .text-green-700 {
-            --tw-text-opacity: 1;
-            color: rgb(21 128 61 / var(--tw-text-opacity, 1))
-        }
-
-        .text-green-800 {
-            --tw-text-opacity: 1;
-            color: rgb(22 101 52 / var(--tw-text-opacity, 1))
-        }
-
-        .text-primary {
-            --tw-text-opacity: 1;
-            color: rgb(255 209 0 / var(--tw-text-opacity, 1))
-        }
-
-        .text-purple-600 {
-            --tw-text-opacity: 1;
-            color: rgb(147 51 234 / var(--tw-text-opacity, 1))
-        }
-
-        .text-purple-700 {
-            --tw-text-opacity: 1;
-            color: rgb(126 34 206 / var(--tw-text-opacity, 1))
-        }
-
-        .text-purple-800 {
-            --tw-text-opacity: 1;
-            color: rgb(107 33 168 / var(--tw-text-opacity, 1))
-        }
-
-        .text-red-500 {
-            --tw-text-opacity: 1;
-            color: rgb(239 68 68 / var(--tw-text-opacity, 1))
-        }
-
-        .text-red-700 {
-            --tw-text-opacity: 1;
-            color: rgb(185 28 28 / var(--tw-text-opacity, 1))
-        }
-
-        .text-red-800 {
-            --tw-text-opacity: 1;
-            color: rgb(153 27 27 / var(--tw-text-opacity, 1))
-        }
-
-        .text-secondary {
-            --tw-text-opacity: 1;
-            color: rgb(0 0 0 / var(--tw-text-opacity, 1))
-        }
-
-        .text-white {
-            --tw-text-opacity: 1;
-            color: rgb(255 255 255 / var(--tw-text-opacity, 1))
-        }
-
-        .text-yellow-600 {
-            --tw-text-opacity: 1;
-            color: rgb(202 138 4 / var(--tw-text-opacity, 1))
-        }
-
-        .text-yellow-800 {
-            --tw-text-opacity: 1;
-            color: rgb(133 77 14 / var(--tw-text-opacity, 1))
-        }
-
-        .shadow-md {
-            --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
-            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
-        }
-
-        .shadow-sm {
-            --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
-            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
-        }
-
-        .transition-colors {
-            transition-property: color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;
-            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            transition-duration: 150ms
-        }
-
-        .hover\:bg-gray-100:hover {
-            --tw-bg-opacity: 1;
-            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
-        }
-
-        .hover\:bg-gray-50:hover {
-            --tw-bg-opacity: 1;
-            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
-        }
-
-        .hover\:text-gray-700:hover {
-            --tw-text-opacity: 1;
-            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
-        }
-
-        .hover\:text-primary:hover {
-            --tw-text-opacity: 1;
-            color: rgb(255 209 0 / var(--tw-text-opacity, 1))
-        }
-
-        .focus\:border-transparent:focus {
-            border-color: transparent
-        }
-
-        .focus\:outline-none:focus {
-            outline: 2px solid transparent;
-            outline-offset: 2px
-        }
-
-        .focus\:ring-2:focus {
-            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)
-        }
-
-        .focus\:ring-primary:focus {
-            --tw-ring-opacity: 1;
-            --tw-ring-color: rgb(255 209 0 / var(--tw-ring-opacity, 1))
-        }
-
-        @media (min-width: 640px) {
-            .sm\:flex {
-                display: flex
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked+.toggle-slider { background-color: #4CAF50; }
+        input:checked+.toggle-slider:before { transform: translateX(26px); }
+        .notification-badge { position: absolute; top: -5px; right: -5px; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 300px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 60;
+            border-radius: 8px;
+        }
+        .dropdown-content.show { display: block; }
+        .main-header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 40;
+            background-color: white;
+            transition: left 0.3s;
+        }
+        .main-content-wrapper {
+            margin-top: 72px;
+            transition: margin-left 0.3s;
+        }
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .sidebar.show~.main-content-wrapper .main-header { left: 256px; }
+
+        /* Estilos específicos da página Pedidos.html */
+        .btn-primary { background-color: #FFD100; color: #000000; }
+        .btn-primary:hover { background-color: #e6bc00; }
+        .btn-outline { border: 2px solid #000000; }
+        .tab.active { border-bottom: 3px solid #FFD100; color: #000000; font-weight: 500; }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 80%;
+                max-width: 300px;
             }
-
-            .sm\:hidden {
-                display: none
+            .sidebar.show {
+                transform: translateX(0);
             }
-
-            .sm\:w-64 {
-                width: 16rem
-            }
-
-            .sm\:flex-1 {
-                flex: 1 1 0%
-            }
-
-            .sm\:flex-row {
-                flex-direction: row
-            }
-
-            .sm\:items-center {
-                align-items: center
-            }
-
-            .sm\:justify-between {
-                justify-content: space-between
-            }
-        }
-
-        @media (min-width: 768px) {
-            .md\:mt-0 {
-                margin-top: 0px
-            }
-
-            .md\:inline {
-                display: inline
-            }
-
-            .md\:min-h-screen {
-                min-height: 100vh
-            }
-
-            .md\:w-64 {
-                width: 16rem
-            }
-
-            .md\:grid-cols-2 {
-                grid-template-columns: repeat(2, minmax(0, 1fr))
-            }
-
-            .md\:flex-row {
-                flex-direction: row
-            }
-
-            .md\:items-center {
-                align-items: center
-            }
-
-            .md\:justify-between {
-                justify-content: space-between
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .lg\:grid-cols-4 {
-                grid-template-columns: repeat(4, minmax(0, 1fr))
+            .main-header,
+            .main-content-wrapper {
+                margin-left: 0 !important;
+                left: 0 !important;
             }
         }
     </style>
 </head>
-
 <body class="min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="bg-secondary py-4">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center">
-                <svg class="h-10 w-10 lightning-logo" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="11" fill="#FFD100"></circle>
-                    <circle cx="12" cy="12" r="9" fill="#000000"></circle>
-                    <path d="M13 6L7 14h4v4l6-8h-4V6z" fill="#FFD100"></path>
+    <div id="sidebar" class="sidebar w-64 text-white flex-shrink-0">
+        <div class="p-4 flex items-center justify-center border-b border-gray-700">
+            <div class="relative h-10 w-10 mr-2">
+                <div class="absolute inset-0 rounded-full border-2 border-yellow-400"></div>
+                <svg class="absolute inset-0 h-full w-full text-yellow-400" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 10V3L4 14H11V21L20 10H13Z" fill="currentColor"></path>
                 </svg>
-                <span class="ml-2 text-2xl font-bold text-primary">PedeAí</span>
-                <span class="ml-2 text-white text-sm bg-primary bg-opacity-20 px-2 py-1 rounded">Parceiro</span>
+            </div>
+            <span class="text-xl font-bold">PedeAí</span>
+            <span class="ml-1 text-xs bg-yellow-400 text-black px-1 rounded">Parceiros</span>
+        </div>
+        <div class="py-4">
+            <p class="px-4 text-xs text-gray-400 uppercase font-semibold mb-2">Principal</p>
+            <a href="#" class="sidebar-link flex items-center px-4 py-3 text-gray-300">
+                <i data-feather="grid" class="h-5 w-5 mr-3"></i><span>Dashboard</span>
             </a>
-
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <button class="text-white hover:text-primary transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                            </path>
-                        </svg>
-                        <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-                    </button>
+            <a href="#" class="sidebar-link active flex items-center px-4 py-3 text-gray-100">
+                <i data-feather="shopping-bag" class="h-5 w-5 mr-3"></i><span>Pedidos</span>
+                <span class="ml-auto bg-yellow-400 text-black text-xs px-2 py-1 rounded-full">5</span>
+            </a>
+            <a href="#" class="sidebar-link flex items-center px-4 py-3 text-gray-300">
+                <i data-feather="package" class="h-5 w-5 mr-3"></i><span>Produtos</span>
+            </a>
+            <a href="#" class="sidebar-link flex items-center px-4 py-3 text-gray-300">
+                <i data-feather="tag" class="h-5 w-5 mr-3"></i><span>Promoções</span>
+            </a>
+            <p class="px-4 text-xs text-gray-400 uppercase font-semibold mt-6 mb-2">Gerenciamento</p>
+            <a href="#" class="sidebar-link flex items-center px-4 py-3 text-gray-300">
+                <i data-feather="dollar-sign" class="h-5 w-5 mr-3"></i><span>Financeiro</span>
+            </a>
+            <a href="#" class="sidebar-link flex items-center px-4 py-3 text-gray-300">
+                <i data-feather="star" class="h-5 w-5 mr-3"></i><span>Avaliações</span>
+            </a>
+            <a href="#" class="sidebar-link flex items-center px-4 py-3 text-gray-300">
+                <i data-feather="bar-chart-2" class="h-5 w-5 mr-3"></i><span>Relatórios</span>
+            </a>
+            <a href="#" class="sidebar-link flex items-center px-4 py-3 text-gray-300">
+                <i data-feather="settings" class="h-5 w-5 mr-3"></i><span>Configurações</span>
+            </a>
+        </div>
+        <div class="mt-auto p-4 border-t border-gray-700">
+            <div class="flex items-center">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0iZmVhdGhlciBmZWF0aGVyLXVzZXIiPjxwYXRoIGQ9Ik0yMCAyMS4wMDAxVjE5LjAwMDFDMjAgMTcuOTM5NiAxOS41Nzg2IDE2LjkyMTcgMTguODI4NCAxNi4xNzE2QzE4LjA3ODMgMTUuNDIxNCAxNy4wNjA5IDE1LjAwMDEgMTYgMTUuMDAwMUg4QzYuOTM5MTMgMTUuMDAwMSA1LjkyMTcyIDE1LjQyMTQgNS4xNzE1NyAxNi4xNzE2QzQuNDIxNDMgMTYuOTIxNyA0IDE3LjkzOTYgNCAxOS4wMDAxVjIxLjAwMDEiPjwvcGF0aD48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiPjwvY2lyY2xlPjwvc3ZnPg=="
+                    alt="User" class="w-8 h-8 rounded-full bg-gray-700 p-1">
+                <div class="ml-3">
+                    <p class="text-sm font-medium">Restaurante Exemplo</p>
+                    <p class="text-xs text-gray-400">Administrador</p>
                 </div>
-
-                <div class="flex items-center">
-                    <img src="https://ui-avatars.com/api/?name=Restaurante+Delícia&amp;background=FFD100&amp;color=000"
-                        alt="Logo da Loja" class="h-8 w-8 rounded-full border-2 border-primary">
-                    <span class="ml-2 text-white hidden md:inline">Restaurante Delícia</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white ml-1" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </div>
+                <button class="ml-auto text-gray-400 hover:text-white">
+                    <i data-feather="log-out" class="h-5 w-5"></i>
+                </button>
             </div>
         </div>
-    </header>
-
-    <div class="flex flex-col md:flex-row flex-grow">
-        <!-- Sidebar -->
-        <aside class="bg-white w-full md:w-64 shadow-md md:min-h-screen">
-            <nav class="p-4">
-                <div class="mb-8">
-                    <h3 class="text-xs uppercase text-gray-500 font-medium mb-4">Menu Principal</h3>
-                    <ul>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
-                                    </path>
-                                </svg>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link active flex items-center px-4 py-3 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
-                                    </path>
-                                </svg>
-                                Pedidos
-                                <span
-                                    class="ml-auto bg-primary text-secondary text-xs font-bold px-2 py-1 rounded-full">12</span>
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                                    </path>
-                                </svg>
-                                Produtos
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                </svg>
-                                Promoções
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                    </path>
-                                </svg>
-                                Clientes
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="mb-8">
-                    <h3 class="text-xs uppercase text-gray-500 font-medium mb-4">Gestão</h3>
-                    <ul>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                    </path>
-                                </svg>
-                                Relatórios
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                                    </path>
-                                </svg>
-                                Financeiro
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-700">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                                    </path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                Configurações
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="mt-auto">
-                    <div class="bg-primary bg-opacity-10 rounded-lg p-4">
-                        <div class="flex items-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary mr-2" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <h4 class="font-medium">Precisa de ajuda?</h4>
+    </div>
+    
+    <div class="main-content-wrapper md:ml-64">
+        <header class="main-header shadow-sm">
+            <div class="bg-white w-full">
+                <div class="main-header-content flex items-center justify-between p-4 pl-6 max-w-[1400px] mx-auto">
+                    <div class="flex items-center">
+                        <button id="sidebar-toggle" class="mr-4">
+                            <i data-feather="menu" class="h-6 w-6"></i>
+                        </button>
+                        <h1 class="text-xl font-semibold hidden md:block">Gerenciamento de Pedidos</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative hidden md:block">
+                            <input type="text" placeholder="Buscar..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent w-64">
+                            <i data-feather="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
                         </div>
-                        <p class="text-sm text-gray-600 mb-3">Acesse nosso centro de suporte para parceiros</p>
-                        <a href="#"
-                            class="btn-primary text-sm py-2 px-4 rounded-lg inline-block w-full text-center">Central de
-                            Ajuda</a>
+                        <div class="flex items-center">
+                            <span class="mr-2 text-sm font-medium">Loja</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="ml-2 text-sm font-medium text-green-600">Aberta</span>
+                        </div>
+                        <div class="dropdown">
+                            <button id="notification-toggle" class="relative p-1 rounded-full hover:bg-gray-100">
+                                <i data-feather="bell" class="h-6 w-6"></i>
+                                <span class="notification-badge flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full">3</span>
+                            </button>
+                            <div id="notification-dropdown" class="dropdown-content mt-2"></div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="flex items-center space-x-2">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0iZmVhdGhlciBmZWF0aGVyLXVzZXIiPjxwYXRoIGQ9Ik0yMCAyMS4wMDAxVjE5LjAwMDFDMjAgMTcuOTM5NiAxOS41Nzg2IDE2LjkyMTcgMTguODI4NCAxNi4xNzE2QzE4LjA3ODMgMTUuNDIxNCAxNy4wNjA5IDE1LjAwMDEgMTYgMTUuMDAwMUg4QzYuOTM5MTMgMTUuMDAwMSA1LjkyMTcyIDE1LjQyMTQgNS4xNzE1NyAxNi4xNzE2QzQuNDIxNDMgMTYuOTIxNyA0IDE3LjkzOTYgNCAxOS4wMDAxVjIxLjAwMDEiPjwvcGF0aD48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiPjwvY2lyY2xlPjwvc3ZnPg=="
+                                    alt="User" class="w-8 h-8 rounded-full bg-gray-200 p-1">
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </nav>
-        </aside>
+            </div>
+        </header>
 
         <!-- Main Content -->
         <main class="flex-grow p-6 bg-gray-50">
@@ -2362,6 +980,73 @@
             </div>
         </main>
     </div>
-</body>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            feather.replace();
+
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const mainContentWrapper = document.querySelector('.main-content-wrapper');
+            const mainHeader = document.querySelector('.main-header');
+
+            function updateLayout() {
+                if (window.innerWidth < 768) {
+                    sidebar.classList.remove('show');
+                } else {
+                    sidebar.classList.add('show');
+                }
+
+                if (sidebar.classList.contains('show') && window.innerWidth >= 768) {
+                    mainContentWrapper.style.marginLeft = '256px';
+                    mainHeader.style.left = '256px';
+                } else {
+                    mainContentWrapper.style.marginLeft = '0';
+                    mainHeader.style.left = '0';
+                }
+            }
+
+            if(sidebarToggle) {
+                sidebarToggle.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    sidebar.classList.toggle('show');
+                    updateLayout();
+                });
+            }
+
+            function setupDropdown(toggleId, dropdownId) {
+                const toggle = document.getElementById(toggleId);
+                const dropdown = document.getElementById(dropdownId);
+                if (!toggle || !dropdown) return;
+
+                toggle.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    document.querySelectorAll('.dropdown-content.show').forEach(d => {
+                        if (d.id !== dropdownId) d.classList.remove('show');
+                    });
+                    dropdown.classList.toggle('show');
+                });
+            }
+
+            setupDropdown('notification-toggle', 'notification-dropdown');
+
+            window.addEventListener('click', function (event) {
+                document.querySelectorAll('.dropdown-content.show').forEach(openDropdown => {
+                    openDropdown.classList.remove('show');
+                });
+            });
+
+            // Adicionar lógica para tabs da página de pedidos se necessário
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Lógica para trocar abas
+                });
+            });
+
+            window.addEventListener('resize', updateLayout);
+            updateLayout();
+        });
+    </script>
+</body>
 </html>

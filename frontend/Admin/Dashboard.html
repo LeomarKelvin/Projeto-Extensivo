@@ -1,0 +1,2230 @@
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PedeAí - Painel Administrativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1A1A1A;
+            --secondary: #FFD100;
+            --text-light: #FFFFFF;
+            --text-dark: #1A1A1A;
+            --gray-light: #F5F5F5;
+            --gray-medium: #E0E0E0;
+            --gray-dark: #9E9E9E;
+            --danger: #FF3B30;
+            --success: #34C759;
+            --warning: #FF9500;
+            --info: #5AC8FA;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: var(--text-dark);
+        }
+
+        .sidebar {
+            background-color: var(--primary);
+            color: var(--text-light);
+            height: 100vh;
+            position: fixed;
+            transition: all 0.3s;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar-collapsed {
+            width: 80px;
+        }
+
+        .sidebar-expanded {
+            width: 280px;
+        }
+
+        .nav-item {
+            border-radius: 8px;
+            margin: 5px 10px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+        }
+
+        .logo-icon {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon:before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: var(--secondary);
+            clip-path: polygon(50% 0%, 15% 100%, 85% 100%, 50% 60%);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background-color: var(--success);
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #E6BC00;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--gray-dark);
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-light);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.pending {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+
+        .status-badge.processing {
+            background-color: #D1ECF1;
+            color: #0C5460;
+        }
+
+        .status-badge.completed {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+
+        .status-badge.cancelled {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 100;
+            background-color: white;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            min-width: 10rem;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--gray-light);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            border-bottom: 2px solid var(--gray-medium);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-medium);
+        }
+
+        tr:hover {
+            background-color: var(--gray-light);
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .pagination li {
+            margin: 0 0.25rem;
+        }
+
+        .pagination a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--gray-medium);
+            transition: all 0.2s;
+        }
+
+        .pagination a:hover {
+            background-color: var(--gray-light);
+        }
+
+        .pagination a.active {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            border-color: var(--secondary);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+
+            .sidebar.mobile-open {
+                width: 280px;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+    <style>
+        *,
+        ::before,
+        ::after {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        ::backdrop {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        /* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */
+        *,
+        ::after,
+        ::before {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb
+        }
+
+        ::after,
+        ::before {
+            --tw-content: ''
+        }
+
+        :host,
+        html {
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+            -moz-tab-size: 4;
+            tab-size: 4;
+            font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        body {
+            margin: 0;
+            line-height: inherit
+        }
+
+        hr {
+            height: 0;
+            color: inherit;
+            border-top-width: 1px
+        }
+
+        abbr:where([title]) {
+            -webkit-text-decoration: underline dotted;
+            text-decoration: underline dotted
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-size: inherit;
+            font-weight: inherit
+        }
+
+        a {
+            color: inherit;
+            text-decoration: inherit
+        }
+
+        b,
+        strong {
+            font-weight: bolder
+        }
+
+        code,
+        kbd,
+        pre,
+        samp {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            font-size: 1em
+        }
+
+        small {
+            font-size: 80%
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        table {
+            text-indent: 0;
+            border-color: inherit;
+            border-collapse: collapse
+        }
+
+        button,
+        input,
+        optgroup,
+        select,
+        textarea {
+            font-family: inherit;
+            font-feature-settings: inherit;
+            font-variation-settings: inherit;
+            font-size: 100%;
+            font-weight: inherit;
+            line-height: inherit;
+            letter-spacing: inherit;
+            color: inherit;
+            margin: 0;
+            padding: 0
+        }
+
+        button,
+        select {
+            text-transform: none
+        }
+
+        button,
+        input:where([type=button]),
+        input:where([type=reset]),
+        input:where([type=submit]) {
+            -webkit-appearance: button;
+            background-color: transparent;
+            background-image: none
+        }
+
+        :-moz-focusring {
+            outline: auto
+        }
+
+        :-moz-ui-invalid {
+            box-shadow: none
+        }
+
+        progress {
+            vertical-align: baseline
+        }
+
+        ::-webkit-inner-spin-button,
+        ::-webkit-outer-spin-button {
+            height: auto
+        }
+
+        [type=search] {
+            -webkit-appearance: textfield;
+            outline-offset: -2px
+        }
+
+        ::-webkit-search-decoration {
+            -webkit-appearance: none
+        }
+
+        ::-webkit-file-upload-button {
+            -webkit-appearance: button;
+            font: inherit
+        }
+
+        summary {
+            display: list-item
+        }
+
+        blockquote,
+        dd,
+        dl,
+        figure,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        hr,
+        p,
+        pre {
+            margin: 0
+        }
+
+        fieldset {
+            margin: 0;
+            padding: 0
+        }
+
+        legend {
+            padding: 0
+        }
+
+        menu,
+        ol,
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0
+        }
+
+        dialog {
+            padding: 0
+        }
+
+        textarea {
+            resize: vertical
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            opacity: 1;
+            color: #9ca3af
+        }
+
+        [role=button],
+        button {
+            cursor: pointer
+        }
+
+        :disabled {
+            cursor: default
+        }
+
+        audio,
+        canvas,
+        embed,
+        iframe,
+        img,
+        object,
+        svg,
+        video {
+            display: block;
+            vertical-align: middle
+        }
+
+        img,
+        video {
+            max-width: 100%;
+            height: auto
+        }
+
+        [hidden]:where(:not([hidden=until-found])) {
+            display: none
+        }
+
+        .absolute {
+            position: absolute
+        }
+
+        .relative {
+            position: relative
+        }
+
+        .left-3 {
+            left: 0.75rem
+        }
+
+        .left-\[-8px\] {
+            left: -8px
+        }
+
+        .top-0 {
+            top: 0px
+        }
+
+        .top-3 {
+            top: 0.75rem
+        }
+
+        .my-1 {
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem
+        }
+
+        .ml-3 {
+            margin-left: 0.75rem
+        }
+
+        .ml-auto {
+            margin-left: auto
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem
+        }
+
+        .mt-6 {
+            margin-top: 1.5rem
+        }
+
+        .mb-1 {
+            margin-bottom: 0.25rem
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem
+        }
+
+        .ml-1 {
+            margin-left: 0.25rem
+        }
+
+        .ml-2 {
+            margin-left: 0.5rem
+        }
+
+        .mr-1 {
+            margin-right: 0.25rem
+        }
+
+        .mr-2 {
+            margin-right: 0.5rem
+        }
+
+        .mr-3 {
+            margin-right: 0.75rem
+        }
+
+        .mr-4 {
+            margin-right: 1rem
+        }
+
+        .mt-1 {
+            margin-top: 0.25rem
+        }
+
+        .mt-auto {
+            margin-top: auto
+        }
+
+        .flex {
+            display: flex
+        }
+
+        .grid {
+            display: grid
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .h-full {
+            height: 100%
+        }
+
+        .h-10 {
+            height: 2.5rem
+        }
+
+        .h-12 {
+            height: 3rem
+        }
+
+        .h-2 {
+            height: 0.5rem
+        }
+
+        .h-3 {
+            height: 0.75rem
+        }
+
+        .h-4 {
+            height: 1rem
+        }
+
+        .max-h-80 {
+            max-height: 20rem
+        }
+
+        .w-6 {
+            width: 1.5rem
+        }
+
+        .w-1\/2 {
+            width: 50%
+        }
+
+        .w-10 {
+            width: 2.5rem
+        }
+
+        .w-12 {
+            width: 3rem
+        }
+
+        .w-3 {
+            width: 0.75rem
+        }
+
+        .w-4 {
+            width: 1rem
+        }
+
+        .w-48 {
+            width: 12rem
+        }
+
+        .w-64 {
+            width: 16rem
+        }
+
+        .w-80 {
+            width: 20rem
+        }
+
+        .w-full {
+            width: 100%
+        }
+
+        .flex-1 {
+            flex: 1 1 0%
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr))
+        }
+
+        .flex-col {
+            flex-direction: column
+        }
+
+        .items-end {
+            align-items: flex-end
+        }
+
+        .items-center {
+            align-items: center
+        }
+
+        .justify-center {
+            justify-content: center
+        }
+
+        .justify-between {
+            justify-content: space-between
+        }
+
+        .gap-6 {
+            gap: 1.5rem
+        }
+
+        .space-x-6> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(1.5rem * var(--tw-space-x-reverse));
+            margin-left: calc(1.5rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .overflow-hidden {
+            overflow: hidden
+        }
+
+        .overflow-y-auto {
+            overflow-y: auto
+        }
+
+        .rounded-full {
+            border-radius: 9999px
+        }
+
+        .rounded-lg {
+            border-radius: 0.5rem
+        }
+
+        .rounded-md {
+            border-radius: 0.375rem
+        }
+
+        .border {
+            border-width: 1px
+        }
+
+        .border-b {
+            border-bottom-width: 1px
+        }
+
+        .border-l-2 {
+            border-left-width: 2px
+        }
+
+        .border-t {
+            border-top-width: 1px
+        }
+
+        .border-gray-100 {
+            --tw-border-opacity: 1;
+            border-color: rgb(243 244 246 / var(--tw-border-opacity, 1))
+        }
+
+        .border-gray-200 {
+            --tw-border-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-border-opacity, 1))
+        }
+
+        .border-gray-300 {
+            --tw-border-opacity: 1;
+            border-color: rgb(209 213 219 / var(--tw-border-opacity, 1))
+        }
+
+        .bg-red-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-400 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(96 165 250 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-200 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-800 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(31 41 55 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-400 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(74 222 128 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-purple-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-purple-400 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(192 132 252 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-purple-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(168 85 247 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-red-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-red-400 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(248 113 113 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-white {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-400 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(250 204 21 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1))
+        }
+
+        .p-3 {
+            padding: 0.75rem
+        }
+
+        .p-4 {
+            padding: 1rem
+        }
+
+        .p-2 {
+            padding: 0.5rem
+        }
+
+        .p-6 {
+            padding: 1.5rem
+        }
+
+        .px-2 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem
+        }
+
+        .py-1 {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem
+        }
+
+        .pb-5 {
+            padding-bottom: 1.25rem
+        }
+
+        .pl-10 {
+            padding-left: 2.5rem
+        }
+
+        .pl-4 {
+            padding-left: 1rem
+        }
+
+        .pl-8 {
+            padding-left: 2rem
+        }
+
+        .pr-4 {
+            padding-right: 1rem
+        }
+
+        .text-center {
+            text-align: center
+        }
+
+        .text-right {
+            text-align: right
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem
+        }
+
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem
+        }
+
+        .font-bold {
+            font-weight: 700
+        }
+
+        .font-semibold {
+            font-weight: 600
+        }
+
+        .font-medium {
+            font-weight: 500
+        }
+
+        .uppercase {
+            text-transform: uppercase
+        }
+
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity, 1))
+        }
+
+        .text-white {
+            --tw-text-opacity: 1;
+            color: rgb(255 255 255 / var(--tw-text-opacity, 1))
+        }
+
+        .text-blue-500 {
+            --tw-text-opacity: 1;
+            color: rgb(59 130 246 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-500 {
+            --tw-text-opacity: 1;
+            color: rgb(107 114 128 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-600 {
+            --tw-text-opacity: 1;
+            color: rgb(75 85 99 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-800 {
+            --tw-text-opacity: 1;
+            color: rgb(31 41 55 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-500 {
+            --tw-text-opacity: 1;
+            color: rgb(34 197 94 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-800 {
+            --tw-text-opacity: 1;
+            color: rgb(22 101 52 / var(--tw-text-opacity, 1))
+        }
+
+        .text-purple-500 {
+            --tw-text-opacity: 1;
+            color: rgb(168 85 247 / var(--tw-text-opacity, 1))
+        }
+
+        .text-red-500 {
+            --tw-text-opacity: 1;
+            color: rgb(239 68 68 / var(--tw-text-opacity, 1))
+        }
+
+        .text-yellow-500 {
+            --tw-text-opacity: 1;
+            color: rgb(234 179 8 / var(--tw-text-opacity, 1))
+        }
+
+        .text-yellow-800 {
+            --tw-text-opacity: 1;
+            color: rgb(133 77 14 / var(--tw-text-opacity, 1))
+        }
+
+        .shadow-sm {
+            --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .hover\:bg-gray-100:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-50:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:text-gray-700:hover {
+            --tw-text-opacity: 1;
+            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-yellow-600:hover {
+            --tw-text-opacity: 1;
+            color: rgb(202 138 4 / var(--tw-text-opacity, 1))
+        }
+
+        .focus\:border-transparent:focus {
+            border-color: transparent
+        }
+
+        .focus\:outline-none:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px
+        }
+
+        .focus\:ring-2:focus {
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)
+        }
+
+        .focus\:ring-yellow-400:focus {
+            --tw-ring-opacity: 1;
+            --tw-ring-color: rgb(250 204 21 / var(--tw-ring-opacity, 1))
+        }
+
+        @media (min-width: 768px) {
+            .md\:block {
+                display: block
+            }
+
+            .md\:flex {
+                display: flex
+            }
+
+            .md\:hidden {
+                display: none
+            }
+
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:col-span-2 {
+                grid-column: span 2 / span 2
+            }
+
+            .lg\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .lg\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr))
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <div id="sidebar" class="sidebar sidebar-expanded">
+            <div class="flex flex-col h-full">
+                <!-- Logo -->
+                <div class="p-4 flex items-center">
+                    <div class="logo-icon"></div>
+                    <span class="ml-3 text-xl font-bold sidebar-text">PedeAí Admin</span>
+                </div>
+
+                <!-- Navigation Items -->
+                <div class="mt-6">
+                    <p class="px-4 text-xs text-gray-400 uppercase font-semibold sidebar-text">Geral</p>
+
+                    <div class="mt-2">
+                        <a href="#" class="nav-item active flex items-center p-3">
+                            <i class="fas fa-tachometer-alt w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Dashboard</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-shopping-bag w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Pedidos</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-store w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Lojas</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-users w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Usuários</span>
+                            <span
+                                class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full sidebar-text">12</span>
+                        </a>
+                    </div>
+
+                    <p class="px-4 text-xs text-gray-400 uppercase font-semibold mt-6 sidebar-text">Gerenciamento</p>
+
+                    <div class="mt-2">
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-box w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Produtos</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-tags w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Promoções</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-motorcycle w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Entregadores</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-credit-card w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Financeiro</span>
+                        </a>
+                    </div>
+
+                    <p class="px-4 text-xs text-gray-400 uppercase font-semibold mt-6 sidebar-text">Marketing</p>
+
+                    <div class="mt-2">
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-bullhorn w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Campanhas</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-bell w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Notificações</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-chart-line w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Relatórios</span>
+                        </a>
+                    </div>
+
+                    <p class="px-4 text-xs text-gray-400 uppercase font-semibold mt-6 sidebar-text">Sistema</p>
+
+                    <div class="mt-2">
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-cog w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Configurações</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-headset w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Suporte</span>
+                            <span
+                                class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-full sidebar-text">5</span>
+                        </a>
+
+                        <a href="#" class="nav-item flex items-center p-3">
+                            <i class="fas fa-shield-alt w-6 text-center"></i>
+                            <span class="ml-3 sidebar-text">Permissões</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Toggle Sidebar Button -->
+                <div class="mt-auto p-4">
+                    <button id="toggle-sidebar"
+                        class="flex items-center justify-center w-full p-2 rounded-md bg-gray-800 text-white">
+                        <i id="toggle-icon" class="fas fa-chevron-left"></i>
+                        <span class="ml-2 sidebar-text">Recolher</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="flex-1 flex flex-col" style="margin-left: 280px;">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between">
+                <div class="flex items-center">
+                    <button id="mobile-menu-button" class="md:hidden mr-4">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <!-- Search Bar -->
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar..."
+                            class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent w-64">
+                        <i class="fas fa-search text-gray-400 absolute left-3 top-3"></i>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <!-- System Status -->
+                    <div class="hidden md:flex items-center">
+                        <span class="mr-2 text-sm font-medium">Sistema:</span>
+                        <span class="flex items-center text-green-500">
+                            <i class="fas fa-circle text-xs mr-1"></i>
+                            <span class="text-sm font-medium">Online</span>
+                        </span>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button id="notifications-dropdown" class="p-2 rounded-full hover:bg-gray-100 relative">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">8</span>
+                        </button>
+                        <div id="notifications-menu" class="dropdown-menu w-80">
+                            <div class="p-3 border-b border-gray-200">
+                                <h3 class="font-semibold">Notificações</h3>
+                                <p class="text-sm text-gray-500">Você tem 8 novas notificações</p>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto">
+                                <a href="#" class="flex p-3 border-b border-gray-200 hover:bg-gray-50">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mr-3">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-sm">Novo lojista cadastrado</p>
+                                        <p class="text-xs text-gray-500">Pizzaria do João solicitou aprovação</p>
+                                        <p class="text-xs text-gray-400 mt-1">Há 5 minutos</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="flex p-3 border-b border-gray-200 hover:bg-gray-50">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 mr-3">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-sm">Alerta de sistema</p>
+                                        <p class="text-xs text-gray-500">Alto volume de pedidos detectado</p>
+                                        <p class="text-xs text-gray-400 mt-1">Há 20 minutos</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="flex p-3 border-b border-gray-200 hover:bg-gray-50">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-500 mr-3">
+                                        <i class="fas fa-times-circle"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-sm">Pedido cancelado</p>
+                                        <p class="text-xs text-gray-500">Pedido #12345 foi cancelado pelo cliente</p>
+                                        <p class="text-xs text-gray-400 mt-1">Há 45 minutos</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="flex p-3 border-b border-gray-200 hover:bg-gray-50">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-3">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-sm">Pagamento confirmado</p>
+                                        <p class="text-xs text-gray-500">Transferência de R$ 1.250,00 concluída</p>
+                                        <p class="text-xs text-gray-400 mt-1">Há 1 hora</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="p-3 text-center border-t border-gray-200">
+                                <a href="#" class="text-sm font-medium text-yellow-500 hover:text-yellow-600">Ver todas
+                                    as notificações</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Profile -->
+                    <div class="relative">
+                        <button id="profile-dropdown" class="flex items-center">
+                            <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full">
+                            <div class="ml-2 hidden md:block">
+                                <p class="text-sm font-medium">Admin Master</p>
+                                <p class="text-xs text-gray-500">Administrador</p>
+                            </div>
+                            <i class="fas fa-chevron-down ml-2 text-xs text-gray-500"></i>
+                        </button>
+                        <div id="profile-menu" class="dropdown-menu w-48">
+                            <a href="#" class="dropdown-item flex items-center">
+                                <i class="fas fa-user mr-3 text-gray-500"></i>
+                                <span>Meu Perfil</span>
+                            </a>
+                            <a href="#" class="dropdown-item flex items-center">
+                                <i class="fas fa-cog mr-3 text-gray-500"></i>
+                                <span>Configurações</span>
+                            </a>
+                            <div class="border-t border-gray-200 my-1"></div>
+                            <a href="#" class="dropdown-item flex items-center text-red-500">
+                                <i class="fas fa-sign-out-alt mr-3"></i>
+                                <span>Sair</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="flex-1 p-6 bg-gray-50 overflow-y-auto">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                    <p class="text-gray-600">Bem-vindo ao painel administrativo do PedeAí</p>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Pedidos Hoje</h3>
+                            <div
+                                class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <span class="text-3xl font-bold">128</span>
+                            <span class="ml-2 text-sm text-green-500 flex items-center">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                12.5%
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Comparado a ontem</p>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Faturamento</h3>
+                            <div
+                                class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-500">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <span class="text-3xl font-bold">R$ 8.549</span>
+                            <span class="ml-2 text-sm text-green-500 flex items-center">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                8.2%
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Últimas 24 horas</p>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Novos Usuários</h3>
+                            <div
+                                class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <span class="text-3xl font-bold">24</span>
+                            <span class="ml-2 text-sm text-red-500 flex items-center">
+                                <i class="fas fa-arrow-down mr-1"></i>
+                                3.8%
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Últimas 24 horas</p>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Lojas Ativas</h3>
+                            <div
+                                class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500">
+                                <i class="fas fa-store"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-end">
+                            <span class="text-3xl font-bold">42</span>
+                            <span class="ml-2 text-sm text-green-500 flex items-center">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                2.4%
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">De 45 lojas cadastradas</p>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold">Vendas por Período</h3>
+                            <div class="flex items-center">
+                                <button class="text-sm text-gray-500 hover:text-gray-700 mr-4">Diário</button>
+                                <button class="text-sm font-medium text-yellow-500 mr-4">Semanal</button>
+                                <button class="text-sm text-gray-500 hover:text-gray-700">Mensal</button>
+                            </div>
+                        </div>
+                        <div>
+                            <canvas id="salesChart" height="250"
+                                style="display: block; box-sizing: border-box; height: 250px; width: 361px;"
+                                width="361"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold">Distribuição por Categoria</h3>
+                            <div>
+                                <button class="text-sm text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-download mr-1"></i>
+                                    Exportar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2">
+                                <canvas id="categoryChart" height="250"
+                                    style="display: block; box-sizing: border-box; height: 250px; width: 180px;"
+                                    width="180"></canvas>
+                            </div>
+                            <div class="w-1/2 pl-4">
+                                <div class="mb-4">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-3 h-3 rounded-full bg-yellow-400 mr-2"></div>
+                                        <span class="text-sm font-medium">Lanchonetes</span>
+                                        <span class="ml-auto text-sm font-semibold">42%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-yellow-400 h-2 rounded-full" style="width: 42%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
+                                        <span class="text-sm font-medium">Farmácias</span>
+                                        <span class="ml-auto text-sm font-semibold">28%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-400 h-2 rounded-full" style="width: 28%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-3 h-3 rounded-full bg-green-400 mr-2"></div>
+                                        <span class="text-sm font-medium">Mercados</span>
+                                        <span class="ml-auto text-sm font-semibold">18%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-400 h-2 rounded-full" style="width: 18%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-3 h-3 rounded-full bg-red-400 mr-2"></div>
+                                        <span class="text-sm font-medium">Petshops</span>
+                                        <span class="ml-auto text-sm font-semibold">8%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-red-400 h-2 rounded-full" style="width: 8%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-3 h-3 rounded-full bg-purple-400 mr-2"></div>
+                                        <span class="text-sm font-medium">Outros</span>
+                                        <span class="ml-auto text-sm font-semibold">4%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-purple-400 h-2 rounded-full" style="width: 4%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders & Top Stores -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="card p-6 lg:col-span-2">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold">Pedidos Recentes</h3>
+                            <a href="#" class="text-sm font-medium text-yellow-500 hover:text-yellow-600">Ver todos</a>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Loja</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>#12345</td>
+                                        <td>Maria Silva</td>
+                                        <td>Pizzaria do João</td>
+                                        <td>R$ 89,90</td>
+                                        <td>
+                                            <span class="status-badge completed">Entregue</span>
+                                        </td>
+                                        <td>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>#12344</td>
+                                        <td>Pedro Santos</td>
+                                        <td>Farmácia Saúde</td>
+                                        <td>R$ 45,50</td>
+                                        <td>
+                                            <span class="status-badge processing">Em entrega</span>
+                                        </td>
+                                        <td>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>#12343</td>
+                                        <td>Ana Oliveira</td>
+                                        <td>Mercado Express</td>
+                                        <td>R$ 132,75</td>
+                                        <td>
+                                            <span class="status-badge pending">Preparando</span>
+                                        </td>
+                                        <td>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>#12342</td>
+                                        <td>Carlos Mendes</td>
+                                        <td>Hamburgueria Top</td>
+                                        <td>R$ 56,90</td>
+                                        <td>
+                                            <span class="status-badge cancelled">Cancelado</span>
+                                        </td>
+                                        <td>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>#12341</td>
+                                        <td>Juliana Costa</td>
+                                        <td>Açaí Delícia</td>
+                                        <td>R$ 28,00</td>
+                                        <td>
+                                            <span class="status-badge completed">Entregue</span>
+                                        </td>
+                                        <td>
+                                            <button class="text-gray-500 hover:text-gray-700">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold">Lojas em Destaque</h3>
+                            <a href="#" class="text-sm font-medium text-yellow-500 hover:text-yellow-600">Ver todas</a>
+                        </div>
+                        <div>
+                            <div class="flex items-center p-3 border-b border-gray-100">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
+                                    <i class="fas fa-pizza-slice text-gray-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">Pizzaria do João</h4>
+                                    <div class="flex items-center text-sm text-yellow-500">
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star-half-alt text-xs"></i>
+                                        <span class="ml-1 text-gray-500">4.5</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold">R$ 2.450</p>
+                                    <p class="text-xs text-green-500">+12% hoje</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center p-3 border-b border-gray-100">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
+                                    <i class="fas fa-hamburger text-gray-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">Hamburgueria Top</h4>
+                                    <div class="flex items-center text-sm text-yellow-500">
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="far fa-star text-xs"></i>
+                                        <span class="ml-1 text-gray-500">4.0</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold">R$ 1.890</p>
+                                    <p class="text-xs text-green-500">+8% hoje</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center p-3 border-b border-gray-100">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
+                                    <i class="fas fa-prescription-bottle-alt text-gray-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">Farmácia Saúde</h4>
+                                    <div class="flex items-center text-sm text-yellow-500">
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <span class="ml-1 text-gray-500">5.0</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold">R$ 1.245</p>
+                                    <p class="text-xs text-green-500">+15% hoje</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center p-3 border-b border-gray-100">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
+                                    <i class="fas fa-shopping-basket text-gray-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">Mercado Express</h4>
+                                    <div class="flex items-center text-sm text-yellow-500">
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star-half-alt text-xs"></i>
+                                        <i class="far fa-star text-xs"></i>
+                                        <span class="ml-1 text-gray-500">3.5</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold">R$ 980</p>
+                                    <p class="text-xs text-red-500">-3% hoje</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center p-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
+                                    <i class="fas fa-ice-cream text-gray-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">Açaí Delícia</h4>
+                                    <div class="flex items-center text-sm text-yellow-500">
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="fas fa-star text-xs"></i>
+                                        <i class="far fa-star text-xs"></i>
+                                        <span class="ml-1 text-gray-500">4.0</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold">R$ 750</p>
+                                    <p class="text-xs text-green-500">+5% hoje</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status & Recent Activities -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold">Status do Sistema</h3>
+                            <button class="text-sm text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium">Servidor API</span>
+                                    <span
+                                        class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Operacional</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 98%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-500">Uptime: 99.8%</span>
+                                    <span class="text-xs text-gray-500">Carga: 42%</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium">Banco de Dados</span>
+                                    <span
+                                        class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Operacional</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-500">Uptime: 99.5%</span>
+                                    <span class="text-xs text-gray-500">Carga: 65%</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium">Processamento de Pagamentos</span>
+                                    <span
+                                        class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Operacional</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-500">Uptime: 100%</span>
+                                    <span class="text-xs text-gray-500">Carga: 28%</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium">Serviço de Notificações</span>
+                                    <span
+                                        class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Degradado</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 78%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-500">Uptime: 97.2%</span>
+                                    <span class="text-xs text-gray-500">Carga: 82%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6 lg:col-span-2">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold">Atividades Recentes</h3>
+                            <a href="#" class="text-sm font-medium text-yellow-500 hover:text-yellow-600">Ver todas</a>
+                        </div>
+                        <div>
+                            <div class="relative pl-8 pb-5 border-l-2 border-gray-200">
+                                <div class="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-blue-500"></div>
+                                <div class="mb-1">
+                                    <span class="font-medium">Nova loja aprovada</span>
+                                    <span class="text-sm text-gray-500 ml-2">há 10 minutos</span>
+                                </div>
+                                <p class="text-sm text-gray-600">A loja "Açaí Delícia" foi aprovada e está pronta para
+                                    começar a receber pedidos.</p>
+                            </div>
+
+                            <div class="relative pl-8 pb-5 border-l-2 border-gray-200">
+                                <div class="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-green-500"></div>
+                                <div class="mb-1">
+                                    <span class="font-medium">Pagamento processado</span>
+                                    <span class="text-sm text-gray-500 ml-2">há 25 minutos</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Transferência de R$ 1.250,00 para a loja "Pizzaria do
+                                    João" foi processada com sucesso.</p>
+                            </div>
+
+                            <div class="relative pl-8 pb-5 border-l-2 border-gray-200">
+                                <div class="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-yellow-500"></div>
+                                <div class="mb-1">
+                                    <span class="font-medium">Campanha de marketing criada</span>
+                                    <span class="text-sm text-gray-500 ml-2">há 1 hora</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Nova campanha "Delivery Grátis" foi criada e agendada
+                                    para iniciar amanhã.</p>
+                            </div>
+
+                            <div class="relative pl-8 pb-5 border-l-2 border-gray-200">
+                                <div class="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-red-500"></div>
+                                <div class="mb-1">
+                                    <span class="font-medium">Alerta de sistema</span>
+                                    <span class="text-sm text-gray-500 ml-2">há 2 horas</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Detectado alto volume de pedidos. Recursos adicionais
+                                    foram alocados automaticamente.</p>
+                            </div>
+
+                            <div class="relative pl-8">
+                                <div class="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-purple-500"></div>
+                                <div class="mb-1">
+                                    <span class="font-medium">Atualização de sistema</span>
+                                    <span class="text-sm text-gray-500 ml-2">há 3 horas</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Atualização v2.5.3 foi aplicada com sucesso. Novos
+                                    recursos de relatórios disponíveis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Sidebar
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const sidebarTexts = document.querySelectorAll('.sidebar-text');
+
+        toggleBtn.addEventListener('click', () => {
+            if (sidebar.classList.contains('sidebar-expanded')) {
+                sidebar.classList.remove('sidebar-expanded');
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.style.marginLeft = '80px';
+
+                // Hide text elements
+                sidebarTexts.forEach(text => {
+                    text.style.display = 'none';
+                });
+
+                // Change icon direction
+                toggleIcon.classList.remove('fa-chevron-left');
+                toggleIcon.classList.add('fa-chevron-right');
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('sidebar-expanded');
+                mainContent.style.marginLeft = '280px';
+
+                // Show text elements
+                sidebarTexts.forEach(text => {
+                    text.style.display = 'inline';
+                });
+
+                // Change icon direction
+                toggleIcon.classList.remove('fa-chevron-right');
+                toggleIcon.classList.add('fa-chevron-left');
+            }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-button');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+        });
+
+        // Dropdown Menus
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenu = document.getElementById('profile-menu');
+        const notificationsDropdown = document.getElementById('notifications-dropdown');
+        const notificationsMenu = document.getElementById('notifications-menu');
+
+        profileDropdown.addEventListener('click', () => {
+            profileMenu.classList.toggle('show');
+            notificationsMenu.classList.remove('show');
+        });
+
+        notificationsDropdown.addEventListener('click', () => {
+            notificationsMenu.classList.toggle('show');
+            profileMenu.classList.remove('show');
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!profileDropdown.contains(event.target) && !profileMenu.contains(event.target)) {
+                profileMenu.classList.remove('show');
+            }
+
+            if (!notificationsDropdown.contains(event.target) && !notificationsMenu.contains(event.target)) {
+                notificationsMenu.classList.remove('show');
+            }
+        });
+
+        // Sales Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                datasets: [{
+                    label: 'Vendas',
+                    data: [5800, 6200, 7500, 6800, 8200, 9100, 8500],
+                    backgroundColor: 'rgba(255, 209, 0, 0.1)',
+                    borderColor: '#FFD100',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#FFD100',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1A1A1A',
+                        titleColor: '#FFFFFF',
+                        bodyColor: '#FFFFFF',
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 14
+                        },
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function (context) {
+                                return `R$ ${context.raw.toLocaleString('pt-BR')}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return `R$ ${value / 1000}k`;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Lanchonetes', 'Farmácias', 'Mercados', 'Petshops', 'Outros'],
+                datasets: [{
+                    data: [42, 28, 18, 8, 4],
+                    backgroundColor: [
+                        '#FFD100',
+                        '#4DA3FF',
+                        '#4CD964',
+                        '#FF3B30',
+                        '#AF52DE'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1A1A1A',
+                        titleColor: '#FFFFFF',
+                        bodyColor: '#FFFFFF',
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 14
+                        },
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function (context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'94da5f6ee5fbf1d1',t:'MTc0OTU3NDI3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+    <iframe height="1" width="1"
+        style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe>
+
+</body>
+
+</html>

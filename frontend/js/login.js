@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Pega todos os elementos que precisamos da página
     const loginTab = document.getElementById('login-tab');
     const registerTab = document.getElementById('register-tab');
     const loginForm = document.getElementById('login-form');
@@ -13,34 +12,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const storeFields = document.getElementById('store-fields');
     const deliveryFields = document.getElementById('delivery-fields');
 
-    const loginButton = document.querySelector('#login-form button');
-    const registerButton = document.querySelector('#register-form button');
+    let selectedAccountType = 'cliente';
 
-    let selectedAccountType = 'user'; 
+    function setupEventListeners() {
+        if (loginTab) loginTab.addEventListener('click', () => switchTab('login'));
+        if (registerTab) registerTab.addEventListener('click', () => switchTab('register'));
 
-    // --- Adiciona os Eventos de Clique ---
+        if (userTypeButton) userTypeButton.addEventListener('click', () => selectAccountType('cliente'));
+        if (storeTypeButton) storeTypeButton.addEventListener('click', () => selectAccountType('loja'));
+        if (deliveryTypeButton) deliveryTypeButton.addEventListener('click', () => selectAccountType('entregador'));
 
-    if(loginTab) loginTab.addEventListener('click', () => switchTab('login'));
-    if(registerTab) registerTab.addEventListener('click', () => switchTab('register'));
-
-    if(userTypeButton) userTypeButton.addEventListener('click', () => selectAccountType('user'));
-    if(storeTypeButton) storeTypeButton.addEventListener('click', () => selectAccountType('store'));
-    if(deliveryTypeButton) deliveryTypeButton.addEventListener('click', () => selectAccountType('delivery'));
-
-    if (loginButton) {
-        loginButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            handleLogin();
-        });
+        if (loginForm) {
+            loginForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                handleLogin();
+            });
+        }
+        if (registerForm) {
+            registerForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                handleRegister();
+            });
+        }
     }
-    if (registerButton) {
-        registerButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            handleRegister();
-        });
-    }
-
-    // --- Funções ---
 
     function switchTab(tab) {
         if (tab === 'login') {
@@ -58,48 +52,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function selectAccountType(type) {
         selectedAccountType = type;
+
         userTypeButton.classList.remove('account-type-selected');
         storeTypeButton.classList.remove('account-type-selected');
         deliveryTypeButton.classList.remove('account-type-selected');
-        if(storeFields) storeFields.classList.add('hidden');
-        if(deliveryFields) deliveryFields.classList.add('hidden');
 
-        if (type === 'user') {
+        if (storeFields) storeFields.classList.add('hidden');
+        if (deliveryFields) deliveryFields.classList.add('hidden');
+
+        if (type === 'cliente') {
             userTypeButton.classList.add('account-type-selected');
-        } else if (type === 'store') {
+        } else if (type === 'loja') {
             storeTypeButton.classList.add('account-type-selected');
-            if(storeFields) storeFields.classList.remove('hidden');
-        } else if (type === 'delivery') {
+            if (storeFields) storeFields.classList.remove('hidden');
+        } else if (type === 'entregador') {
             deliveryTypeButton.classList.add('account-type-selected');
-            if(deliveryFields) deliveryFields.classList.remove('hidden');
+            if (deliveryFields) deliveryFields.classList.remove('hidden');
         }
     }
 
     async function handleLogin() {
-        // IDs dos campos de input do seu HTML
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        if (!email || !password) { return showToast('Atenção', 'Por favor, preencha e-mail e senha.', 'error'); }
+        if (!email || !password) {
+            return showToast('Atenção', 'Por favor, preencha e-mail e senha.', 'error');
+        }
 
         try {
-            // ===== A ÚNICA CORREÇÃO IMPORTANTE =====
-            // Trocamos '/api/login' por '/api/perfil/login'
             const response = await fetch('http://localhost:3000/api/perfil/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
+
             const result = await response.json();
+
             if (response.ok) {
-                // Salvamos os dados que o backend nos deu
-                localStorage.setItem('userToken', result.token);
+                localStorage.setItem('userToken', result.session.access_token);
                 localStorage.setItem('userData', JSON.stringify(result.user));
-                
+                localStorage.setItem('userProfile', JSON.stringify(result.perfil));
+
                 showToast('Sucesso!', 'Login realizado com sucesso!');
 
-                // Redirecionamos para a página correta
                 setTimeout(() => {
-                    window.location.href = result.redirectTo || '/frontend/Clientes/Inicio.html';
+                    if (result.perfil.tipo === 'loja') {
+                        window.location.href = '../../loja-frontend/Dashboard.html';
+                    } else {
+                        window.location.href = '/frontend/Clientes/Inicio.html';
+                    }
                 }, 1500);
             } else {
                 showToast('Erro no login', result.error, 'error');
@@ -119,22 +119,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (password !== passwordConfirm) { return showToast('Atenção', 'As senhas não coincidem.', 'error'); }
 
         const dataToSend = {
-            nome_completo: nome,
+            nome: nome,
             email: email,
             password: password,
-            role: selectedAccountType
+            tipo: selectedAccountType
         };
 
-        if (selectedAccountType === 'store') {
-            dataToSend.nome_loja = document.getElementById('store-name').value;
-            if (!dataToSend.nome_loja) {
-                return showToast('Atenção', 'Por favor, preencha o nome da loja.', 'error');
+        // *** CORREÇÃO APLICADA AQUI ***
+        // Se o tipo de conta for 'loja', verificamos e adicionamos o nome da loja.
+        if (selectedAccountType === 'loja') {
+            const nomeLoja = document.getElementById('store-name').value;
+            if (!nomeLoja) {
+                return showToast('Atenção', 'O nome da loja é obrigatório.', 'error');
             }
+            dataToSend.nome_loja = nomeLoja;
         }
-        
+
         try {
-            // ===== A ÚNICA CORREÇÃO IMPORTANTE =====
-            // Trocamos '/api/register' por '/api/perfil/register'
             const response = await fetch('http://localhost:3000/api/perfil/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -143,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const result = await response.json();
             if (response.ok) {
                 showToast('Sucesso!', 'Cadastro realizado! Você já pode fazer o login.');
-                setTimeout(() => window.location.reload(), 2000);
+                setTimeout(() => switchTab('login'), 2000);
             } else {
                 showToast('Erro no cadastro', result.error, 'error');
             }
@@ -152,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Inicia a página com as seleções padrão
+    setupEventListeners();
     switchTab('login');
-    selectAccountType('user');
+    selectAccountType('cliente');
 });
