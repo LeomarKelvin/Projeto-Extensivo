@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarPedidosRecentes();
     carregarTabelaDeProdutos();
     carregarProdutosMaisVendidos();
+    carregarAvaliacoesRecentes();
     configurarLogout();
 });
 
@@ -82,7 +83,7 @@ async function carregarGraficoDeVendas(period) {
         salesChartInstance.destroy();
     }
 
-     salesChartInstance = new Chart(ctx, {
+    salesChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: chartData.labels,
@@ -178,8 +179,8 @@ async function carregarPedidosRecentes() {
                 </div>
             </div>
         `;
-        container.innerHTML += itemHtml;
-    });
+            container.innerHTML += itemHtml;
+        });
 
     } catch (error) {
         console.error('Erro ao carregar pedidos recentes:', error.message);
@@ -299,13 +300,13 @@ async function carregarProdutosMaisVendidos() {
         if (!response.ok) throw new Error('Falha ao buscar dados do servidor.');
 
         const produtos = await response.json();
-        container.innerHTML = ''; 
+        container.innerHTML = '';
 
         if (produtos.length === 0) {
             container.innerHTML = '<p class="text-sm text-gray-500 text-center">Ainda não há dados de vendas.</p>';
             return;
         }
-        
+
         const maxVendas = Math.max(...produtos.map(p => p.total_vendido));
 
         produtos.forEach((produto, index) => {
@@ -332,5 +333,65 @@ async function carregarProdutosMaisVendidos() {
     } catch (error) {
         console.error('Erro ao carregar produtos mais vendidos:', error);
         container.innerHTML = '<p class="text-sm text-red-500 text-center">Não foi possível carregar os dados.</p>';
+    }
+}
+
+async function carregarAvaliacoesRecentes() {
+    const token = localStorage.getItem('userToken');
+    const container = document.getElementById('avaliacoes-recentes-container');
+    if (!container) return;
+
+    try {
+        const response = await fetch('http://localhost:3000/api/dashboard/loja/avaliacoes-recentes', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Falha ao buscar avaliações.');
+        }
+
+        const avaliacoes = await response.json();
+        container.innerHTML = ''; // Limpa o "Carregando..."
+
+        if (avaliacoes.length === 0) {
+            container.innerHTML = '<p class="text-sm text-gray-500 text-center">Nenhuma avaliação recente encontrada.</p>';
+            return;
+        }
+
+        avaliacoes.forEach(avaliacao => {
+            const nomeCliente = avaliacao.cliente ? avaliacao.cliente.nome_completo : 'Cliente';
+            // Gera as iniciais a partir do nome do cliente
+            const iniciais = nomeCliente.split(' ').map(n => n[0]).join('').substring(0, 2);
+            
+            let estrelasHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                const cor = i <= avaliacao.nota ? 'text-yellow-400 fill-current' : 'text-gray-300';
+                // Código completo do SVG da estrela
+                estrelasHtml += `<svg class="feather feather-star h-4 w-4 ${cor}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+            }
+
+            const itemHtml = `
+                <div class="border-b pb-4">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <span class="font-semibold text-blue-600">${iniciais}</span>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium">${nomeCliente}</p>
+                                <p class="text-xs text-gray-500">${new Date(avaliacao.created_at).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                        </div>
+                        <div class="flex">${estrelasHtml}</div>
+                    </div>
+                    <p class="text-sm mt-2 text-gray-600">${avaliacao.comentario || 'O cliente não deixou um comentário.'}</p>
+                </div>
+            `;
+            container.innerHTML += itemHtml;
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar avaliações:', error);
+        container.innerHTML = '<p class="text-sm text-red-500 text-center">Não foi possível carregar as avaliações.</p>';
     }
 }

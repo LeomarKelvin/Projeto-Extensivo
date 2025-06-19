@@ -244,11 +244,82 @@ const getProdutosMaisVendidos = async (req, res) => {
     }
 };
 
+const getAvaliacoesRecentes = async (req, res) => {
+    // O ID do usuário logado (loja) é um UUID
+    const lojaAuthId = req.user.id;
+
+    try {
+        // Passo 1: Encontrar o ID numérico do perfil da loja
+        const { data: perfil, error: perfilError } = await supabase
+            .from('perfis')
+            .select('id')
+            .eq('user_id', lojaAuthId)
+            .single();
+
+        if (perfilError) throw new Error(`Erro ao buscar perfil da loja: ${perfilError.message}`);
+        if (!perfil) return res.status(404).json({ error: 'Perfil da loja não encontrado.' });
+        
+        const perfilId = perfil.id;
+
+        // Passo 2: Encontrar o ID numérico da loja
+        const { data: loja, error: lojaError } = await supabase
+            .from('lojas')
+            .select('id')
+            .eq('perfil_id', perfilId)
+            .single();
+
+        if (lojaError) throw new Error(`Erro ao buscar dados da loja: ${lojaError.message}`);
+        if (!loja) return res.status(404).json({ error: 'Loja não encontrada para este perfil.' });
+
+        const lojaNumericId = loja.id;
+
+        // Passo 3: Buscar as últimas 3 avaliações da loja
+        const { data: avaliacoes, error: avaliacoesError } = await supabase
+            .from('avaliacoes')
+            .select('*')
+            .eq('loja_id', lojaNumericId)
+            .order('created_at', { ascending: false })
+            .limit(3);
+            
+        if (avaliacoesError) throw new Error(`Erro ao buscar avaliações: ${avaliacoesError.message}`);
+        if (avaliacoes.length === 0) {
+            return res.status(200).json([]);
+        }
+
+        // Passo 4: Coletar os IDs dos clientes que fizeram as avaliações
+        const clienteUserIds = avaliacoes.map(a => a.user_id);
+
+        // Passo 5: Buscar os perfis (nomes) desses clientes
+        const { data: perfis, error: perfisError } = await supabase
+            .from('perfis')
+            .select('user_id, nome_completo')
+            .in('user_id', clienteUserIds);
+
+        if (perfisError) throw new Error(`Erro ao buscar perfis dos clientes: ${perfisError.message}`);
+        
+        // Passo 6: Criar um mapa para facilitar a busca (id -> nome)
+        const perfisMap = new Map(perfis.map(p => [p.user_id, p]));
+
+        // Passo 7: Juntar as avaliações com os nomes dos clientes
+        const resultadoFinal = avaliacoes.map(avaliacao => ({
+            ...avaliacao,
+            cliente: perfisMap.get(avaliacao.user_id) || { nome_completo: 'Cliente Anônimo' }
+        }));
+
+        res.status(200).json(resultadoFinal);
+
+    } catch (error) {
+        console.error('Erro no controller de avaliações:', error.message);
+        res.status(500).json({ error: 'Erro interno ao processar a requisição.' });
+    }
+};
+
 // Exportando AMBAS as funções
 module.exports = {
     getDashboardStats,
     getSalesChartData,
     getRecentOrders,
     getProdutosDaLoja,
-    getProdutosMaisVendidos
+    getProdutosMaisVendidos,
+    getAvaliacoesRecentes
 };
