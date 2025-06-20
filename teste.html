@@ -1,0 +1,1379 @@
+<html lang="pt-BR"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Produtos - PedeAí</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1A1A1A;
+            --secondary: #FFD100;
+            --text-light: #FFFFFF;
+            --text-dark: #1A1A1A;
+            --gray-light: #F5F5F5;
+            --gray-medium: #E0E0E0;
+            --gray-dark: #9E9E9E;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F8F9FA;
+        }
+        
+        .sidebar {
+            background-color: var(--primary);
+            color: var(--text-light);
+            height: 100vh;
+            position: fixed;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-collapsed {
+            width: 80px;
+        }
+        
+        .sidebar-expanded {
+            width: 250px;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item.active {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+        }
+        
+        .logo-icon {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-icon:before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--secondary);
+            clip-path: polygon(50% 0%, 15% 100%, 85% 100%);
+            transform: rotate(180deg) translateY(-2px);
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            background-color: #E6BC00;
+        }
+        
+        .btn-outline {
+            border: 1px solid var(--gray-dark);
+            color: var(--text-dark);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--gray-light);
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-card {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--secondary);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .dropdown-menu {
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tag {
+            background-color: var(--gray-light);
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 12px;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .sortable-ghost {
+            opacity: 0.4;
+        }
+        
+        .image-upload-area {
+            border: 2px dashed var(--gray-dark);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .image-upload-area:hover {
+            border-color: var(--secondary);
+            background-color: rgba(255, 209, 0, 0.05);
+        }
+        
+        .product-image-thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: grab;
+        }
+        
+        .product-image-thumbnail.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #FF5252;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Modal styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+            
+            .mobile-menu-toggle {
+                display: block !important;
+            }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.left-3{left:0.75rem}.right-3{right:0.75rem}.top-3{top:0.75rem}.z-20{z-index:20}.col-span-2{grid-column:span 2 / span 2}.-mb-px{margin-bottom:-1px}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.ml-1{margin-left:0.25rem}.ml-2{margin-left:0.5rem}.ml-3{margin-left:0.75rem}.ml-4{margin-left:1rem}.ml-auto{margin-left:auto}.mr-1{margin-right:0.25rem}.mr-2{margin-right:0.5rem}.mr-3{margin-right:0.75rem}.mr-4{margin-right:1rem}.mr-6{margin-right:1.5rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-auto{margin-top:auto}.line-clamp-2{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-16{height:4rem}.h-4{height:1rem}.h-48{height:12rem}.h-5{height:1.25rem}.h-8{height:2rem}.h-full{height:100%}.w-10{width:2.5rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-80{width:20rem}.w-full{width:100%}.min-w-full{min-width:100%}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-lg{max-width:32rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.appearance-none{-webkit-appearance:none;appearance:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-gray-200 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(229 231 235 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-l-lg{border-top-left-radius:0.5rem;border-bottom-left-radius:0.5rem}.rounded-r-lg{border-top-right-radius:0.5rem;border-bottom-right-radius:0.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l-0{border-left-width:0px}.border-r-0{border-right-width:0px}.border-dashed{border-style:dashed}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.border-yellow-500{--tw-border-opacity:1;border-color:rgb(234 179 8 / var(--tw-border-opacity, 1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-300{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-gray-500{--tw-bg-opacity:1;background-color:rgb(107 114 128 / var(--tw-bg-opacity, 1))}.bg-green-100{--tw-bg-opacity:1;background-color:rgb(220 252 231 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-yellow-100{--tw-bg-opacity:1;background-color:rgb(254 249 195 / var(--tw-bg-opacity, 1))}.bg-yellow-500{--tw-bg-opacity:1;background-color:rgb(234 179 8 / var(--tw-bg-opacity, 1))}.object-cover{object-fit:cover}.p-2{padding:0.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pl-10{padding-left:2.5rem}.pl-4{padding-left:1rem}.pr-10{padding-right:2.5rem}.pr-4{padding-right:1rem}.text-left{text-align:left}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-5{line-height:1.25rem}.tracking-wider{letter-spacing:0.05em}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39 / var(--tw-text-opacity, 1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74 / var(--tw-text-opacity, 1))}.text-green-800{--tw-text-opacity:1;color:rgb(22 101 52 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-500{--tw-text-opacity:1;color:rgb(234 179 8 / var(--tw-text-opacity, 1))}.text-yellow-600{--tw-text-opacity:1;color:rgb(202 138 4 / var(--tw-text-opacity, 1))}.text-yellow-800{--tw-text-opacity:1;color:rgb(133 77 14 / var(--tw-text-opacity, 1))}.line-through{-webkit-text-decoration-line:line-through;text-decoration-line:line-through}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:border-gray-300:hover{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.hover\:bg-gray-100:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-200:hover{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.hover\:text-gray-300:hover{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.hover\:text-gray-700:hover{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.hover\:text-gray-900:hover{--tw-text-opacity:1;color:rgb(17 24 39 / var(--tw-text-opacity, 1))}.hover\:text-indigo-900:hover{--tw-text-opacity:1;color:rgb(49 46 129 / var(--tw-text-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.focus\:border-transparent:focus{border-color:transparent}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-yellow-400:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(250 204 21 / var(--tw-ring-opacity, 1))}.disabled\:opacity-50:disabled{opacity:0.5}@media (min-width: 640px){.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}@media (min-width: 768px){.md\:col-span-1{grid-column:span 1 / span 1}.md\:col-span-2{grid-column:span 2 / span 2}.md\:mb-0{margin-bottom:0px}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}@media (min-width: 1024px){.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}@media (min-width: 1280px){.xl\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}</style></head>
+<body>
+    <div class="flex">
+        <!-- Sidebar Navigation -->
+        <div id="sidebar" class="sidebar sidebar-expanded z-20">
+            <div class="flex flex-col h-full">
+                <div class="p-4 flex items-center">
+                    <div class="logo-icon mr-3"></div>
+                    <span class="text-xl font-bold sidebar-text" style="display: inline;">PedeAí</span>
+                    <button id="toggleSidebar" class="ml-auto text-white hover:text-gray-300">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-6">
+                    <p class="px-4 text-xs text-gray-400 uppercase font-semibold sidebar-text" style="display: inline;">Principal</p>
+                    <div class="mt-2">
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-tachometer-alt w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Dashboard</span>
+                        </a>
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-shopping-bag w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Pedidos</span>
+                        </a>
+                        <a href="#" class="nav-item active flex items-center py-3 px-4">
+                            <i class="fas fa-box w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Produtos</span>
+                        </a>
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-percentage w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Promoções</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <p class="px-4 text-xs text-gray-400 uppercase font-semibold sidebar-text" style="display: inline;">Gerenciamento</p>
+                    <div class="mt-2">
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-store w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Perfil da Loja</span>
+                        </a>
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-wallet w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Financeiro</span>
+                        </a>
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-star w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Avaliações</span>
+                        </a>
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-chart-bar w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Relatórios</span>
+                        </a>
+                        <a href="#" class="nav-item flex items-center py-3 px-4">
+                            <i class="fas fa-cog w-6"></i>
+                            <span class="ml-3 sidebar-text" style="display: inline;">Configurações</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="mt-auto p-4">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600"></i>
+                        </div>
+                        <div class="ml-3 sidebar-text" style="display: inline;">
+                            <p class="text-sm font-medium">Restaurante Exemplo</p>
+                            <p class="text-xs text-gray-400">Administrador</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div id="content" class="content-wrapper flex-1 transition-all" style="margin-left: 250px;">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm">
+                <div class="flex items-center justify-between px-6 py-3">
+                    <div class="flex items-center">
+                        <button id="mobileMenuToggle" class="mobile-menu-toggle mr-4 hidden">
+                            <i class="fas fa-bars text-gray-600"></i>
+                        </button>
+                        <div class="relative">
+                            <input type="text" placeholder="Buscar produtos..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent w-80">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="mr-6 flex items-center">
+                            <span class="mr-2 text-sm font-medium">Loja Aberta</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked="">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="relative mr-4">
+                            <button class="p-2 rounded-full hover:bg-gray-100">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="notification-badge">3</span>
+                            </button>
+                        </div>
+                        
+                        <div class="relative">
+                            <button id="userMenuBtn" class="flex items-center focus:outline-none">
+                                <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <i class="fas fa-user text-gray-600"></i>
+                                </div>
+                                <i class="fas fa-chevron-down ml-2 text-gray-600 text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content Area -->
+            <main class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold">Produtos</h1>
+                    <div class="flex">
+                        <button id="importExportBtn" class="btn-outline py-2 px-4 rounded-lg mr-3 flex items-center">
+                            <i class="fas fa-file-import mr-2"></i>
+                            <span>Importar/Exportar</span>
+                        </button>
+                        <button id="addProductBtn" class="btn-primary py-2 px-4 rounded-lg flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            <span>Adicionar Produto</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filters and View Options -->
+                <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                    <div class="flex flex-wrap justify-between items-center">
+                        <div class="flex flex-wrap items-center gap-3 mb-3 md:mb-0">
+                            <div class="relative">
+                                <select class="appearance-none bg-gray-100 rounded-lg py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                                    <option>Todas as categorias</option>
+                                    <option>Lanches</option>
+                                    <option>Bebidas</option>
+                                    <option>Sobremesas</option>
+                                    <option>Combos</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-500 pointer-events-none"></i>
+                            </div>
+                            
+                            <div class="relative">
+                                <select class="appearance-none bg-gray-100 rounded-lg py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                                    <option>Status: Todos</option>
+                                    <option>Ativos</option>
+                                    <option>Inativos</option>
+                                    <option>Em promoção</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-500 pointer-events-none"></i>
+                            </div>
+                            
+                            <button class="bg-gray-100 rounded-lg py-2 px-4 flex items-center">
+                                <i class="fas fa-filter mr-2 text-gray-500"></i>
+                                <span>Mais filtros</span>
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <span class="text-sm text-gray-500 mr-3">Visualização:</span>
+                            <button id="gridViewBtn" class="p-2 rounded bg-gray-100 mr-2 active">
+                                <i class="fas fa-th text-gray-600"></i>
+                            </button>
+                            <button id="listViewBtn" class="p-2 rounded hover:bg-gray-100">
+                                <i class="fas fa-list text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bulk Actions -->
+                <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                    <div class="flex flex-wrap justify-between items-center">
+                        <div class="flex items-center mb-3 md:mb-0">
+                            <input type="checkbox" id="selectAll" class="mr-3 h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                            <label for="selectAll" class="text-sm font-medium">Selecionar todos</label>
+                            <span class="ml-2 text-sm text-gray-500">(0 selecionados)</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2">
+                            <button class="btn-outline py-2 px-3 rounded-lg text-sm" disabled="">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span>Editar preços</span>
+                            </button>
+                            <button class="btn-outline py-2 px-3 rounded-lg text-sm" disabled="">
+                                <i class="fas fa-percentage mr-1"></i>
+                                <span>Aplicar promoção</span>
+                            </button>
+                            <button class="btn-outline py-2 px-3 rounded-lg text-sm" disabled="">
+                                <i class="fas fa-eye-slash mr-1"></i>
+                                <span>Desativar</span>
+                            </button>
+                            <button class="btn-outline py-2 px-3 rounded-lg text-sm text-red-500 border-red-200" disabled="">
+                                <i class="fas fa-trash-alt mr-1"></i>
+                                <span>Excluir</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products Grid View -->
+                <div id="gridView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Product Card 1 -->
+                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/300x200" alt="X-Tudo" class="w-full h-48 object-cover">
+                            <div class="absolute top-3 right-3 flex">
+                                <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full mr-2">Ativo</span>
+                                <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">Promoção</span>
+                            </div>
+                            <div class="absolute top-3 left-3">
+                                <input type="checkbox" class="product-checkbox h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold text-lg">X-Tudo</h3>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-gray-500 line-through text-sm">R$ 28,90</span>
+                                    <span class="font-bold text-lg">R$ 24,90</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Hambúrguer artesanal com queijo, bacon, ovo, alface, tomate e molho especial.</p>
+                            <div class="mb-3">
+                                <span class="tag">Lanches</span>
+                                <span class="tag">Destaque</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Cód: #1234</span>
+                                <div class="flex">
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-pencil-alt text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-ellipsis-v text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 2 -->
+                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/300x200" alt="Batata Frita Grande" class="w-full h-48 object-cover">
+                            <div class="absolute top-3 right-3">
+                                <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">Ativo</span>
+                            </div>
+                            <div class="absolute top-3 left-3">
+                                <input type="checkbox" class="product-checkbox h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold text-lg">Batata Frita Grande</h3>
+                                <div class="flex flex-col items-end">
+                                    <span class="font-bold text-lg">R$ 15,90</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Porção grande de batatas fritas crocantes com molho especial.</p>
+                            <div class="mb-3">
+                                <span class="tag">Acompanhamentos</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Cód: #1235</span>
+                                <div class="flex">
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-pencil-alt text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-ellipsis-v text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 3 -->
+                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/300x200" alt="Refrigerante Cola 2L" class="w-full h-48 object-cover">
+                            <div class="absolute top-3 right-3">
+                                <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">Ativo</span>
+                            </div>
+                            <div class="absolute top-3 left-3">
+                                <input type="checkbox" class="product-checkbox h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold text-lg">Refrigerante Cola 2L</h3>
+                                <div class="flex flex-col items-end">
+                                    <span class="font-bold text-lg">R$ 12,00</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Refrigerante sabor cola, garrafa de 2 litros.</p>
+                            <div class="mb-3">
+                                <span class="tag">Bebidas</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Cód: #1236</span>
+                                <div class="flex">
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-pencil-alt text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-ellipsis-v text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 4 -->
+                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/300x200" alt="Combo Família" class="w-full h-48 object-cover">
+                            <div class="absolute top-3 right-3 flex">
+                                <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full mr-2">Ativo</span>
+                                <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">Promoção</span>
+                            </div>
+                            <div class="absolute top-3 left-3">
+                                <input type="checkbox" class="product-checkbox h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold text-lg">Combo Família</h3>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-gray-500 line-through text-sm">R$ 89,90</span>
+                                    <span class="font-bold text-lg">R$ 79,90</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">4 hambúrgueres, 2 batatas grandes, 4 refrigerantes e 2 sobremesas.</p>
+                            <div class="mb-3">
+                                <span class="tag">Combos</span>
+                                <span class="tag">Destaque</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Cód: #1237</span>
+                                <div class="flex">
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-pencil-alt text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-ellipsis-v text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 5 -->
+                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/300x200" alt="Milk Shake Chocolate" class="w-full h-48 object-cover">
+                            <div class="absolute top-3 right-3">
+                                <span class="bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded-full">Inativo</span>
+                            </div>
+                            <div class="absolute top-3 left-3">
+                                <input type="checkbox" class="product-checkbox h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold text-lg">Milk Shake Chocolate</h3>
+                                <div class="flex flex-col items-end">
+                                    <span class="font-bold text-lg">R$ 16,90</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Milk shake cremoso de chocolate com calda e chantilly.</p>
+                            <div class="mb-3">
+                                <span class="tag">Sobremesas</span>
+                                <span class="tag">Bebidas</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Cód: #1238</span>
+                                <div class="flex">
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-pencil-alt text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-ellipsis-v text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 6 -->
+                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/300x200" alt="Salada Caesar" class="w-full h-48 object-cover">
+                            <div class="absolute top-3 right-3">
+                                <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">Ativo</span>
+                            </div>
+                            <div class="absolute top-3 left-3">
+                                <input type="checkbox" class="product-checkbox h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold text-lg">Salada Caesar</h3>
+                                <div class="flex flex-col items-end">
+                                    <span class="font-bold text-lg">R$ 22,90</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Salada com alface, frango grelhado, croutons, queijo parmesão e molho caesar.</p>
+                            <div class="mb-3">
+                                <span class="tag">Saudável</span>
+                                <span class="tag">Saladas</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Cód: #1239</span>
+                                <div class="flex">
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-pencil-alt text-gray-600"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-gray-100 rounded-full">
+                                        <i class="fas fa-ellipsis-v text-gray-600"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products List View (Hidden by default) -->
+                <div id="listView" class="hidden">
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Produto
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Categoria
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Preço
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Estoque
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <!-- Product Row 1 -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-md object-cover" src="https://via.placeholder.com/300x200" alt="X-Tudo">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">X-Tudo</div>
+                                                <div class="text-sm text-gray-500">Cód: #1234</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="tag">Lanches</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-500 line-through">R$ 28,90</div>
+                                        <div class="text-sm font-medium text-gray-900">R$ 24,90</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Ativo
+                                        </span>
+                                        <span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            Promoção
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        Disponível
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                                        <button class="text-gray-600 hover:text-gray-900">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Product Row 2 -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-md object-cover" src="https://via.placeholder.com/300x200" alt="Batata Frita Grande">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Batata Frita Grande</div>
+                                                <div class="text-sm text-gray-500">Cód: #1235</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="tag">Acompanhamentos</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">R$ 15,90</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        Disponível
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                                        <button class="text-gray-600 hover:text-gray-900">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- More product rows... -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-md object-cover" src="https://via.placeholder.com/300x200" alt="Refrigerante Cola 2L">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Refrigerante Cola 2L</div>
+                                                <div class="text-sm text-gray-500">Cód: #1236</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="tag">Bebidas</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">R$ 12,00</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Ativo
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        Disponível
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                                        <button class="text-gray-600 hover:text-gray-900">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img class="h-10 w-10 rounded-md object-cover" src="https://via.placeholder.com/300x200" alt="Milk Shake Chocolate">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Milk Shake Chocolate</div>
+                                                <div class="text-sm text-gray-500">Cód: #1238</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="tag">Sobremesas</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">R$ 16,90</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            Inativo
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        Indisponível
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                                        <button class="text-gray-600 hover:text-gray-900">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="mt-6 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        Mostrando <span class="font-medium">1</span> a <span class="font-medium">6</span> de <span class="font-medium">24</span> produtos
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50" disabled="">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 rounded-md bg-yellow-500 text-white">1</button>
+                        <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200">2</button>
+                        <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200">3</button>
+                        <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200">4</button>
+                        <button class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Product Detail Modal (Hidden by default) -->
+    <div id="productDetailModal" class="modal-backdrop hidden">
+        <div class="modal-content w-full max-w-4xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Detalhes do Produto</h2>
+                    <button id="closeProductModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Product Images -->
+                    <div class="md:col-span-1">
+                        <div class="mb-4">
+                            <img src="https://via.placeholder.com/300x200" alt="X-Tudo" class="w-full h-48 object-cover rounded-lg">
+                        </div>
+                        
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="border-2 border-yellow-500 rounded-md">
+                                <img src="https://via.placeholder.com/300x200" alt="" class="w-full h-16 object-cover rounded-md">
+                            </div>
+                            <div class="border border-gray-200 rounded-md">
+                                <img src="https://via.placeholder.com/300x200" alt="" class="w-full h-16 object-cover rounded-md">
+                            </div>
+                            <div class="border border-gray-200 rounded-md">
+                                <img src="https://via.placeholder.com/300x200" alt="" class="w-full h-16 object-cover rounded-md">
+                            </div>
+                            <div class="border border-dashed border-gray-300 rounded-md flex items-center justify-center">
+                                <i class="fas fa-plus text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="image-upload-area">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-500">Arraste e solte imagens ou clique para fazer upload</p>
+                                <input type="file" class="hidden" multiple="" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Details Form -->
+                    <div class="md:col-span-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
+                                <input type="text" value="X-Tudo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
+                                <input type="text" value="28.90" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Preço Promocional (R$)</label>
+                                <input type="text" value="24.90" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                    <option>Lanches</option>
+                                    <option>Bebidas</option>
+                                    <option>Sobremesas</option>
+                                    <option>Acompanhamentos</option>
+                                    <option>Combos</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Código do Produto</label>
+                                <input type="text" value="1234" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            </div>
+                            
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                                <input type="text" value="Lanches, Destaque" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                <p class="text-xs text-gray-500 mt-1">Separe as tags por vírgulas</p>
+                            </div>
+                            
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                                <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">Hambúrguer artesanal com queijo, bacon, ovo, alface, tomate e molho especial.</textarea>
+                            </div>
+                            
+                            <div class="col-span-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <label class="mr-2 text-sm font-medium text-gray-700">Status</label>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" checked="">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <span class="ml-2 text-sm text-green-600">Ativo</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <label class="mr-2 text-sm font-medium text-gray-700">Promoção</label>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" checked="">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <span class="ml-2 text-sm text-yellow-600">Ativada</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabs for additional information -->
+                        <div class="mt-6">
+                            <div class="border-b border-gray-200">
+                                <nav class="-mb-px flex">
+                                    <a href="#" class="border-yellow-500 text-yellow-600 border-b-2 py-2 px-4 text-sm font-medium">
+                                        Informações Adicionais
+                                    </a>
+                                    <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-2 px-4 text-sm font-medium">
+                                        Variações
+                                    </a>
+                                    <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-2 px-4 text-sm font-medium">
+                                        Informações Nutricionais
+                                    </a>
+                                </nav>
+                            </div>
+                            
+                            <div class="py-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tempo de Preparo (min)</label>
+                                        <input type="number" value="15" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Disponibilidade</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                            <option>Sempre disponível</option>
+                                            <option>Disponível em horários específicos</option>
+                                            <option>Disponível em dias específicos</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button class="btn-outline py-2 px-4 rounded-lg">Cancelar</button>
+                            <button class="btn-primary py-2 px-4 rounded-lg">Salvar Alterações</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import/Export Modal (Hidden by default) -->
+    <div id="importExportModal" class="modal-backdrop hidden">
+        <div class="modal-content w-full max-w-lg">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Importar/Exportar Produtos</h2>
+                    <button id="closeImportExportModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3">Exportar Produtos</h3>
+                    <p class="text-gray-600 text-sm mb-4">Baixe seu catálogo de produtos em formato CSV para edição em massa.</p>
+                    <button class="btn-primary py-2 px-4 rounded-lg w-full flex items-center justify-center">
+                        <i class="fas fa-download mr-2"></i>
+                        <span>Exportar Catálogo (CSV)</span>
+                    </button>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-3">Importar Produtos</h3>
+                    <p class="text-gray-600 text-sm mb-4">Faça upload de um arquivo CSV para atualizar ou adicionar múltiplos produtos de uma vez.</p>
+                    
+                    <div class="image-upload-area mb-4">
+                        <i class="fas fa-file-csv text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-500">Arraste e solte seu arquivo CSV ou clique para fazer upload</p>
+                        <input type="file" class="hidden" accept=".csv">
+                    </div>
+                    
+                    <button class="btn-outline py-2 px-4 rounded-lg w-full flex items-center justify-center" disabled="">
+                        <i class="fas fa-upload mr-2"></i>
+                        <span>Importar Produtos</span>
+                    </button>
+                    
+                    <p class="text-xs text-gray-500 mt-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Precisa de ajuda? <a href="#" class="text-yellow-600 hover:underline">Baixe nosso modelo de CSV</a> ou consulte o <a href="#" class="text-yellow-600 hover:underline">guia de importação</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bulk Edit Modal (Hidden by default) -->
+    <div id="bulkEditModal" class="modal-backdrop hidden">
+        <div class="modal-content w-full max-w-2xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Edição em Massa</h2>
+                    <button id="closeBulkEditModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-gray-600">Você está editando <span class="font-bold">3 produtos</span> selecionados.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ajustar Preço</label>
+                        <div class="flex">
+                            <select class="rounded-l-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                <option>Aumentar</option>
+                                <option>Diminuir</option>
+                                <option>Definir como</option>
+                            </select>
+                            <input type="text" placeholder="0.00" class="flex-1 border-l-0 border-r-0 border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            <select class="rounded-r-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                <option>R$ (valor)</option>
+                                <option>% (porcentagem)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            <option>Não alterar</option>
+                            <option>Lanches</option>
+                            <option>Bebidas</option>
+                            <option>Sobremesas</option>
+                            <option>Acompanhamentos</option>
+                            <option>Combos</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            <option>Não alterar</option>
+                            <option>Ativar</option>
+                            <option>Desativar</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Promoção</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            <option>Não alterar</option>
+                            <option>Aplicar promoção</option>
+                            <option>Remover promoção</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Desconto Promocional</label>
+                        <div class="flex">
+                            <input type="text" placeholder="0.00" class="flex-1 rounded-l-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                            <select class="rounded-r-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                <option>R$ (valor)</option>
+                                <option>% (porcentagem)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tags (adicionar a todos)</label>
+                        <input type="text" placeholder="Separe as tags por vírgulas" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button class="btn-outline py-2 px-4 rounded-lg">Cancelar</button>
+                    <button class="btn-primary py-2 px-4 rounded-lg">Aplicar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle sidebar
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        
+        toggleSidebarBtn.addEventListener('click', function() {
+            if (sidebar.classList.contains('sidebar-expanded')) {
+                sidebar.classList.remove('sidebar-expanded');
+                sidebar.classList.add('sidebar-collapsed');
+                content.style.marginLeft = '80px';
+                
+                // Hide text elements
+                const sidebarTexts = document.querySelectorAll('.sidebar-text');
+                sidebarTexts.forEach(text => {
+                    text.style.display = 'none';
+                });
+                
+                // Change icon
+                toggleSidebarBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('sidebar-expanded');
+                content.style.marginLeft = '250px';
+                
+                // Show text elements
+                const sidebarTexts = document.querySelectorAll('.sidebar-text');
+                sidebarTexts.forEach(text => {
+                    text.style.display = 'inline';
+                });
+                
+                // Change icon
+                toggleSidebarBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            }
+        });
+        
+        // Toggle view (grid/list)
+        const gridViewBtn = document.getElementById('gridViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const gridView = document.getElementById('gridView');
+        const listView = document.getElementById('listView');
+        
+        gridViewBtn.addEventListener('click', function() {
+            gridView.classList.remove('hidden');
+            listView.classList.add('hidden');
+            gridViewBtn.classList.add('bg-gray-100');
+            listViewBtn.classList.remove('bg-gray-100');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+            gridView.classList.add('hidden');
+            listView.classList.remove('hidden');
+            gridViewBtn.classList.remove('bg-gray-100');
+            listViewBtn.classList.add('bg-gray-100');
+        });
+        
+        // Product Detail Modal
+        const productDetailModal = document.getElementById('productDetailModal');
+        const closeProductModal = document.getElementById('closeProductModal');
+        
+        // Open modal when clicking on product cards or edit buttons
+        document.querySelectorAll('.product-card, .fa-pencil-alt').forEach(item => {
+            item.addEventListener('click', function() {
+                productDetailModal.classList.remove('hidden');
+            });
+        });
+        
+        // Close modal
+        closeProductModal.addEventListener('click', function() {
+            productDetailModal.classList.add('hidden');
+        });
+        
+        // Import/Export Modal
+        const importExportModal = document.getElementById('importExportModal');
+        const importExportBtn = document.getElementById('importExportBtn');
+        const closeImportExportModal = document.getElementById('closeImportExportModal');
+        
+        importExportBtn.addEventListener('click', function() {
+            importExportModal.classList.remove('hidden');
+        });
+        
+        closeImportExportModal.addEventListener('click', function() {
+            importExportModal.classList.add('hidden');
+        });
+        
+        // Select All Products
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const productCheckboxes = document.querySelectorAll('.product-checkbox');
+        const bulkActionButtons = document.querySelectorAll('.btn-outline[disabled]');
+        
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            
+            // Enable/disable bulk action buttons
+            bulkActionButtons.forEach(button => {
+                button.disabled = !isChecked;
+            });
+            
+            // Update selected count
+            const selectedCount = isChecked ? productCheckboxes.length : 0;
+            document.querySelector('label[for="selectAll"] + span').textContent = `(${selectedCount} selecionados)`;
+        });
+        
+        // Individual product checkbox handling
+        productCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checkedCount = document.querySelectorAll('.product-checkbox:checked').length;
+                
+                // Update "Select All" checkbox
+                selectAllCheckbox.checked = checkedCount === productCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < productCheckboxes.length;
+                
+                // Enable/disable bulk action buttons
+                bulkActionButtons.forEach(button => {
+                    button.disabled = checkedCount === 0;
+                });
+                
+                // Update selected count
+                document.querySelector('label[for="selectAll"] + span').textContent = `(${checkedCount} selecionados)`;
+            });
+        });
+        
+        // Add Product Button
+        const addProductBtn = document.getElementById('addProductBtn');
+        
+        addProductBtn.addEventListener('click', function() {
+            productDetailModal.classList.remove('hidden');
+            // Reset form fields for a new product
+            // This would be more complex in a real application
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === productDetailModal) {
+                productDetailModal.classList.add('hidden');
+            }
+            
+            if (event.target === importExportModal) {
+                importExportModal.classList.add('hidden');
+            }
+            
+            if (event.target === bulkEditModal) {
+                bulkEditModal.classList.add('hidden');
+            }
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        
+        mobileMenuToggle?.addEventListener('click', function() {
+            if (sidebar.style.display === 'none' || sidebar.style.display === '') {
+                sidebar.style.display = 'block';
+            } else {
+                sidebar.style.display = 'none';
+            }
+        });
+        
+        // Responsive adjustments
+        function handleResponsiveLayout() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('sidebar-collapsed');
+                sidebar.classList.remove('sidebar-expanded');
+                content.style.marginLeft = '0';
+                
+                const sidebarTexts = document.querySelectorAll('.sidebar-text');
+                sidebarTexts.forEach(text => {
+                    text.style.display = 'none';
+                });
+            } else {
+                if (sidebar.classList.contains('sidebar-collapsed')) {
+                    content.style.marginLeft = '80px';
+                } else {
+                    content.style.marginLeft = '250px';
+                    
+                    const sidebarTexts = document.querySelectorAll('.sidebar-text');
+                    sidebarTexts.forEach(text => {
+                        text.style.display = 'inline';
+                    });
+                }
+            }
+        }
+        
+        // Initial call and event listener for window resize
+        handleResponsiveLayout();
+        window.addEventListener('resize', handleResponsiveLayout);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'952cf99505794b2e',t:'MTc1MDQ0MDQyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe>
+
+</body></html>

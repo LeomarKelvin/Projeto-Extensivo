@@ -12,5 +12,8 @@ router.get('/pedidos-recentes', authMiddleware, lojaDashboardController.getRecen
 router.get('/produtos', authMiddleware, lojaDashboardController.getProdutosDaLoja);
 router.get('/produtos-mais-vendidos', authMiddleware, lojaDashboardController.getProdutosMaisVendidos);
 router.get('/avaliacoes-recentes', authMiddleware, lojaDashboardController.getAvaliacoesRecentes);
+router.post('/produtos', lojaDashboardController.adicionarProduto);
+router.put('/produtos/:id', lojaDashboardController.editarProduto);
+router.delete('/produtos/:id', lojaDashboardController.deletarProduto);
 
 module.exports = router;

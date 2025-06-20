@@ -220,7 +220,7 @@ const getProdutosMaisVendidos = async (req, res) => {
             .from('pedido_itens')
             .select('nome_produto, quantidade')
             .in('pedido_id', pedidoIds);
-        
+
         if (itensError) throw new Error('Erro ao buscar itens dos pedidos.');
 
         // Passo 5: Contar os produtos em JavaScript (esta parte continua igual)
@@ -233,7 +233,7 @@ const getProdutosMaisVendidos = async (req, res) => {
         const sortedProducts = Object.entries(salesCount)
             .map(([nome, total]) => ({ nome_produto: nome, total_vendido: total }))
             .sort((a, b) => b.total_vendido - a.total_vendido);
-        
+
         const top5Products = sortedProducts.slice(0, 5);
 
         res.status(200).json(top5Products);
@@ -258,7 +258,7 @@ const getAvaliacoesRecentes = async (req, res) => {
 
         if (perfilError) throw new Error(`Erro ao buscar perfil da loja: ${perfilError.message}`);
         if (!perfil) return res.status(404).json({ error: 'Perfil da loja não encontrado.' });
-        
+
         const perfilId = perfil.id;
 
         // Passo 2: Encontrar o ID numérico da loja
@@ -280,7 +280,7 @@ const getAvaliacoesRecentes = async (req, res) => {
             .eq('loja_id', lojaNumericId)
             .order('created_at', { ascending: false })
             .limit(3);
-            
+
         if (avaliacoesError) throw new Error(`Erro ao buscar avaliações: ${avaliacoesError.message}`);
         if (avaliacoes.length === 0) {
             return res.status(200).json([]);
@@ -296,7 +296,7 @@ const getAvaliacoesRecentes = async (req, res) => {
             .in('user_id', clienteUserIds);
 
         if (perfisError) throw new Error(`Erro ao buscar perfis dos clientes: ${perfisError.message}`);
-        
+
         // Passo 6: Criar um mapa para facilitar a busca (id -> nome)
         const perfisMap = new Map(perfis.map(p => [p.user_id, p]));
 
@@ -314,6 +314,112 @@ const getAvaliacoesRecentes = async (req, res) => {
     }
 };
 
+const adicionarProduto = async (req, res) => {
+    try {
+        // 1. Obter o loja_id a partir do usuário autenticado
+        const lojaId = await getLojaId(req.user.id);
+        if (!lojaId) {
+            return res.status(404).json({ error: 'Loja não encontrada para este usuário.' });
+        }
+
+        // 2. Extrair os dados do produto do corpo da requisição
+        const { nome, descricao, preco, categoria, url_imagem } = req.body;
+
+        // 3. Validar se os dados essenciais foram recebidos
+        if (!nome || !preco || !categoria) {
+            return res.status(400).json({ error: 'Nome, preço e categoria são obrigatórios.' });
+        }
+
+        // 4. Inserir o novo produto no banco de dados, associando ao loja_id
+        const { data: novoProduto, error } = await supabase
+            .from('produtos')
+            .insert([
+                {
+                    loja_id: lojaId,
+                    nome,
+                    descricao,
+                    preco,
+                    categoria,
+                    url_imagem,
+                    // ativo: true // Podemos definir um valor padrão se a coluna existir
+                },
+            ])
+            .select()
+            .single(); // .single() para retornar o objeto inserido diretamente
+
+        if (error) {
+            throw error;
+        }
+
+        // 5. Retornar o produto recém-criado com status 201 (Created)
+        res.status(201).json(novoProduto);
+
+    } catch (error) {
+        console.error('Erro ao adicionar produto:', error.message);
+        res.status(500).json({ error: 'Erro interno do servidor ao adicionar produto.' });
+    }
+};
+
+const editarProduto = async (req, res) => {
+    try {
+        const produtoId = req.params.id;
+        const { nome, descricao, preco, categoria, url_imagem } = req.body;
+
+        // Validar se os dados essenciais foram recebidos
+        if (!nome || !preco || !categoria) {
+            return res.status(400).json({ error: 'Nome, preço e categoria são obrigatórios.' });
+        }
+
+        const { data: produtoAtualizado, error } = await supabase
+            .from('produtos')
+            .update({
+                nome,
+                descricao,
+                preco,
+                categoria,
+                url_imagem,
+            })
+            .eq('id', produtoId)
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        if (!produtoAtualizado) {
+            return res.status(404).json({ error: 'Produto não encontrado.' });
+        }
+
+        res.status(200).json(produtoAtualizado);
+
+    } catch (error) {
+        console.error('Erro ao editar produto:', error.message);
+        res.status(500).json({ error: 'Erro interno do servidor ao editar produto.' });
+    }
+};
+
+const deletarProduto = async (req, res) => {
+    try {
+        const produtoId = req.params.id;
+
+        const { error } = await supabase
+            .from('produtos')
+            .delete()
+            .eq('id', produtoId);
+
+        if (error) {
+            throw error;
+        }
+
+        res.status(204).send(); // 204 No Content - Sucesso, mas sem corpo na resposta
+
+    } catch (error) {
+        console.error('Erro ao deletar produto:', error.message);
+        res.status(500).json({ error: 'Erro interno do servidor ao deletar produto.' });
+    }
+};
+
 // Exportando AMBAS as funções
 module.exports = {
     getDashboardStats,
@@ -321,5 +427,9 @@ module.exports = {
     getRecentOrders,
     getProdutosDaLoja,
     getProdutosMaisVendidos,
-    getAvaliacoesRecentes
+    getAvaliacoesRecentes,
+    adicionarProduto,
+    editarProduto,
+    deletarProduto,
+
 };
