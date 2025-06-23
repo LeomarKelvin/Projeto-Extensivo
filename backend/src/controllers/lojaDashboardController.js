@@ -142,36 +142,6 @@ const getRecentOrders = async (req, res) => {
     }
 };
 
-const getProdutosDaLoja = async (req, res) => {
-    // O ID da loja é pego do usuário autenticado pelo middleware
-    const lojaId = req.user.id;
-
-    try {
-        const { data, error } = await supabase
-            .from('produtos')
-            .select(`
-                id,
-                nome,
-                descricao,
-                preco,
-                disponivel,
-                imagem_url
-            `)
-            .eq('loja_id', lojaId) // Filtra pela ID da loja logada
-            .order('nome', { ascending: true }); // Ordena os produtos por nome
-
-        if (error) {
-            throw error;
-        }
-
-        res.status(200).json(data);
-
-    } catch (error) {
-        console.error('Erro ao buscar produtos da loja:', error.message);
-        res.status(500).json({ error: 'Erro interno do servidor ao buscar produtos.' });
-    }
-};
-
 const getProdutosMaisVendidos = async (req, res) => {
     // Este é o ID da autenticação, do tipo UUID
     const lojaAuthId = req.user.id;
@@ -314,109 +284,100 @@ const getAvaliacoesRecentes = async (req, res) => {
     }
 };
 
-const adicionarProduto = async (req, res) => {
+const getProdutosDaLoja = async (req, res) => {
+    const { loja_id } = req; // Usando o loja_id injetado pelo authMiddleware
     try {
-        // 1. Obter o loja_id a partir do usuário autenticado
-        const lojaId = await getLojaId(req.user.id);
-        if (!lojaId) {
-            return res.status(404).json({ error: 'Loja não encontrada para este usuário.' });
-        }
-
-        // 2. Extrair os dados do produto do corpo da requisição
-        const { nome, descricao, preco, categoria, url_imagem } = req.body;
-
-        // 3. Validar se os dados essenciais foram recebidos
-        if (!nome || !preco || !categoria) {
-            return res.status(400).json({ error: 'Nome, preço e categoria são obrigatórios.' });
-        }
-
-        // 4. Inserir o novo produto no banco de dados, associando ao loja_id
-        const { data: novoProduto, error } = await supabase
+        // Ajuste para buscar o nome da categoria junto com o produto
+        const { data, error } = await supabase
             .from('produtos')
-            .insert([
-                {
-                    loja_id: lojaId,
-                    nome,
-                    descricao,
-                    preco,
-                    categoria,
-                    url_imagem,
-                    // ativo: true // Podemos definir um valor padrão se a coluna existir
-                },
-            ])
-            .select()
-            .single(); // .single() para retornar o objeto inserido diretamente
-
-        if (error) {
-            throw error;
-        }
-
-        // 5. Retornar o produto recém-criado com status 201 (Created)
-        res.status(201).json(novoProduto);
-
+            .select(`*, categorias(nome_categoria)`)
+            .eq('loja_id', loja_id)
+            .order('nome', { ascending: true });
+        if (error) throw error;
+        res.status(200).json(data);
     } catch (error) {
-        console.error('Erro ao adicionar produto:', error.message);
-        res.status(500).json({ error: 'Erro interno do servidor ao adicionar produto.' });
+        res.status(500).json({ message: "Erro ao buscar produtos.", error: error.message });
+    }
+};
+
+const adicionarProduto = async (req, res) => {
+    const { loja_id } = req;
+    const { nome, descricao, preco, categoria_id } = req.body; 
+    try {
+        let imagem_url = null;
+        if (req.file) {
+            // Sua lógica de upload de imagem
+        }
+        const { data, error } = await supabase.from('produtos').insert([{ nome, descricao, preco, loja_id, categoria_id: parseInt(categoria_id) || null, imagem_url }]).select();
+        if (error) throw error;
+        res.status(201).json({ message: "Produto adicionado com sucesso!", produto: data });
+    } catch (error) {
+        res.status(500).json({ message: "Erro ao adicionar produto.", error: error.message });
     }
 };
 
 const editarProduto = async (req, res) => {
+    const { loja_id } = req;
+    const { id } = req.params;
+    const { nome, descricao, preco, categoria_id } = req.body;
     try {
-        const produtoId = req.params.id;
-        const { nome, descricao, preco, categoria, url_imagem } = req.body;
-
-        // Validar se os dados essenciais foram recebidos
-        if (!nome || !preco || !categoria) {
-            return res.status(400).json({ error: 'Nome, preço e categoria são obrigatórios.' });
-        }
-
-        const { data: produtoAtualizado, error } = await supabase
-            .from('produtos')
-            .update({
-                nome,
-                descricao,
-                preco,
-                categoria,
-                url_imagem,
-            })
-            .eq('id', produtoId)
-            .select()
-            .single();
-
-        if (error) {
-            throw error;
-        }
-
-        if (!produtoAtualizado) {
-            return res.status(404).json({ error: 'Produto não encontrado.' });
-        }
-
-        res.status(200).json(produtoAtualizado);
-
+        const { data, error } = await supabase.from('produtos').update({ nome, descricao, preco, categoria_id: parseInt(categoria_id) || null }).match({ id, loja_id }).select().single();
+        if (error) throw error;
+        res.status(200).json(data);
     } catch (error) {
-        console.error('Erro ao editar produto:', error.message);
-        res.status(500).json({ error: 'Erro interno do servidor ao editar produto.' });
+        res.status(500).json({ message: "Erro ao editar produto.", error: error.message });
     }
 };
 
 const deletarProduto = async (req, res) => {
+    const { loja_id } = req;
+    const { id } = req.params;
     try {
-        const produtoId = req.params.id;
-
-        const { error } = await supabase
-            .from('produtos')
-            .delete()
-            .eq('id', produtoId);
-
-        if (error) {
-            throw error;
-        }
-
-        res.status(204).send(); // 204 No Content - Sucesso, mas sem corpo na resposta
-
+        const { error } = await supabase.from('produtos').delete().match({ id, loja_id });
+        if (error) throw error;
+        res.status(204).send();
     } catch (error) {
-        console.error('Erro ao deletar produto:', error.message);
-        res.status(500).json({ error: 'Erro interno do servidor ao deletar produto.' });
+        res.status(500).json({ message: "Erro ao deletar produto.", error: error.message });
+    }
+};
+
+// --- FUNÇÕES DE CATEGORIAS (Novas) ---
+
+const obterCategorias = async (req, res) => {
+    const { loja_id } = req;
+    try {
+        const { data, error } = await supabase.from('categorias').select('id, nome_categoria').eq('loja_id', loja_id).order('nome_categoria');
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ message: "Erro ao buscar categorias.", error: error.message });
+    }
+};
+
+const adicionarCategoria = async (req, res) => {
+    const { loja_id } = req;
+    const { nome_categoria } = req.body;
+    if (!nome_categoria) return res.status(400).json({ message: 'O nome da categoria é obrigatório.' });
+    try {
+        const { data, error } = await supabase.from('categorias').insert([{ nome_categoria: nome_categoria.trim(), loja_id }]).select().single();
+        if (error) throw error;
+        res.status(201).json({ message: 'Categoria criada com sucesso!', categoria: data });
+    } catch (error) {
+        if (error.code === '23505') return res.status(409).json({ message: 'Essa categoria já existe.' });
+        res.status(500).json({ message: 'Erro ao criar categoria.', error: error.message });
+    }
+};
+
+const excluirCategoria = async (req, res) => {
+    const { loja_id } = req;
+    const { id } = req.params;
+    try {
+        await supabase.from('produtos').update({ categoria_id: null }).eq('categoria_id', id).eq('loja_id', loja_id);
+        const { error } = await supabase.from('categorias').delete().match({ id: id, loja_id: loja_id });
+        if (error) throw error;
+        res.status(200).json({ message: 'Categoria excluída com sucesso.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao excluir categoria.', error: error.message });
     }
 };
 
@@ -431,5 +392,7 @@ module.exports = {
     adicionarProduto,
     editarProduto,
     deletarProduto,
-
+    obterCategorias,
+    adicionarCategoria,
+    excluirCategoria
 };

@@ -183,43 +183,111 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Função para lidar com o envio do formulário
+    const handleAdicionarProduto = async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData();
+        const form = event.target;
+
+        // Função para encontrar um campo pelo texto do seu label.
+        // Isso nos protege caso os IDs dos campos não estejam definidos no HTML.
+        const findInputByLabel = (labelText) => {
+            const labels = Array.from(form.querySelectorAll('label'));
+            const label = labels.find(l => l.textContent.trim().includes(labelText));
+            return label ? (label.parentElement.querySelector('input, select, textarea') || label.nextElementSibling?.querySelector('input')) : null;
+        };
+
+        // Coletando TODOS os campos do seu formulário, incluindo os que eu havia removido por engano.
+        formData.append('nome', findInputByLabel('Nome do Produto')?.value || '');
+        formData.append('preco', findInputByLabel('Preço (R$)')?.value || '');
+        formData.append('preco_promocional', findInputByLabel('Preço Promocional')?.value || '');
+        formData.append('categoria', findInputByLabel('Categoria')?.value || '');
+        formData.append('sku', findInputByLabel('Código do Produto')?.value || '');
+        formData.append('tags', findInputByLabel('Tags')?.value || '');
+        formData.append('descricao', findInputByLabel('Descrição')?.value || '');
+        
+        // Coletando o estado dos toggles (ativo/inativo, promoção)
+        const statusToggle = findInputByLabel('Status');
+        formData.append('disponivel', statusToggle ? statusToggle.checked : false);
+        const promocaoToggle = findInputByLabel('Promoção');
+        formData.append('em_promocao', promocaoToggle ? promocaoToggle.checked : false);
+
+        // Coletando os campos de Informações Adicionais
+        formData.append('tempo_preparo', findInputByLabel('Tempo de Preparo')?.value || '');
+        formData.append('disponibilidade_horario', findInputByLabel('Disponibilidade')?.value || '');
+        
+        // Anexando o arquivo de imagem
+        if (fileInput.files.length > 0) {
+            formData.append('imagem', fileInput.files[0]);
+        }
+
+        const result = await addProduct(formData);
+
+        if (result.error) {
+            alert(`Erro ao salvar: ${result.error.message}`);
+        } else {
+            alert('Produto salvo com sucesso!');
+            document.getElementById('productDetailModal').classList.add('hidden');
+            await carregarProdutos(); // Sua função para recarregar a lista.
+        }
+    };
+
     if (formAdicionarProduto) {
-        formAdicionarProduto.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            // Coleta todos os dados do formulário usando as novas IDs
-            const dadosProduto = {
-                nome: document.getElementById('produtoNome').value,
-                descricao: document.getElementById('produtoDescricao').value,
-                preco: document.getElementById('produtoPreco').value,
-                categoria: document.getElementById('produtoCategoria').value,
-                url_imagem: document.getElementById('produtoImagemURL').value
-                // NOTA: preço promocional e outros serão adicionados no futuro, quando o backend estiver pronto
-            };
-
-            console.log('Enviando para o backend:', dadosProduto);
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/produtos`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(dadosProduto)
-                });
-                if (!response.ok) {
-                    const erro = await response.json();
-                    throw new Error(erro.error || 'Falha ao adicionar o produto.');
-                }
-                
-                formAdicionarProduto.reset();
-                hideModal();
-                await carregarProdutos();
-                alert('Produto adicionado com sucesso!');
-            } catch (error) {
-                console.error('Erro ao adicionar produto:', error);
-                alert(`Erro: ${error.message}`);
-            }
-        });
+        formAdicionarProduto.addEventListener('submit', handleAdicionarProduto);
     }
 
     carregarProdutos();
 });
+
+// Este código seria adicionado ao seu arquivo produtos.js
+
+// --- CONTROLE DO MODAL DE CATEGORIAS ---
+const manageCategoriesBtn = document.getElementById('manageCategoriesBtn');
+const categoryModal = document.getElementById('categoryManagerModal');
+const closeCategoryModalBtn = document.getElementById('closeCategoryModal');
+const addCategoryBtn = document.getElementById('addCategoryBtn');
+const newCategoryInput = document.getElementById('newCategoryName');
+const categoryList = document.getElementById('categoryList');
+
+// Função para abrir o modal de categorias
+if (manageCategoriesBtn && categoryModal) {
+    manageCategoriesBtn.addEventListener('click', () => {
+        categoryModal.classList.remove('hidden');
+        // Futuramente, aqui chamaríamos a função para carregar as categorias da API
+        // loadCategories(); 
+    });
+}
+
+// Função para fechar o modal de categorias
+if (closeCategoryModalBtn && categoryModal) {
+    closeCategoryModalBtn.addEventListener('click', () => {
+        categoryModal.classList.add('hidden');
+    });
+}
+
+// Função para adicionar uma nova categoria (simulação)
+if (addCategoryBtn && newCategoryInput && categoryList) {
+    addCategoryBtn.addEventListener('click', () => {
+        const categoryName = newCategoryInput.value.trim();
+        if (categoryName === '') {
+            alert('Por favor, digite um nome para a categoria.');
+            return;
+        }
+        
+        // Simulação: Adiciona o item na lista da tela
+        const newListItem = document.createElement('li');
+        newListItem.className = 'flex justify-between items-center bg-gray-100 p-2 rounded-md';
+        newListItem.innerHTML = `
+            <span>${categoryName}</span>
+            <button class="text-gray-400 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+        `;
+        categoryList.appendChild(newListItem);
+        
+        // Limpa o campo de input
+        newCategoryInput.value = '';
+
+        // Futuramente, aqui chamaríamos a API para salvar a nova categoria no banco
+        // await api_addCategory(categoryName);
+        console.log(`Simulação: Categoria "${categoryName}" adicionada.`);
+    });
+}

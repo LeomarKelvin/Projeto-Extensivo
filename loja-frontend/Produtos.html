@@ -1067,286 +1067,325 @@
 
                     <!-- Product Details Form -->
                     <div class="md:col-span-2">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
-                                <input type="text" value="X-Tudo"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            </div>
+                        <form id="productForm">
+                            <input type="hidden" id="produtoId" name="id">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
-                                <input type="text" value="28.90"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            </div>
+                                <div class="col-span-2">
+                                    <label for="produtoNome" class="block text-sm font-medium text-gray-700 mb-1">Nome
+                                        do Produto</label>
+                                    <input type="text" id="produtoNome" name="nome"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Preço Promocional
-                                    (R$)</label>
-                                <input type="text" value="24.90"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            </div>
+                                <div>
+                                    <label for="produtoPreco" class="block text-sm font-medium text-gray-700 mb-1">Preço
+                                        (R$)</label>
+                                    <input type="number" step="0.01" id="produtoPreco" name="preco"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                                <select
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                                    <option>Lanches</option>
-                                    <option>Bebidas</option>
-                                    <option>Sobremesas</option>
-                                    <option>Acompanhamentos</option>
-                                    <option>Combos</option>
-                                </select>
-                            </div>
+                                <div>
+                                    <label for="produtoPrecoPromocional"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Preço Promocional
+                                        (R$)</label>
+                                    <input type="number" step="0.01" id="produtoPrecoPromocional"
+                                        name="preco_promocional"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Código do Produto</label>
-                                <input type="text" value="1234"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            </div>
+                                <div>
+                                    <label for="produtoCategoria"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                                    <select id="produtoCategoria" name="categoria_id"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                        <option value="">Carregando categorias...</option>
+                                    </select>
+                                </div>
 
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-                                <input type="text" value="Lanches, Destaque"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                                <p class="text-xs text-gray-500 mt-1">Separe as tags por vírgulas</p>
-                            </div>
+                                <div>
+                                    <label for="produtoCodigo"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Código do Produto
+                                        (SKU)</label>
+                                    <input type="text" id="produtoCodigo" name="sku"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                </div>
 
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                                <textarea rows="3"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">Hambúrguer artesanal com queijo, bacon, ovo, alface, tomate e molho especial.</textarea>
-                            </div>
+                                <div class="col-span-2">
+                                    <button id="importExportBtn"
+                                        class="btn-outline py-2 px-4 rounded-lg mr-3 flex items-center">
+                                    </button>
+                                    <button id="manageCategoriesBtn"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                        <i class="fas fa-tags mr-2"></i>
+                                        <span>Gerenciar Categorias</span>
+                                    </button>
+                                </div>
 
-                            <div class="col-span-2">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <label class="mr-2 text-sm font-medium text-gray-700">Status</label>
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" checked="">
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                        <span class="ml-2 text-sm text-green-600">Ativo</span>
-                                    </div>
+                                <div class="col-span-2">
+                                    <label for="produtoTags"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                                    <input type="text" id="produtoTags" name="tags"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                    <p class="text-xs text-gray-500 mt-1">Separe as tags por vírgulas</p>
+                                </div>
 
-                                    <div class="flex items-center">
-                                        <label class="mr-2 text-sm font-medium text-gray-700">Promoção</label>
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" checked="">
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                        <span class="ml-2 text-sm text-yellow-600">Ativada</span>
+                                <div class="col-span-2">
+                                    <label for="produtoDescricao"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                                    <textarea id="produtoDescricao" name="descricao" rows="3"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"></textarea>
+                                </div>
+
+                                <div class="col-span-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <label class="mr-2 text-sm font-medium text-gray-700">Status</label>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="produtoStatus" name="disponivel" checked>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                            <span class="ml-2 text-sm text-green-600">Ativo</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <label class="mr-2 text-sm font-medium text-gray-700">Promoção</label>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="produtoPromocao" name="em_promocao">
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                            <span class="ml-2 text-sm">Desativada</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Tabs for additional information -->
-                        <div class="mt-6">
-                            <div class="border-b border-gray-200">
-                                <nav class="-mb-px flex">
-                                    <a href="#"
-                                        class="border-yellow-500 text-yellow-600 border-b-2 py-2 px-4 text-sm font-medium">
-                                        Informações Adicionais
-                                    </a>
-                                    <a href="#"
-                                        class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-2 px-4 text-sm font-medium">
-                                        Variações
-                                    </a>
-                                    <a href="#"
-                                        class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-2 px-4 text-sm font-medium">
-                                        Informações Nutricionais
-                                    </a>
-                                </nav>
+                            <div class="mt-6 flex justify-end space-x-3">
+                                <button type="button"
+                                    class="btn-cancelar btn-outline py-2 px-4 rounded-lg">Cancelar</button>
+                                <button type="submit" class="btn-primary py-2 px-4 rounded-lg">Salvar</button>
                             </div>
+                        </form>
+                    </div>
 
-                            <div class="py-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Import/Export Modal (Hidden by default) -->
+                    <div id="importExportModal" class="modal-backdrop hidden">
+                        <div class="modal-content w-full max-w-lg">
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-bold">Importar/Exportar Produtos</h2>
+                                    <button id="closeImportExportModal" class="text-gray-500 hover:text-gray-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <div class="mb-6">
+                                    <h3 class="text-lg font-medium mb-3">Exportar Produtos</h3>
+                                    <p class="text-gray-600 text-sm mb-4">Baixe seu catálogo de produtos em formato CSV
+                                        para edição em
+                                        massa.</p>
+                                    <button
+                                        class="btn-primary py-2 px-4 rounded-lg w-full flex items-center justify-center">
+                                        <i class="fas fa-download mr-2"></i>
+                                        <span>Exportar Catálogo (CSV)</span>
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-lg font-medium mb-3">Importar Produtos</h3>
+                                    <p class="text-gray-600 text-sm mb-4">Faça upload de um arquivo CSV para atualizar
+                                        ou adicionar
+                                        múltiplos produtos de uma vez.</p>
+
+                                    <div class="image-upload-area mb-4">
+                                        <i class="fas fa-file-csv text-3xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm text-gray-500">Arraste e solte seu arquivo CSV ou clique para
+                                            fazer upload</p>
+                                        <input type="file" class="hidden" accept=".csv">
+                                    </div>
+
+                                    <button
+                                        class="btn-outline py-2 px-4 rounded-lg w-full flex items-center justify-center"
+                                        disabled="">
+                                        <i class="fas fa-upload mr-2"></i>
+                                        <span>Importar Produtos</span>
+                                    </button>
+
+                                    <p class="text-xs text-gray-500 mt-3">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Precisa de ajuda? <a href="#" class="text-yellow-600 hover:underline">Baixe
+                                            nosso modelo de
+                                            CSV</a> ou consulte o <a href="#"
+                                            class="text-yellow-600 hover:underline">guia de
+                                            importação</a>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Edit Modal (Hidden by default) -->
+                    <div id="bulkEditModal" class="modal-backdrop hidden">
+                        <div class="modal-content w-full max-w-2xl">
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-bold">Edição em Massa</h2>
+                                    <button id="closeBulkEditModal" class="text-gray-500 hover:text-gray-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <div class="mb-4">
+                                    <p class="text-gray-600">Você está editando <span class="font-bold">3
+                                            produtos</span> selecionados.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tempo de Preparo
-                                            (min)</label>
-                                        <input type="number" value="15"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ajustar
+                                            Preço</label>
+                                        <div class="flex">
+                                            <select
+                                                class="rounded-l-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                                <option>Aumentar</option>
+                                                <option>Diminuir</option>
+                                                <option>Definir como</option>
+                                            </select>
+                                            <input type="text" placeholder="0.00"
+                                                class="flex-1 border-l-0 border-r-0 border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                            <select
+                                                class="rounded-r-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                                <option>R$ (valor)</option>
+                                                <option>% (porcentagem)</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1">Disponibilidade</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
                                         <select
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                                            <option>Sempre disponível</option>
-                                            <option>Disponível em horários específicos</option>
-                                            <option>Disponível em dias específicos</option>
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                            <option>Não alterar</option>
+                                            <option>Lanches</option>
+                                            <option>Bebidas</option>
+                                            <option>Sobremesas</option>
+                                            <option>Acompanhamentos</option>
+                                            <option>Combos</option>
                                         </select>
                                     </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                        <select
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                            <option>Não alterar</option>
+                                            <option>Ativar</option>
+                                            <option>Desativar</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Promoção</label>
+                                        <select
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                            <option>Não alterar</option>
+                                            <option>Aplicar promoção</option>
+                                            <option>Remover promoção</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Desconto
+                                            Promocional</label>
+                                        <div class="flex">
+                                            <input type="text" placeholder="0.00"
+                                                class="flex-1 rounded-l-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                            <select
+                                                class="rounded-r-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                                <option>R$ (valor)</option>
+                                                <option>% (porcentagem)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tags (adicionar a
+                                            todos)</label>
+                                        <input type="text" placeholder="Separe as tags por vírgulas"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end space-x-3">
+                                    <button class="btn-outline py-2 px-4 rounded-lg">Cancelar</button>
+                                    <button class="btn-primary py-2 px-4 rounded-lg">Aplicar Alterações</button>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="mt-6 flex justify-end space-x-3">
-                            <button class="btn-outline py-2 px-4 rounded-lg">Cancelar</button>
-                            <button class="btn-primary py-2 px-4 rounded-lg">Salvar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Import/Export Modal (Hidden by default) -->
-    <div id="importExportModal" class="modal-backdrop hidden">
-        <div class="modal-content w-full max-w-lg">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold">Importar/Exportar Produtos</h2>
-                    <button id="closeImportExportModal" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div class="mb-6">
-                    <h3 class="text-lg font-medium mb-3">Exportar Produtos</h3>
-                    <p class="text-gray-600 text-sm mb-4">Baixe seu catálogo de produtos em formato CSV para edição em
-                        massa.</p>
-                    <button class="btn-primary py-2 px-4 rounded-lg w-full flex items-center justify-center">
-                        <i class="fas fa-download mr-2"></i>
-                        <span>Exportar Catálogo (CSV)</span>
-                    </button>
-                </div>
-
-                <div>
-                    <h3 class="text-lg font-medium mb-3">Importar Produtos</h3>
-                    <p class="text-gray-600 text-sm mb-4">Faça upload de um arquivo CSV para atualizar ou adicionar
-                        múltiplos produtos de uma vez.</p>
-
-                    <div class="image-upload-area mb-4">
-                        <i class="fas fa-file-csv text-3xl text-gray-400 mb-2"></i>
-                        <p class="text-sm text-gray-500">Arraste e solte seu arquivo CSV ou clique para fazer upload</p>
-                        <input type="file" class="hidden" accept=".csv">
                     </div>
 
-                    <button class="btn-outline py-2 px-4 rounded-lg w-full flex items-center justify-center"
-                        disabled="">
-                        <i class="fas fa-upload mr-2"></i>
-                        <span>Importar Produtos</span>
-                    </button>
+                    <div id="categoryManagerModal" class="modal-backdrop hidden">
+                        <div class="modal-content w-full max-w-md bg-white rounded-lg shadow-xl">
+                            <div class="p-6">
+                                <div class="flex justify-between items-center pb-4 border-b">
+                                    <h2 class="text-xl font-bold text-gray-800">Gerenciar Categorias</h2>
+                                    <button id="closeCategoryModal" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times text-2xl"></i>
+                                    </button>
+                                </div>
 
-                    <p class="text-xs text-gray-500 mt-3">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Precisa de ajuda? <a href="#" class="text-yellow-600 hover:underline">Baixe nosso modelo de
-                            CSV</a> ou consulte o <a href="#" class="text-yellow-600 hover:underline">guia de
-                            importação</a>.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+                                <div class="mt-6">
+                                    <label for="newCategoryName"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Adicionar nova
+                                        categoria</label>
+                                    <form id="addCategoryForm" class="flex">
+                                        <input type="text" id="newCategoryName" name="nome_categoria"
+                                            placeholder="Ex: Bebidas Geladas"
+                                            class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                            required>
+                                        <button type="submit"
+                                            class="btn-primary px-4 rounded-r-md font-semibold">Adicionar</button>
+                                    </form>
+                                </div>
 
-    <!-- Bulk Edit Modal (Hidden by default) -->
-    <div id="bulkEditModal" class="modal-backdrop hidden">
-        <div class="modal-content w-full max-w-2xl">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold">Edição em Massa</h2>
-                    <button id="closeBulkEditModal" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div class="mb-4">
-                    <p class="text-gray-600">Você está editando <span class="font-bold">3 produtos</span> selecionados.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Ajustar Preço</label>
-                        <div class="flex">
-                            <select
-                                class="rounded-l-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                                <option>Aumentar</option>
-                                <option>Diminuir</option>
-                                <option>Definir como</option>
-                            </select>
-                            <input type="text" placeholder="0.00"
-                                class="flex-1 border-l-0 border-r-0 border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            <select
-                                class="rounded-r-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                                <option>R$ (valor)</option>
-                                <option>% (porcentagem)</option>
-                            </select>
+                                <div class="mt-6">
+                                    <h3 class="text-base font-semibold text-gray-600 mb-3">Categorias existentes</h3>
+                                    <div class="max-h-64 overflow-y-auto border rounded-lg">
+                                        <ul id="categoryList" class="divide-y divide-gray-200">
+                                            <li class="p-3 text-center text-gray-500">Carregando categorias...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                        <select
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            <option>Não alterar</option>
-                            <option>Lanches</option>
-                            <option>Bebidas</option>
-                            <option>Sobremesas</option>
-                            <option>Acompanhamentos</option>
-                            <option>Combos</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            <option>Não alterar</option>
-                            <option>Ativar</option>
-                            <option>Desativar</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Promoção</label>
-                        <select
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            <option>Não alterar</option>
-                            <option>Aplicar promoção</option>
-                            <option>Remover promoção</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Desconto Promocional</label>
-                        <div class="flex">
-                            <input type="text" placeholder="0.00"
-                                class="flex-1 rounded-l-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                            <select
-                                class="rounded-r-lg border border-gray-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                                <option>R$ (valor)</option>
-                                <option>% (porcentagem)</option>
-                            </select>
+                    <div id="deleteCategoryConfirmModal" class="modal-backdrop hidden">
+                        <div class="modal-content w-full max-w-sm bg-white rounded-lg shadow-xl">
+                            <div class="p-6 text-center">
+                                <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Confirmar Exclusão</h3>
+                                <p class="text-gray-600 mb-6">
+                                    Tem certeza que deseja excluir a categoria "<span id="categoryNameToDelete"
+                                        class="font-bold"></span>"?
+                                    Esta ação não pode ser desfeita.
+                                </p>
+                                <div class="flex justify-center space-x-4">
+                                    <button id="cancelDeleteBtn"
+                                        class="btn-outline py-2 px-6 rounded-lg">Cancelar</button>
+                                    <button id="confirmDeleteBtn"
+                                        class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700">Excluir</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tags (adicionar a todos)</label>
-                        <input type="text" placeholder="Separe as tags por vírgulas"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent">
-                    </div>
-                </div>
+                    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+                    <script>
+                        feather.replace();
+                    </script>
 
-                <div class="flex justify-end space-x-3">
-                    <button class="btn-outline py-2 px-4 rounded-lg">Cancelar</button>
-                    <button class="btn-primary py-2 px-4 rounded-lg">Aplicar Alterações</button>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <script type="module" src="js/pages/produtos.js"></script>
 
-    
-
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script>
-        feather.replace();
-    </script>
-
-    <script src="js/pages/produtos.js"></script>
 </body>
 
 </html>
