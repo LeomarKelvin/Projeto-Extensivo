@@ -40,7 +40,8 @@ export default function HeroSection({ tenant }: HeroSectionProps) {
         <div className="max-w-4xl mx-auto text-center">
           {/* Main Heading */}
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            Peça e receba em{' '}
+            Peça e receba em
+            <br />
             <span className="text-tenant-primary">{tenant.name}</span>
           </h1>
           
