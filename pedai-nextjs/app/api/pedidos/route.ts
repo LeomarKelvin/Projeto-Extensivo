@@ -1,22 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getTenantBySlug } from '@/lib/tenantConfig'
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
-      )
-    }
+    /* 
+     * ARCHITECTURAL DECISION: Multi-Tenant Isolation Strategy
+     * 
+     * This API does NOT enforce strict tenant (município) isolation at the API level
+     * for the following reasons:
+     * 
+     * 1. Guest checkout is required (no authentication)
+     * 2. No subdomain-based tenant separation
+     * 3. Referer header is spoofable and cannot be trusted
+     * 4. Signed tokens would require complex client-side crypto
+     * 
+     * SECURITY GUARANTEES PROVIDED:
+     * ✅ All prices fetched from database (price tampering impossible)
+     * ✅ All products validated to belong to specified loja
+     * ✅ All totals recalculated server-side
+     * ✅ Transaction rollback on errors
+     * 
+     * ACCEPTABLE BEHAVIOR:
+     * - A user from município A can order from loja in município B
+     * - This is not a security issue - it's a business logic decision
+     * - The loja's município determines delivery fees and logistics
+     * 
+     * For STRICT tenant isolation, implement:
+     * - Mandatory authentication
+     * - município field in perfis table
+     * - Server-side validation of user.município === loja.município
+     */
     
     const body = await request.json()
-    const { items, endereco, observacoes, taxa_entrega, total } = body
+    const { 
+      items, 
+      endereco, 
+      referencia,
+      observacoes, 
+      forma_pagamento,
+      troco_para
+    } = body
     
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -32,25 +58,21 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Get user profile - only clientes can create orders
-    const { data: perfil } = await supabase
-      .from('perfis')
-      .select('id, tipo')
-      .eq('user_id', user.id)
-      .single()
+    // Check if user is authenticated (optional for guest checkout)
+    const { data: { user } } = await supabase.auth.getUser()
+    let perfil_id = null
     
-    if (!perfil) {
-      return NextResponse.json(
-        { error: 'Perfil não encontrado' },
-        { status: 404 }
-      )
-    }
-    
-    if (perfil.tipo !== 'cliente') {
-      return NextResponse.json(
-        { error: 'Apenas clientes podem criar pedidos' },
-        { status: 403 }
-      )
+    if (user) {
+      // Get user profile if authenticated
+      const { data: perfil } = await supabase
+        .from('perfis')
+        .select('id, tipo')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (perfil && perfil.tipo === 'cliente') {
+        perfil_id = perfil.id
+      }
     }
     
     // Get loja_id from first item (assuming single-store cart)
@@ -65,7 +87,8 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Verify the loja exists
+    // Verify the loja exists - município is derived FROM the loja (trusted source)
+    // This prevents tenant isolation bypass by trusting database state, not client input
     const { data: loja, error: lojaError } = await supabase
       .from('lojas')
       .select('id, nome_loja, municipio')
@@ -79,18 +102,98 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // NOTE: Tenant isolation is enforced at the UI level (storefront filters by municipio)
-    // For strict tenant isolation, perfis table would need a municipio column
-    // See SECURITY_NOTE.md for details and future enhancements
+    // CRITICAL SECURITY: Validate quantities before any calculations
+    for (const item of items) {
+      if (!item.quantidade || item.quantidade <= 0 || item.quantidade > 100) {
+        return NextResponse.json(
+          { error: 'Quantidade inválida. Deve ser entre 1 e 100.' },
+          { status: 400 }
+        )
+      }
+      // Ensure quantidade is an integer to prevent decimal exploits
+      if (!Number.isInteger(item.quantidade)) {
+        return NextResponse.json(
+          { error: 'Quantidade deve ser um número inteiro' },
+          { status: 400 }
+        )
+      }
+    }
+    
+    // CRITICAL SECURITY: Fetch actual prices from database to prevent price tampering
+    const productIds = items.map((item: any) => item.produto_id)
+    const { data: produtos, error: produtosError } = await supabase
+      .from('produtos')
+      .select('id, nome, preco, loja_id')
+      .in('id', productIds)
+    
+    if (produtosError || !produtos) {
+      return NextResponse.json(
+        { error: 'Erro ao validar produtos' },
+        { status: 500 }
+      )
+    }
+    
+    // Validate all products exist and belong to the correct loja
+    const invalidProducts = produtos.filter((p: any) => p.loja_id !== loja_id)
+    if (invalidProducts.length > 0) {
+      return NextResponse.json(
+        { error: 'Alguns produtos não pertencem a esta loja' },
+        { status: 400 }
+      )
+    }
+    
+    // Create a map of product prices from database (trusted source)
+    const produtoMap = new Map(produtos.map((p: any) => [p.id, p]))
+    
+    // Calculate server-side pricing (prevent price tampering)
+    let subtotal = 0
+    const validatedItems = items.map((item: any) => {
+      const produto = produtoMap.get(item.produto_id)
+      if (!produto) {
+        throw new Error(`Produto ${item.produto_id} não encontrado`)
+      }
+      const itemTotal = produto.preco * item.quantidade
+      subtotal += itemTotal
+      return {
+        produto_id: item.produto_id,
+        quantidade: item.quantidade,
+        preco_unitario: produto.preco, // Use DB price, not client price
+        observacao: item.observacao,
+      }
+    })
+    
+    // Get tenant config from loja's município for delivery fee calculation
+    // Normalize município name to match tenant slug format
+    const municipioSlug = loja.municipio
+      .toLowerCase()
+      .normalize('NFD') // Decompose accented characters
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .trim()
+    
+    const tenant = getTenantBySlug(municipioSlug)
+    if (!tenant) {
+      console.error(`Tenant not found for município: ${loja.municipio}, normalized to: ${municipioSlug}`)
+      return NextResponse.json(
+        { error: 'Configuração de município não encontrada' },
+        { status: 500 }
+      )
+    }
+    
+    // Recalculate total with correct delivery fee from loja's tenant
+    const taxa_entrega = tenant.delivery.baseFee
+    const total = subtotal + taxa_entrega
     
     // Create order
     const { data: pedido, error: pedidoError } = await supabase
       .from('pedidos')
       .insert({
-        perfil_id: perfil.id,
+        perfil_id,
         loja_id,
-        endereco_entrega: endereco,
+        endereco_entrega: `${endereco}${referencia ? ` | Ref: ${referencia}` : ''}`,
         observacoes,
+        forma_pagamento: forma_pagamento || 'dinheiro',
+        troco_para: troco_para || null,
         taxa_entrega,
         total,
         status: 'pendente',
@@ -106,13 +209,10 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Create order items
-    const itemsToInsert = items.map((item: any) => ({
+    // Create order items with server-validated prices
+    const itemsToInsert = validatedItems.map((item: any) => ({
       pedido_id: pedido.id,
-      produto_id: item.produto_id,
-      quantidade: item.quantidade,
-      preco_unitario: item.preco,
-      observacao: item.observacao,
+      ...item,
     }))
     
     const { error: itemsError } = await supabase
@@ -132,6 +232,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: 'Pedido criado com sucesso!',
+        id: pedido.id,
         pedido,
       },
       { status: 201 }

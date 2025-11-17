@@ -11,51 +11,17 @@ interface CarrinhoContentProps {
 
 export default function CarrinhoContent({ tenant }: CarrinhoContentProps) {
   const router = useRouter()
-  const { items, removeItem, updateQuantity, total, clearCart } = useCart()
-  const [endereco, setEndereco] = useState('')
-  const [observacoes, setObservacoes] = useState('')
+  const { items, removeItem, updateQuantity, total } = useCart()
 
   const taxaEntrega = tenant.delivery.baseFee
   const totalComEntrega = total + taxaEntrega
 
-  const handleFinalizarPedido = async () => {
-    if (!endereco.trim()) {
-      alert('Por favor, informe o endereço de entrega')
-      return
-    }
-
+  const handleIrParaCheckout = () => {
     if (total < tenant.delivery.minOrder) {
       alert(`O pedido mínimo é de R$ ${tenant.delivery.minOrder.toFixed(2)}`)
       return
     }
-
-    try {
-      const response = await fetch('/api/pedidos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items,
-          endereco,
-          observacoes,
-          taxa_entrega: taxaEntrega,
-          total: totalComEntrega,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao criar pedido')
-      }
-
-      alert('Pedido realizado com sucesso!')
-      clearCart()
-      router.push(`/${tenant.slug}`)
-    } catch (error: any) {
-      alert('Erro ao finalizar pedido: ' + error.message)
-    }
+    router.push(`/${tenant.slug}/checkout`)
   }
 
   if (items.length === 0) {
@@ -138,39 +104,9 @@ export default function CarrinhoContent({ tenant }: CarrinhoContentProps) {
             <div className="bg-gray-800 rounded-xl p-6 sticky top-24">
               <h2 className="text-2xl font-bold text-white mb-6">Resumo do Pedido</h2>
 
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label htmlFor="endereco" className="block text-sm font-medium text-gray-300 mb-2">
-                    Endereço de Entrega
-                  </label>
-                  <input
-                    id="endereco"
-                    type="text"
-                    value={endereco}
-                    onChange={(e) => setEndereco(e.target.value)}
-                    placeholder="Rua, número, bairro..."
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-tenant-primary focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="observacoes" className="block text-sm font-medium text-gray-300 mb-2">
-                    Observações (opcional)
-                  </label>
-                  <textarea
-                    id="observacoes"
-                    value={observacoes}
-                    onChange={(e) => setObservacoes(e.target.value)}
-                    placeholder="Ex: sem cebola, bem passado..."
-                    rows={3}
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-tenant-primary focus:border-transparent resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3 border-t border-gray-700 pt-4">
+              <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-400">
-                  <span>Subtotal</span>
+                  <span>Subtotal ({items.reduce((sum, item) => sum + item.quantidade, 0)} itens)</span>
                   <span>R$ {total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-400">
@@ -184,17 +120,27 @@ export default function CarrinhoContent({ tenant }: CarrinhoContentProps) {
               </div>
 
               {total < tenant.delivery.minOrder && (
-                <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500 rounded-lg text-yellow-500 text-sm">
-                  Pedido mínimo: R$ {tenant.delivery.minOrder.toFixed(2)}
+                <div className="p-3 bg-yellow-500/10 border border-yellow-500 rounded-lg text-yellow-500 text-sm mb-4">
+                  ⚠️ Pedido mínimo: R$ {tenant.delivery.minOrder.toFixed(2)}
+                  <div className="mt-1 text-xs">
+                    Faltam R$ {(tenant.delivery.minOrder - total).toFixed(2)}
+                  </div>
                 </div>
               )}
 
               <button
-                onClick={handleFinalizarPedido}
+                onClick={handleIrParaCheckout}
                 disabled={total < tenant.delivery.minOrder}
-                className="w-full mt-6 py-4 bg-tenant-primary text-tenant-secondary font-bold text-lg rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-tenant-primary text-tenant-secondary font-bold text-lg rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Finalizar Pedido
+                Ir para Checkout
+              </button>
+
+              <button
+                onClick={() => router.push(`/${tenant.slug}/lojas`)}
+                className="w-full mt-3 py-3 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Adicionar Mais Itens
               </button>
             </div>
           </div>
