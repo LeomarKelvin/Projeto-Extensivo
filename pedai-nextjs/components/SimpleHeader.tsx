@@ -82,7 +82,7 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
               Lojas
             </Link>
             <Link 
-              href="/tenants"
+              href="/"
               className="transition-colors text-white"
               style={{ color: 'white' }}
               onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
@@ -126,7 +126,7 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
               Lojas
             </Link>
             <Link 
-              href="/tenants"
+              href="/"
               className="text-white hover:opacity-80 transition-opacity py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
