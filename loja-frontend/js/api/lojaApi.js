@@ -1,6 +1,6 @@
 import { supabase } from '../../frontend/js/shared/auth.js';
 
-const API_URL = `${window.location.origin}/api/loja-dashboard`;
+const API_URL = `${window.location.origin}/api/dashboard/loja`;
 
 export async function fetchPedidosDaLoja() {
     const { data: { session } } = await supabase.auth.getSession();

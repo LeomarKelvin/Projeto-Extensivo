@@ -72,6 +72,13 @@ The following environment variables are configured in `backend/.env`:
 - `PORT`: Server port (5000)
 - `NOME_MUNICIPIO`: Target city name ("Alagoa Nova")
 
+**⚠️ SECURITY WARNING**: The current Supabase keys in `backend/.env` were imported from the original repository and should be rotated immediately. The service role key provides admin access to the database and should never be committed to version control. 
+
+**Recommended Actions**:
+1. Rotate all Supabase keys in the Supabase dashboard
+2. Store new keys in Replit Secrets (not in `.env` file)
+3. Update code to read from environment variables provided by Replit
+
 ## Running the Application
 
 ### Development
