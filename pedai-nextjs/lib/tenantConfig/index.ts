@@ -101,3 +101,8 @@ export function getAllTenants(): TenantConfig[] {
 export function isTenantValid(slug: string): boolean {
   return slug in tenantConfigs && tenantConfigs[slug as TenantSlug].enabled
 }
+
+export function getTenantBySlug(slug: string): TenantConfig | null {
+  if (!isTenantValid(slug)) return null
+  return tenantConfigs[slug as TenantSlug]
+}

@@ -3,6 +3,7 @@
 import { ReactNode, useEffect } from 'react'
 import SimpleHeader from './SimpleHeader'
 import Footer from './Footer'
+import CartButton from './CartButton'
 import type { TenantConfig } from '@/lib/types/tenant'
 
 interface ClientLayoutProps {
@@ -10,13 +11,15 @@ interface ClientLayoutProps {
   tenant?: TenantConfig
   showHeader?: boolean
   showFooter?: boolean
+  showCart?: boolean
 }
 
 export default function ClientLayout({ 
   children, 
   tenant,
   showHeader = true,
-  showFooter = true 
+  showFooter = true,
+  showCart = true
 }: ClientLayoutProps) {
   // Inject CSS variables into document root for tenant theming
   useEffect(() => {
@@ -39,6 +42,7 @@ export default function ClientLayout({
         {children}
       </main>
       {showFooter && <Footer tenant={tenant} />}
+      {showCart && <CartButton tenant={tenant} />}
     </div>
   )
 }
