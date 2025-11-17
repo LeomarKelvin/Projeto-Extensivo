@@ -24,12 +24,12 @@ interface LojasContentProps {
 
 const CATEGORIAS = [
   { id: 'todas', nome: 'Todas', icone: '🏪' },
-  { id: 'restaurante', nome: 'Restaurantes', icone: '🍔' },
-  { id: 'mercado', nome: 'Mercados', icone: '🛒' },
-  { id: 'farmacia', nome: 'Farmácias', icone: '💊' },
-  { id: 'padaria', nome: 'Padarias', icone: '🥖' },
-  { id: 'bebidas', nome: 'Bebidas', icone: '🍺' },
-  { id: 'outros', nome: 'Outros', icone: '📦' },
+  { id: 'Restaurantes', nome: 'Restaurantes', icone: '🍔' },
+  { id: 'Mercados', nome: 'Mercados', icone: '🛒' },
+  { id: 'Farmácias', nome: 'Farmácias', icone: '💊' },
+  { id: 'Padarias', nome: 'Padarias', icone: '🥖' },
+  { id: 'Bebidas', nome: 'Bebidas', icone: '🍺' },
+  { id: 'Outros', nome: 'Outros', icone: '📦' },
 ]
 
 export default function LojasContent({ tenant }: LojasContentProps) {
@@ -61,7 +61,7 @@ export default function LojasContent({ tenant }: LojasContentProps) {
 
   const lojasFiltradas = lojas.filter(loja => {
     const matchCategoria = categoriaAtiva === 'todas' || 
-      loja.categoria?.toLowerCase().includes(categoriaAtiva.toLowerCase())
+      (loja.categoria || '').trim().toLowerCase() === categoriaAtiva.toLowerCase()
     const matchBusca = !busca || 
       loja.nome_loja.toLowerCase().includes(busca.toLowerCase()) ||
       loja.descricao?.toLowerCase().includes(busca.toLowerCase())
