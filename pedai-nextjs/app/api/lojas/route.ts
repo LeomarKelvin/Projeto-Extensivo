@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('lojas')
       .select('*')
-      .eq('ativo', true)
       .eq('municipio', municipio)
     
     if (categoria && categoria !== 'todas') {

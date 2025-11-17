@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Verify the loja exists and is active
+    // Verify the loja exists
     const { data: loja, error: lojaError } = await supabase
       .from('lojas')
-      .select('id, nome_loja, municipio, ativo')
+      .select('id, nome_loja, municipio')
       .eq('id', loja_id)
       .single()
     
@@ -76,13 +76,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Loja não encontrada' },
         { status: 404 }
-      )
-    }
-    
-    if (!loja.ativo) {
-      return NextResponse.json(
-        { error: 'Loja não está ativa no momento' },
-        { status: 400 }
       )
     }
     
