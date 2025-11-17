@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/contexts/CartContext'
 import type { TenantConfig } from '@/lib/types/tenant'
+import { createClient } from '@/lib/supabase/client'
 
 interface CheckoutContentProps {
   tenant: TenantConfig
@@ -13,13 +14,33 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
   const router = useRouter()
   const { items, total, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        // Save current path to redirect back after login
+        sessionStorage.setItem('redirectAfterLogin', `/${tenant.slug}/checkout`)
+        router.push(`/${tenant.slug}/auth/login`)
+        return
+      }
+      
+      setCheckingAuth(false)
+    }
+    
+    checkAuth()
+  }, [router, tenant])
 
   // Redirect if cart is empty
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !checkingAuth) {
       router.push(`/${tenant.slug}/carrinho`)
     }
-  }, [items, router, tenant])
+  }, [items, router, tenant, checkingAuth])
 
   // Form state
   const [formData, setFormData] = useState({
@@ -102,6 +123,12 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
       const data = await response.json()
 
       if (!response.ok) {
+        // If 401 Unauthorized, redirect to login
+        if (response.status === 401) {
+          sessionStorage.setItem('redirectAfterLogin', `/${tenant.slug}/checkout`)
+          router.push(`/${tenant.slug}/auth/login`)
+          return
+        }
         throw new Error(data.error || 'Erro ao criar pedido')
       }
 
@@ -113,6 +140,17 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-tenant-primary mx-auto mb-4"></div>
+          <p className="text-gray-400">Verificando autenticação...</p>
+        </div>
+      </div>
+    )
   }
 
   if (items.length === 0) {

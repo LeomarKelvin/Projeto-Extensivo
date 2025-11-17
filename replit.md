@@ -63,15 +63,22 @@ Servidor Deriva: preços (DB), taxa entrega (config), total (calculado)
 Servidor Valida: quantidades, produtos, loja_id, tenant config
 ```
 
+**Autenticação**:
+- ✅ **Obrigatória para Pedidos**: Usuários devem fazer login antes de finalizar pedidos
+- ✅ **Verificação Client-Side**: Checkout redireciona para login se não autenticado
+- ✅ **Verificação Server-Side**: API retorna 401 se não autenticado
+- ✅ **Somente Clientes**: Apenas perfis do tipo 'cliente' podem criar pedidos
+
 **Trade-off Documentado**:
 - Cross-municipal ordering permitido (usuário de Alagoa Nova pode pedir de loja em Esperança)
 - Não é bug de segurança - é decisão de negócio documentada
-- Para isolamento estrito: requer autenticação + município em perfis
+- Para isolamento estrito: requer município em perfis (futura melhoria)
 
 **Resultado**:
 - 🔒 **Integridade Financeira**: 100% garantida (aprovado pelo architect)
 - 🛡️ **Exploit-Proof**: Todos vetores de ataque fechados
 - ✨ **UX Completo**: Fluxo end-to-end funcional
+- 🔑 **Autenticação Obrigatória**: Segurança de pedidos garantida
 - 🎯 **Production-Ready**: Pronto para MVP deployment
 
 ### ✅ CORREÇÃO CRÍTICA: Bug de "Carregando..." Infinito
@@ -226,14 +233,22 @@ pedai-nextjs/
 
 **URL**: https://jrskruadcwuytvjeqybh.supabase.co
 
-### Tabelas Principais
-- `usuarios` - Clientes, lojistas, entregadores, admin
-- `lojas` - Estabelecimentos por município
-- `produtos` - Catálogo de produtos
-- `pedidos` - Pedidos e tracking
-- `categorias` - Categorias de produtos/lojas
-- `avaliacoes` - Avaliações de lojas
-- `enderecos` - Endereços de entrega
+### Tabelas Criadas
+- ✅ `perfis` - Perfis de usuários (clientes, lojas, entregadores, admin)
+- ✅ `lojas` - Estabelecimentos por município (9 lojas de exemplo)
+- ✅ `produtos` - Catálogo de produtos (9 produtos de exemplo)
+- ✅ `categorias` - Categorias de produtos/lojas
+- ✅ `pedidos` - Pedidos com endereço, pagamento, status
+- ✅ `pedido_itens` - Itens dos pedidos
+- 📋 `avaliacoes` - Avaliações de lojas (planejado)
+- 📋 `enderecos` - Endereços salvos (planejado)
+
+### Schema Features
+- Foreign keys com CASCADE/SET NULL apropriados
+- Indexes para performance em queries comuns
+- Triggers automáticos para `updated_at`
+- Constraints de validação (status, forma_pagamento, etc.)
+- Check constraints para integridade de dados
 
 ## 🎨 Design System
 

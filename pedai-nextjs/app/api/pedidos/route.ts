@@ -6,34 +6,6 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     
-    /* 
-     * ARCHITECTURAL DECISION: Multi-Tenant Isolation Strategy
-     * 
-     * This API does NOT enforce strict tenant (município) isolation at the API level
-     * for the following reasons:
-     * 
-     * 1. Guest checkout is required (no authentication)
-     * 2. No subdomain-based tenant separation
-     * 3. Referer header is spoofable and cannot be trusted
-     * 4. Signed tokens would require complex client-side crypto
-     * 
-     * SECURITY GUARANTEES PROVIDED:
-     * ✅ All prices fetched from database (price tampering impossible)
-     * ✅ All products validated to belong to specified loja
-     * ✅ All totals recalculated server-side
-     * ✅ Transaction rollback on errors
-     * 
-     * ACCEPTABLE BEHAVIOR:
-     * - A user from município A can order from loja in município B
-     * - This is not a security issue - it's a business logic decision
-     * - The loja's município determines delivery fees and logistics
-     * 
-     * For STRICT tenant isolation, implement:
-     * - Mandatory authentication
-     * - município field in perfis table
-     * - Server-side validation of user.município === loja.município
-     */
-    
     const body = await request.json()
     const { 
       items, 
@@ -58,22 +30,38 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Check if user is authenticated (optional for guest checkout)
-    const { data: { user } } = await supabase.auth.getUser()
-    let perfil_id = null
+    // AUTHENTICATION REQUIRED: User must be logged in to create orders
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    if (user) {
-      // Get user profile if authenticated
-      const { data: perfil } = await supabase
-        .from('perfis')
-        .select('id, tipo')
-        .eq('user_id', user.id)
-        .single()
-      
-      if (perfil && perfil.tipo === 'cliente') {
-        perfil_id = perfil.id
-      }
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Autenticação necessária. Faça login para fazer pedidos.' },
+        { status: 401 }
+      )
     }
+    
+    // Get user profile - only clientes can create orders
+    const { data: perfil } = await supabase
+      .from('perfis')
+      .select('id, tipo')
+      .eq('user_id', user.id)
+      .single()
+    
+    if (!perfil) {
+      return NextResponse.json(
+        { error: 'Perfil não encontrado' },
+        { status: 404 }
+      )
+    }
+    
+    if (perfil.tipo !== 'cliente') {
+      return NextResponse.json(
+        { error: 'Apenas clientes podem criar pedidos' },
+        { status: 403 }
+      )
+    }
+    
+    const perfil_id = perfil.id
     
     // Get loja_id from first item (assuming single-store cart)
     const loja_id = items[0].loja_id
