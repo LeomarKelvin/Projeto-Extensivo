@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
   taxa_entrega DECIMAL(10,2) NOT NULL DEFAULT 5.00,
   subtotal DECIMAL(10,2),
   total DECIMAL(10,2) NOT NULL,
-  status VARCHAR(50) DEFAULT 'pendente' CHECK (status IN ('pendente', 'confirmado', 'preparando', 'saiu_entrega', 'entregue', 'cancelado')),
+  status VARCHAR(50) DEFAULT 'pendente' CHECK (status IN ('pendente', 'aceito', 'preparando', 'pronto', 'em_entrega', 'entregue', 'cancelado')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

@@ -52,17 +52,58 @@ export default function LojaDashboard() {
     const { data: lojaData } = await supabase
       .from('lojas')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('perfil_id', perfil.id)
       .single()
+
+    if (!lojaData) {
+      console.error('Loja não encontrada para o perfil')
+      router.push('/')
+      return
+    }
 
     setLoja(lojaData)
     
-    // Load stats (mock data for now)
+    // Load real stats from database
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayISO = today.toISOString()
+
+    // Count pedidos hoje
+    const { count: pedidosHojeCount } = await supabase
+      .from('pedidos')
+      .select('*', { count: 'exact', head: true })
+      .eq('loja_id', lojaData.id)
+      .gte('created_at', todayISO)
+
+    // Sum receita hoje
+    const { data: pedidosHoje } = await supabase
+      .from('pedidos')
+      .select('total')
+      .eq('loja_id', lojaData.id)
+      .gte('created_at', todayISO)
+      .not('status', 'eq', 'cancelado')
+
+    const receitaHoje = pedidosHoje?.reduce((sum, p) => sum + (p.total || 0), 0) || 0
+
+    // Count pendentes
+    const { count: pendentesCount } = await supabase
+      .from('pedidos')
+      .select('*', { count: 'exact', head: true })
+      .eq('loja_id', lojaData.id)
+      .in('status', ['pendente', 'aceito', 'preparando', 'pronto'])
+
+    // Count produtos ativos
+    const { count: produtosCount } = await supabase
+      .from('produtos')
+      .select('*', { count: 'exact', head: true })
+      .eq('loja_id', lojaData.id)
+      .eq('disponivel', true)
+
     setStats({
-      pedidosHoje: 12,
-      receitaHoje: 450.00,
-      pedidosPendentes: 3,
-      produtosAtivos: 25,
+      pedidosHoje: pedidosHojeCount || 0,
+      receitaHoje: receitaHoje,
+      pedidosPendentes: pendentesCount || 0,
+      produtosAtivos: produtosCount || 0,
     })
     
     setLoading(false)
