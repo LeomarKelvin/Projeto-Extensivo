@@ -1,0 +1,33 @@
+# Node modules
+node_modules/
+backend/node_modules/
+
+# Environment variables
+.env
+backend/.env
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Replit files
+.replit
+.cache/
+.config/
+.upm/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build files
+dist/
+build/
