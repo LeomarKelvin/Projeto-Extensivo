@@ -1,6 +1,6 @@
 import { supabase } from '../shared/auth.js'; // Importamos o supabase para pegar o token de login
 
-const API_URL = 'http://localhost:3000/api'; // O endereço do nosso backend
+const API_URL = `${window.location.origin}/api`; // O endereço do nosso backend
 
 export async function fetchPedidos() {
   try {

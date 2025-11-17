@@ -1,6 +1,6 @@
 import { getAuthToken } from '../shared/auth.js';
 
-const API_BASE_URL = 'http://localhost:3000/api/dashboard';
+const API_BASE_URL = `${window.location.origin}/api/dashboard`;
 
 async function fetchWithAuth(url, options = {}) {
     const token = getAuthToken();

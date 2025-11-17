@@ -122,7 +122,7 @@ async function carregarPedidosRecentes() {
     const nomeCliente = pedido.perfis ? pedido.perfis.nome_completo : 'Cliente Anônimo';
 
     try {
-        const response = await fetch('http://localhost:3000/api/dashboard/loja/pedidos-recentes', {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/pedidos-recentes`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -233,7 +233,7 @@ async function carregarTabelaDeProdutos() {
     tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Carregando produtos...</td></tr>';
 
     try {
-        const response = await fetch('http://localhost:3000/api/dashboard/loja/produtos', {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/produtos`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -294,7 +294,7 @@ async function carregarProdutosMaisVendidos() {
     if (!container) return;
 
     try {
-        const response = await fetch('http://localhost:3000/api/dashboard/loja/produtos-mais-vendidos', {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/produtos-mais-vendidos`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Falha ao buscar dados do servidor.');
@@ -342,7 +342,7 @@ async function carregarAvaliacoesRecentes() {
     if (!container) return;
 
     try {
-        const response = await fetch('http://localhost:3000/api/dashboard/loja/avaliacoes-recentes', {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/avaliacoes-recentes`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

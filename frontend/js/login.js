@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!email || !password) return showToast('Atenção', 'Por favor, preencha e-mail e senha.', 'error');
 
         try {
-            const response = await fetch('http://localhost:3000/api/perfil/login', {
+            const response = await fetch(`${window.location.origin}/api/perfil/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/perfil/register', {
+            const response = await fetch(`${window.location.origin}/api/perfil/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend),

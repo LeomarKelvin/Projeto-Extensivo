@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- LÓGICA DE DADOS (API) ---
     const produtosTabelaBody = document.querySelector('#listView tbody');
     const formAdicionarProduto = document.querySelector('#productDetailModal form');
-    const API_BASE_URL = 'http://localhost:3000/api/dashboard/loja';
+    const API_BASE_URL = `${window.location.origin}/api/dashboard/loja`;
     const token = localStorage.getItem('token');
 
     if (!produtosTabelaBody || !formAdicionarProduto) {

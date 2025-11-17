@@ -16,7 +16,7 @@ export async function fetchDashboardStats() {
         return null;
     }
     try {
-        const response = await fetch('http://localhost:3000/api/dashboard/loja/stats', {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/stats`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (handleAuthError(response)) return null;
@@ -33,7 +33,7 @@ export async function fetchSalesChartData(period = '7d') {
     const token = localStorage.getItem('userToken');
     if (!token) return null;
     try {
-        const response = await fetch(`http://localhost:3000/api/dashboard/loja/vendas?period=${period}`, {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/vendas?period=${period}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (handleAuthError(response)) return null;
@@ -50,7 +50,7 @@ export async function fetchRecentOrders() {
     const token = localStorage.getItem('userToken');
     if (!token) return null;
     try {
-        const response = await fetch('http://localhost:3000/api/dashboard/loja/pedidos-recentes', {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/pedidos-recentes`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (handleAuthError(response)) return null;
@@ -67,7 +67,7 @@ export async function fetchProdutosDaLoja() {
     const token = localStorage.getItem('userToken');
     if (!token) return null;
     try {
-        const response = await fetch('http://localhost:3000/api/dashboard/loja/produtos', {
+        const response = await fetch(`${window.location.origin}/api/dashboard/loja/produtos`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (handleAuthError(response)) return null;

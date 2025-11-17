@@ -10,7 +10,7 @@ const pedidosRoutes = require('./routes/pedidos');
 const lojaDashboardRoutes = require('./routes/lojaDashboard');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
   origin: '*',
@@ -29,10 +29,15 @@ app.use('/api/lojas', lojasRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/dashboard/loja', lojaDashboardRoutes);
 
+app.use('/clientes', express.static(path.join(__dirname, '../../frontend/Clientes')));
+app.use('/admin', express.static(path.join(__dirname, '../../frontend/Admin')));
+app.use('/loja', express.static(path.join(__dirname, '../../loja-frontend')));
+app.use('/js', express.static(path.join(__dirname, '../../frontend/js')));
+
 app.get('/', (req, res) => {
-  res.send('API do PedeAí funcionando!');
+  res.sendFile(path.join(__dirname, '../../frontend/Clientes/Inicio.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor rodando em 0.0.0.0:${PORT}`);
 });

@@ -1,6 +1,6 @@
 import { getAuthToken } from '../shared/auth.js';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = `${window.location.origin}/api`;
 
 /**
  * Adiciona um novo produto enviando os dados para a API.
