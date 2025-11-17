@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import type { TenantConfig } from '@/lib/types/tenant'
-import { createClient } from '@/lib/supabase/client'
 
 interface Loja {
   id: string
@@ -20,6 +19,7 @@ interface Loja {
 
 interface LojasContentProps {
   tenant: TenantConfig
+  initialLojas: Loja[]
 }
 
 const CATEGORIAS = [
@@ -32,32 +32,10 @@ const CATEGORIAS = [
   { id: 'Outros', nome: 'Outros', icone: '📦' },
 ]
 
-export default function LojasContent({ tenant }: LojasContentProps) {
-  const [lojas, setLojas] = useState<Loja[]>([])
-  const [loading, setLoading] = useState(true)
+export default function LojasContent({ tenant, initialLojas }: LojasContentProps) {
+  const [lojas] = useState<Loja[]>(initialLojas)
   const [categoriaAtiva, setCategoriaAtiva] = useState('todas')
   const [busca, setBusca] = useState('')
-
-  useEffect(() => {
-    loadLojas()
-  }, [tenant])
-
-  const loadLojas = async () => {
-    try {
-      const response = await fetch(`/api/lojas?municipio=${encodeURIComponent(tenant.name)}`)
-      
-      if (!response.ok) {
-        throw new Error('Erro ao carregar lojas')
-      }
-      
-      const data = await response.json()
-      setLojas(data || [])
-    } catch (error) {
-      console.error('Erro ao carregar lojas:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const lojasFiltradas = lojas.filter(loja => {
     const matchCategoria = categoriaAtiva === 'todas' || 
@@ -122,12 +100,7 @@ export default function LojasContent({ tenant }: LojasContentProps) {
 
       {/* Lojas Grid */}
       <div className="container mx-auto px-4 py-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-tenant-primary"></div>
-            <p className="text-gray-400 mt-4">Carregando lojas...</p>
-          </div>
-        ) : lojasFiltradas.length === 0 ? (
+        {lojasFiltradas.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🏪</div>
             <h3 className="text-2xl font-bold text-white mb-2">Nenhuma loja encontrada</h3>

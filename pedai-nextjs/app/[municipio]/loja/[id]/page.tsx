@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import ClientLayout from '@/components/ClientLayout'
 import LojaDetalhesContent from '@/components/clientes/LojaDetalhesContent'
 import { getTenantBySlug, isTenantValid } from '@/lib/tenantConfig'
+import { createClient } from '@/lib/supabase/server'
 
 interface PageProps {
   params: {
@@ -27,18 +28,56 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function LojaPage({ params }: PageProps) {
+async function getLojaDetalhes(lojaId: string, municipio: string) {
+  const supabase = await createClient()
+  
+  // Buscar loja
+  const { data: loja, error: lojaError } = await supabase
+    .from('lojas')
+    .select('*')
+    .eq('id', lojaId)
+    .eq('municipio', municipio)
+    .single()
+  
+  if (lojaError || !loja) {
+    return null
+  }
+  
+  // Buscar produtos da loja
+  const { data: produtos, error: produtosError } = await supabase
+    .from('produtos')
+    .select('*')
+    .eq('loja_id', lojaId)
+    .eq('disponivel', true)
+    .order('nome')
+  
+  return {
+    loja,
+    produtos: produtos || []
+  }
+}
+
+export default async function LojaPage({ params }: PageProps) {
   if (!isTenantValid(params.municipio)) {
     notFound()
   }
 
   const tenant = getTenantBySlug(params.municipio)!
+  const data = await getLojaDetalhes(params.id, tenant.name)
+
+  if (!data) {
+    notFound()
+  }
 
   return (
     <ClientLayout tenant={tenant}>
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <main className="flex-1">
-          <LojaDetalhesContent tenant={tenant} lojaId={params.id} />
+          <LojaDetalhesContent 
+            tenant={tenant} 
+            loja={data.loja}
+            produtos={data.produtos}
+          />
         </main>
         <Footer tenant={tenant} />
       </div>

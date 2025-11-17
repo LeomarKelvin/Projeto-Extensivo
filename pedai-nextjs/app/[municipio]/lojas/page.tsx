@@ -3,6 +3,7 @@ import { getTenantBySlug } from '@/lib/tenantConfig'
 import { notFound } from 'next/navigation'
 import ClientLayout from '@/components/ClientLayout'
 import LojasContent from '@/components/clientes/LojasContent'
+import { createClient } from '@/lib/supabase/server'
 
 interface PageProps {
   params: {
@@ -25,16 +26,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function LojasPage({ params }: PageProps) {
+async function getLojas(municipio: string) {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('lojas')
+    .select('*')
+    .eq('municipio', municipio)
+    .order('nome_loja')
+  
+  if (error) {
+    console.error('Erro ao carregar lojas:', error)
+    return []
+  }
+  
+  return data || []
+}
+
+export default async function LojasPage({ params }: PageProps) {
   const tenant = getTenantBySlug(params.municipio)
 
   if (!tenant) {
     notFound()
   }
 
+  const lojas = await getLojas(tenant.name)
+
   return (
     <ClientLayout tenant={tenant}>
-      <LojasContent tenant={tenant} />
+      <LojasContent tenant={tenant} initialLojas={lojas} />
     </ClientLayout>
   )
 }

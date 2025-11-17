@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { TenantConfig } from '@/lib/types/tenant'
 import { useCart } from '@/lib/contexts/CartContext'
@@ -29,61 +27,14 @@ interface Produto {
 
 interface LojaDetalhesContentProps {
   tenant: TenantConfig
-  lojaId: string
+  loja: Loja
+  produtos: Produto[]
 }
 
-export default function LojaDetalhesContent({ tenant, lojaId }: LojaDetalhesContentProps) {
-  const router = useRouter()
+export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDetalhesContentProps) {
   const { addItem } = useCart()
-  const [loja, setLoja] = useState<Loja | null>(null)
-  const [produtos, setProdutos] = useState<Produto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    
-    const loadLojaDetalhes = async () => {
-      try {
-        const response = await fetch(`/api/lojas/${lojaId}`, {
-          cache: 'no-store'
-        })
-        
-        if (!response.ok) {
-          throw new Error('Loja não encontrada')
-        }
-        
-        const data = await response.json()
-        
-        if (cancelled) return
-        
-        if (data.loja.municipio !== tenant.name) {
-          setError('Esta loja não está disponível neste município')
-          setLoading(false)
-          return
-        }
-        
-        setLoja(data.loja)
-        setProdutos(data.produtos || [])
-        setLoading(false)
-      } catch (error) {
-        if (cancelled) return
-        console.error('Erro ao carregar loja:', error)
-        setError('Não foi possível carregar os detalhes da loja')
-        setLoading(false)
-      }
-    }
-    
-    loadLojaDetalhes()
-    
-    return () => {
-      cancelled = true
-    }
-  }, [lojaId, tenant.name])
 
   const handleAddToCart = (produto: Produto) => {
-    if (!loja) return
-    
     addItem({
       produto_id: produto.id.toString(),
       nome: produto.nome,
@@ -93,35 +44,6 @@ export default function LojaDetalhesContent({ tenant, lojaId }: LojaDetalhesCont
       loja_nome: loja.nome_loja,
       imagem_url: produto.imagem_url
     })
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-tenant-primary"></div>
-          <p className="text-gray-400 mt-4">Carregando loja...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !loja) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">😞</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Ops!</h2>
-          <p className="text-gray-400 mb-6">{error || 'Loja não encontrada'}</p>
-          <Link
-            href={`/${tenant.slug}/lojas`}
-            className="inline-block px-6 py-3 bg-tenant-primary text-tenant-secondary rounded-lg font-semibold hover:opacity-90 transition-opacity"
-          >
-            Voltar para lojas
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (
