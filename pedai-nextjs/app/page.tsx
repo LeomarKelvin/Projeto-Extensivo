@@ -44,15 +44,6 @@ export default function Home() {
                 </Link>
               ))}
             </div>
-            
-            <div className="text-center mt-8">
-              <Link
-                href="/tenants"
-                className="text-gray-400 hover:text-primary transition-colors"
-              >
-                Ver configurações detalhadas →
-              </Link>
-            </div>
           </div>
         </div>
       </div>
