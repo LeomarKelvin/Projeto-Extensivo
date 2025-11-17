@@ -59,7 +59,7 @@ async function setupPaginaPerfil() {
     } else {
         // Se não conseguir buscar o perfil, talvez o usuário não esteja logado
         alert('Você precisa estar logado para ver seu perfil.');
-        window.location.href = '/frontend/login.html';
+        window.location.href = '/frontend/Clientes/login.html';
         return;
     }
 

@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 showToast('Sucesso!', 'Login realizado com sucesso!');
                 setTimeout(() => {
                     if (result.perfil.tipo === 'loja') {
-                        window.location.href = '../../loja-frontend/Dashboard.html';
+                        window.location.href = '/loja-frontend/Dashboard.html';
                     } else {
                         window.location.href = '/frontend/Clientes/Inicio.html';
                     }
