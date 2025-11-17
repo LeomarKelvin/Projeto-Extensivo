@@ -57,10 +57,10 @@ export const tenantConfigs: Record<TenantSlug, TenantConfig> = {
     },
     enabled: true,
   },
-  'alagoa-grande': {
-    id: 'alagoa-grande',
-    name: 'Alagoa Grande',
-    slug: 'alagoa-grande',
+  'lagoa-seca': {
+    id: 'lagoa-seca',
+    name: 'Lagoa Seca',
+    slug: 'lagoa-seca',
     state: 'PB',
     theme: {
       primary: '#00FF85',
@@ -74,13 +74,13 @@ export const tenantConfigs: Record<TenantSlug, TenantConfig> = {
       maxDistance: 12,
     },
     location: {
-      lat: -7.0558,
-      lng: -35.6307,
+      lat: -7.1542,
+      lng: -35.8513,
       coverageRadius: 12,
     },
     contact: {
       phone: '(83) 99999-0003',
-      email: 'alagoa.grande@pedeai.com.br',
+      email: 'lagoa.seca@pedeai.com.br',
       whatsapp: '5583999990003',
     },
     enabled: true,

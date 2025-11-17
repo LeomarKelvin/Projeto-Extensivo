@@ -7,7 +7,7 @@
 PedeAí é uma plataforma de delivery local que atende 3 municípios da Paraíba:
 - Alagoa Nova (tema amarelo #FFD100)
 - Esperança (tema azul ciano #00D4FF)  
-- Alagoa Grande (tema verde #00FF85)
+- Lagoa Seca (tema verde #00FF85)
 
 ## 🎯 Migração Completa
 

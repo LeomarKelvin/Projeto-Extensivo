@@ -27,4 +27,4 @@ export interface TenantConfig {
   enabled: boolean
 }
 
-export type TenantSlug = 'alagoa-nova' | 'esperanca' | 'alagoa-grande'
+export type TenantSlug = 'alagoa-nova' | 'esperanca' | 'lagoa-seca'
