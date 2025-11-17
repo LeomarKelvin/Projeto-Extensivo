@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { TenantConfig } from '@/lib/types/tenant'
@@ -41,35 +41,45 @@ export default function LojaDetalhesContent({ tenant, lojaId }: LojaDetalhesCont
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadLojaDetalhes()
-  }, [lojaId])
-
-  const loadLojaDetalhes = async () => {
-    try {
-      const response = await fetch(`/api/lojas/${lojaId}`, {
-        cache: 'no-store'
-      })
-      
-      if (!response.ok) {
-        throw new Error('Loja não encontrada')
+    let cancelled = false
+    
+    const loadLojaDetalhes = async () => {
+      try {
+        const response = await fetch(`/api/lojas/${lojaId}`, {
+          cache: 'no-store'
+        })
+        
+        if (!response.ok) {
+          throw new Error('Loja não encontrada')
+        }
+        
+        const data = await response.json()
+        
+        if (cancelled) return
+        
+        if (data.loja.municipio !== tenant.name) {
+          setError('Esta loja não está disponível neste município')
+          setLoading(false)
+          return
+        }
+        
+        setLoja(data.loja)
+        setProdutos(data.produtos || [])
+        setLoading(false)
+      } catch (error) {
+        if (cancelled) return
+        console.error('Erro ao carregar loja:', error)
+        setError('Não foi possível carregar os detalhes da loja')
+        setLoading(false)
       }
-      
-      const data = await response.json()
-      
-      if (data.loja.municipio !== tenant.name) {
-        setError('Esta loja não está disponível neste município')
-        return
-      }
-      
-      setLoja(data.loja)
-      setProdutos(data.produtos || [])
-    } catch (error) {
-      console.error('Erro ao carregar loja:', error)
-      setError('Não foi possível carregar os detalhes da loja')
-    } finally {
-      setLoading(false)
     }
-  }
+    
+    loadLojaDetalhes()
+    
+    return () => {
+      cancelled = true
+    }
+  }, [lojaId, tenant.name])
 
   const handleAddToCart = (produto: Produto) => {
     if (!loja) return

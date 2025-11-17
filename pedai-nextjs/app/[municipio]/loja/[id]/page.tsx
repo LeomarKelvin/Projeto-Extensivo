@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import SimpleHeader from '@/components/SimpleHeader'
 import Footer from '@/components/Footer'
 import ClientLayout from '@/components/ClientLayout'
 import LojaDetalhesContent from '@/components/clientes/LojaDetalhesContent'
@@ -38,7 +37,6 @@ export default function LojaPage({ params }: PageProps) {
   return (
     <ClientLayout tenant={tenant}>
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <SimpleHeader tenant={tenant} />
         <main className="flex-1">
           <LojaDetalhesContent tenant={tenant} lojaId={params.id} />
         </main>
