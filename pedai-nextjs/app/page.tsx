@@ -18,13 +18,9 @@ export default function Home() {
           <h1 className="text-6xl font-bold mb-4">
             Pede<span className="text-primary">Aí</span>
           </h1>
-          <p className="text-2xl text-gray-300 mb-8">
+          <p className="text-2xl text-gray-300 mb-12">
             Delivery local para sua cidade
           </p>
-          
-          <div className="bg-green-500 text-white px-6 py-3 rounded-lg mb-8">
-            ✅ Next.js 14 + Multi-Tenancy configurado!
-          </div>
 
           <div className="w-full max-w-2xl">
             <h2 className="text-2xl font-bold text-center mb-6">
