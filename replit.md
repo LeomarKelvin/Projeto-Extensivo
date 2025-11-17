@@ -180,16 +180,66 @@ Servidor Valida: quantidades, produtos, loja_id, tenant config
 - **/api/pedidos**: 
   - GET: Listar pedidos do usuário
   - POST: Criar pedidos com validações
+- **/api/loja/pedidos**: 
+  - GET: Listar pedidos da loja (com filtro por status)
+- **/api/loja/pedidos/[id]**: 
+  - PATCH: Atualizar status do pedido
+
+## ✅ Sistema de Gerenciamento de Pedidos para Lojistas (17 de novembro de 2025)
+
+**NOVO**: Sistema completo implementado e funcional!
+
+### Features Implementadas:
+1. ✅ **API de Listagem de Pedidos** (`/api/loja/pedidos`)
+   - Autenticação obrigatória (apenas lojistas)
+   - Filtros por status (pendente, aceito, preparando, pronto, em_entrega, entregue, cancelado)
+   - Inclui detalhes completos: cliente, endereço, itens, valores
+   - Proteção por perfil_id (lojista só vê pedidos da própria loja)
+
+2. ✅ **API de Atualização de Status** (`/api/loja/pedidos/[id]`)
+   - PATCH para atualizar status do pedido
+   - Validação de ownership (lojista só atualiza pedidos da própria loja)
+   - Status válidos: pendente, aceito, preparando, pronto, em_entrega, entregue, cancelado
+
+3. ✅ **Página de Gerenciamento** (`/loja/pedidos`)
+   - Lista todos os pedidos da loja
+   - Filtros por status (Todos, Pendente, Aceito, Preparando, etc.)
+   - Cards expansíveis com detalhes completos
+   - Ações de status contextuais (Aceitar, Iniciar Preparo, Marcar como Pronto, etc.)
+   - Interface responsiva e intuitiva
+
+4. ✅ **Dashboard com Dados Reais** (`/loja/dashboard`)
+   - Estatísticas ao vivo do banco de dados:
+     - Pedidos hoje (count)
+     - Receita hoje (sum de totais, excluindo cancelados)
+     - Pedidos pendentes (status: pendente, aceito, preparando, pronto)
+     - Produtos ativos (disponível = true)
+   - Link para gestão de pedidos
+
+### Fluxo de Status dos Pedidos:
+```
+Pendente → Aceito → Preparando → Pronto → Em Entrega → Entregue
+         ↓
+    Cancelado (pode ser cancelado antes de "Em Entrega")
+```
+
+### Credenciais de Teste:
+- **Lojista**: loja@pizzaria.com / senha123
+- **Loja**: Pizzaria Sabor da Hora (Alagoa Nova)
+- **Dados**: 3 pedidos de teste com itens criados
+
+**Aprovação do Architect**: ✅ Revisado e aprovado após correção de alinhamento de status no schema
 
 ## 📋 Próximos Passos (Pós-MVP)
 1. Página de produto individual com detalhes
 2. Página de pedidos do cliente (histórico)
-3. Gestão de produtos da loja (CRUD)
+3. **Gestão de produtos da loja (CRUD)** - Interface para adicionar/editar produtos
 4. Upload de imagens (produtos, perfil)
 5. Sistema de avaliações
 6. Dashboard do entregador
-7. Notificações em tempo real
+7. Notificações em tempo real (pusher/websockets)
 8. **Melhorar tenant isolation** (adicionar `municipio` em `perfis`)
+9. **Corrigir API de Registro** (atualmente cria usuários mas não cria perfis)
 
 ## ⚠️ SEGURANÇA CRÍTICA
 
