@@ -44,7 +44,6 @@ export default function LojasContent({ tenant }: LojasContentProps) {
 
   const loadLojas = async () => {
     try {
-      // Call API with municipio parameter for tenant isolation
       const response = await fetch(`/api/lojas?municipio=${encodeURIComponent(tenant.name)}`)
       
       if (!response.ok) {
@@ -61,7 +60,8 @@ export default function LojasContent({ tenant }: LojasContentProps) {
   }
 
   const lojasFiltradas = lojas.filter(loja => {
-    const matchCategoria = categoriaAtiva === 'todas' || loja.categoria === categoriaAtiva
+    const matchCategoria = categoriaAtiva === 'todas' || 
+      loja.categoria?.toLowerCase().includes(categoriaAtiva.toLowerCase())
     const matchBusca = !busca || 
       loja.nome_loja.toLowerCase().includes(busca.toLowerCase()) ||
       loja.descricao?.toLowerCase().includes(busca.toLowerCase())
