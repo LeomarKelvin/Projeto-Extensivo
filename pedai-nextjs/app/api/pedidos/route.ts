@@ -182,6 +182,7 @@ export async function POST(request: NextRequest) {
         observacoes,
         forma_pagamento: forma_pagamento || 'dinheiro',
         troco_para: troco_para || null,
+        subtotal,
         taxa_entrega,
         total,
         status: 'pendente',
