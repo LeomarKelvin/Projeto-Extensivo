@@ -66,8 +66,11 @@ export default function LoginForm({ tenant }: LoginFormProps) {
       }
 
       // Redirect based on user type
-      // Note: Loja and entregador dashboards are not tenant-specific
+      // Note: Loja, entregador and admin dashboards are not tenant-specific
       switch (perfil.tipo) {
+        case 'admin':
+          router.push('/admin/dashboard')
+          break
         case 'loja':
           router.push('/loja/dashboard')
           break

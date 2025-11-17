@@ -1,356 +1,49 @@
 # PedeAí - Plataforma de Delivery Multi-Municipal
 
-## 📋 Visão Geral do Projeto
-
-**Status**: ✅ **SISTEMA FUNCIONAL** - Next.js 14 fullstack + Supabase integrado e populado
-
-PedeAí é uma plataforma de delivery local que atende 3 municípios da Paraíba:
-- Alagoa Nova (tema amarelo #FFD100)
-- Esperança (tema azul ciano #00D4FF)  
-- Lagoa Seca (tema verde #00FF85)
-
-## 🎯 Migração Completa
-
-Migração de Express + HTML/JS vanilla para **Next.js 14 fullstack** com:
-- ✅ App Router com TypeScript
-- ✅ Sistema multi-tenancy robusto
-- ✅ Tailwind CSS
-- ✅ Supabase com SSR (@supabase/ssr)
-- ✅ Context API para state management
-- ✅ Autenticação integrada
-- ✅ API Routes para backend
-
-## 🎊 Atualização Mais Recente (17 de novembro de 2025)
-
-### ✅ NOVO: Fluxo Completo de Checkout Implementado
-
-**Features Implementadas**:
-1. ✅ **Página de Carrinho** (/{municipio}/carrinho)
-   - Listagem de itens com ajuste de quantidade
-   - Remoção de produtos
-   - Cálculo automático de subtotal e taxa de entrega
-   - Validação de pedido mínimo
-   - Navegação para checkout
-
-2. ✅ **Página de Checkout** (/{municipio}/checkout)
-   - Formulário completo de endereço (rua, número, bairro, complemento, referência)
-   - Seleção de forma de pagamento (dinheiro, PIX, cartão)
-   - Cálculo de troco para pagamento em dinheiro
-   - Validações client-side e server-side
-   - Observações opcionais do pedido
-
-3. ✅ **API de Pedidos** (/api/pedidos) - **APROVADA PELO ARCHITECT**
-   - **Segurança de Preços**: Preços sempre buscados do banco de dados (impossível adulterar)
-   - **Validação de Quantidades**: Range 1-100, inteiros positivos (previne totais negativos)
-   - **Validação de Produtos**: Todos produtos devem pertencer à loja especificada
-   - **Cálculo Server-Side**: Subtotal e total calculados no servidor
-   - **Guest Checkout**: Pedidos sem autenticação são permitidos
-   - **Rollback em Erros**: Transações atômicas com rollback automático
-   - **Normalização de Município**: Suporte correto a acentos (Esperança, etc.)
-
-4. ✅ **Página de Confirmação** (/{municipio}/pedido/[id])
-   - Exibição completa dos detalhes do pedido
-   - Número do pedido e status
-   - Listagem de itens com preços
-   - Resumo financeiro (subtotal, taxa, total)
-   - Tempo estimado de entrega
-   - Ações: novo pedido ou voltar ao início
-
-**Arquitetura de Segurança**:
-```
-Cliente Envia: items, endereco, payment details
-Servidor Deriva: preços (DB), taxa entrega (config), total (calculado)
-Servidor Valida: quantidades, produtos, loja_id, tenant config
-```
-
-**Autenticação**:
-- ✅ **Obrigatória para Pedidos**: Usuários devem fazer login antes de finalizar pedidos
-- ✅ **Verificação Client-Side**: Checkout redireciona para login se não autenticado
-- ✅ **Verificação Server-Side**: API retorna 401 se não autenticado
-- ✅ **Somente Clientes**: Apenas perfis do tipo 'cliente' podem criar pedidos
-
-**Trade-off Documentado**:
-- Cross-municipal ordering permitido (usuário de Alagoa Nova pode pedir de loja em Esperança)
-- Não é bug de segurança - é decisão de negócio documentada
-- Para isolamento estrito: requer município em perfis (futura melhoria)
-
-**Resultado**:
-- 🔒 **Integridade Financeira**: 100% garantida (aprovado pelo architect)
-- 🛡️ **Exploit-Proof**: Todos vetores de ataque fechados
-- ✨ **UX Completo**: Fluxo end-to-end funcional
-- 🔑 **Autenticação Obrigatória**: Segurança de pedidos garantida
-- 🎯 **Production-Ready**: Pronto para MVP deployment
-
-### ✅ CORREÇÃO CRÍTICA: Bug de "Carregando..." Infinito
-
-**Problema Original**:
-- Páginas de lojas e detalhes da loja ficavam travadas em "Carregando..." mesmo com API respondendo
-- Causa raiz: React Strict Mode causando remounts contínuos em Client Components com useEffect
-
-**Solução Implementada**:
-1. ✅ Migração para **Server-Side Rendering (SSR)** seguindo Next.js 14 App Router best practices
-2. ✅ Server Components fazem fetch de dados usando Supabase no servidor
-3. ✅ Client Components recebem dados como props e só lidam com interatividade
-4. ✅ Eliminados todos os problemas de useEffect, loading states, e remounting
-
-**Arquivos Modificados**:
-- `app/[municipio]/lojas/page.tsx`: Agora é async Server Component com fetch de lojas
-- `components/clientes/LojasContent.tsx`: Recebe `initialLojas` como prop, mantém filtros client-side
-- `app/[municipio]/loja/[id]/page.tsx`: Agora é async Server Component com fetch de loja+produtos
-- `components/clientes/LojaDetalhesContent.tsx`: Recebe `loja` e `produtos` como props
-
-**Resultado**:
-- ⚡ Páginas carregam instantaneamente (2-3 segundos)
-- 🎯 Multi-tenancy testado e funcionando em todos os 3 municípios
-- 🐛 Zero erros de SSR ou console
-- ✨ Arquitetura limpa seguindo padrão Server/Client Components do Next.js 14
-
-### ✅ Banco de Dados Supabase Totalmente Funcional
-
-**Problemas Resolvidos**:
-1. ✅ Adicionada coluna `municipio` na tabela `lojas` para multi-tenancy
-2. ✅ Corrigida coluna `loja_id` em `produtos` (convertida de UUID para bigint)
-3. ✅ Banco de dados populado com dados de exemplo:
-   - 9 lojas (3 por município)
-   - 27 categorias de produtos
-   - 9 produtos variados
-
-**Melhorias de Código**:
-1. ✅ Corrigido filtro de categorias case-insensitive e safe para undefined
-2. ✅ Validação de dados antes de inserção
-3. ✅ Removidas duplicatas e dados inconsistentes
-
-**Resultado**:
-- 🎯 Multi-tenancy **100% funcional** nos 3 municípios
-- 🎨 Theming dinâmico funcionando perfeitamente
-- 📊 APIs retornando dados corretos por tenant
-- 🛍️ Listagem de lojas com filtros funcionais
-
-## 📊 Features Implementadas
-
-### ✅ 1. Estrutura Next.js 14
-- App Router configurado
-- TypeScript + Tailwind CSS
-- Package.json e configs otimizados
-- Middleware integrado
-
-### ✅ 2. Sistema Multi-Tenancy
-- Tipos TypeScript para configurações
-- Configs para 3 municípios (taxas, cores, localização)
-- Rotas dinâmicas /[municipio]/*
-- Theming dinâmico com CSS variables
-- Funções helper (getTenantConfig, isTenantValid, getTenantBySlug)
-
-### ✅ 3. Componentes Compartilhados
-- SimpleHeader: Navegação tenant-aware, menu mobile
-- Footer: Links dinâmicos por município
-- ClientLayout: Injeta CSS variables, gerencia theming
-- CartButton: Botão flutuante com total do carrinho
-- Logo: Adaptável por tenant
-- LoginForm: Tabs Login/Cadastro, redirect por tipo de usuário
-
-### ✅ 4. Autenticação
-- Login e Cadastro integrados
-- Suporte a 3 tipos de usuário (cliente, loja, entregador)
-- API /api/auth/register
-- Redirect automático por perfil (clientes → tenant home, lojas → /loja/dashboard)
-- Proteção de rotas com middleware
-
-### ✅ 5. Páginas do Cliente
-- **Página inicial** (/{municipio}): Hero section + categorias
-- **Página de lojas** (/{municipio}/lojas): Listagem com filtros, busca, categorias
-- **Carrinho** (/{municipio}/carrinho): Resumo, endereço, checkout
-- **Login** (/{municipio}/auth/login): Formulário tenant-aware
-
-### ✅ 6. Carrinho de Compras
-- CartContext com Context API
-- LocalStorage para persistência
-- Botão flutuante mostrando itens e total
-- Validação de pedido mínimo
-- Cálculo de taxa de entrega
-
-### ✅ 7. Dashboard da Loja
-- /loja/dashboard com estatísticas
-- Proteção de autenticação
-- Layout exclusivo para lojistas
-
-### ✅ 8. API Routes
-- **/api/auth/register**: Criar usuários (cliente, loja, entregador)
-- **/api/lojas**: Listar lojas por município (tenant-filtered)
-- **/api/pedidos**: 
-  - GET: Listar pedidos do usuário
-  - POST: Criar pedidos com validações
-- **/api/loja/pedidos**: 
-  - GET: Listar pedidos da loja (com filtro por status)
-- **/api/loja/pedidos/[id]**: 
-  - PATCH: Atualizar status do pedido
-
-## ✅ Sistema de Gerenciamento de Pedidos para Lojistas (17 de novembro de 2025)
-
-**NOVO**: Sistema completo implementado e funcional!
-
-### Features Implementadas:
-1. ✅ **API de Listagem de Pedidos** (`/api/loja/pedidos`)
-   - Autenticação obrigatória (apenas lojistas)
-   - Filtros por status (pendente, aceito, preparando, pronto, em_entrega, entregue, cancelado)
-   - Inclui detalhes completos: cliente, endereço, itens, valores
-   - Proteção por perfil_id (lojista só vê pedidos da própria loja)
-
-2. ✅ **API de Atualização de Status** (`/api/loja/pedidos/[id]`)
-   - PATCH para atualizar status do pedido
-   - Validação de ownership (lojista só atualiza pedidos da própria loja)
-   - Status válidos: pendente, aceito, preparando, pronto, em_entrega, entregue, cancelado
-
-3. ✅ **Página de Gerenciamento** (`/loja/pedidos`)
-   - Lista todos os pedidos da loja
-   - Filtros por status (Todos, Pendente, Aceito, Preparando, etc.)
-   - Cards expansíveis com detalhes completos
-   - Ações de status contextuais (Aceitar, Iniciar Preparo, Marcar como Pronto, etc.)
-   - Interface responsiva e intuitiva
-
-4. ✅ **Dashboard com Dados Reais** (`/loja/dashboard`)
-   - Estatísticas ao vivo do banco de dados:
-     - Pedidos hoje (count)
-     - Receita hoje (sum de totais, excluindo cancelados)
-     - Pedidos pendentes (status: pendente, aceito, preparando, pronto)
-     - Produtos ativos (disponível = true)
-   - Link para gestão de pedidos
-
-### Fluxo de Status dos Pedidos:
-```
-Pendente → Aceito → Preparando → Pronto → Em Entrega → Entregue
-         ↓
-    Cancelado (pode ser cancelado antes de "Em Entrega")
-```
-
-### Credenciais de Teste:
-- **Lojista**: loja@pizzaria.com / senha123
-- **Loja**: Pizzaria Sabor da Hora (Alagoa Nova)
-- **Dados**: 3 pedidos de teste com itens criados
-
-**Aprovação do Architect**: ✅ Revisado e aprovado após correção de alinhamento de status no schema
-
-## 📋 Próximos Passos (Pós-MVP)
-1. Página de produto individual com detalhes
-2. Página de pedidos do cliente (histórico)
-3. **Gestão de produtos da loja (CRUD)** - Interface para adicionar/editar produtos
-4. Upload de imagens (produtos, perfil)
-5. Sistema de avaliações
-6. Dashboard do entregador
-7. Notificações em tempo real (pusher/websockets)
-8. **Melhorar tenant isolation** (adicionar `municipio` em `perfis`)
-9. **Corrigir API de Registro** (atualmente cria usuários mas não cria perfis)
-
-## ⚠️ SEGURANÇA CRÍTICA
-
-**AÇÃO NECESSÁRIA**: A SUPABASE_SERVICE_ROLE_KEY exposta precisa ser rotacionada!
-
-Leia o arquivo **`pedai-nextjs/SECURITY.md`** para instruções completas de como:
-1. Rotacionar a chave no Supabase Dashboard
-2. Adicionar a nova chave como Secret no Replit
-3. Manter práticas de segurança adequadas
-
-## 🏗️ Estrutura do Projeto
-
-```
-pedai-nextjs/
-├── app/
-│   ├── layout.tsx              # Layout raiz
-│   ├── page.tsx                # Home com seletor de municípios
-│   ├── globals.css             # Estilos globais
-│   ├── [municipio]/            # Rotas dinâmicas por município
-│   │   ├── page.tsx
-│   │   └── not-found.tsx
-│   ├── tenants/                # Página de configs dos municípios
-│   │   └── page.tsx
-│   └── api/
-│       └── test-supabase/      # Teste de conexão
-│           └── route.ts
-├── lib/
-│   ├── types/
-│   │   └── tenant.ts           # Tipos TypeScript
-│   ├── tenantConfig/
-│   │   └── index.ts            # Configs multi-tenancy
-│   └── supabase/
-│       ├── client.ts           # Cliente browser
-│       ├── server.ts           # Cliente server
-│       └── middleware.ts       # Sessões
-├── middleware.ts               # Middleware Next.js
-└── SECURITY.md                 # Notas de segurança
-```
-
-## 🗄️ Banco de Dados (Supabase)
-
-**URL**: https://jrskruadcwuytvjeqybh.supabase.co
-
-### Tabelas Criadas
-- ✅ `perfis` - Perfis de usuários (clientes, lojas, entregadores, admin)
-- ✅ `lojas` - Estabelecimentos por município (9 lojas de exemplo)
-- ✅ `produtos` - Catálogo de produtos (9 produtos de exemplo)
-- ✅ `categorias` - Categorias de produtos/lojas
-- ✅ `pedidos` - Pedidos com endereço, pagamento, status
-- ✅ `pedido_itens` - Itens dos pedidos
-- 📋 `avaliacoes` - Avaliações de lojas (planejado)
-- 📋 `enderecos` - Endereços salvos (planejado)
-
-### Schema Features
-- Foreign keys com CASCADE/SET NULL apropriados
-- Indexes para performance em queries comuns
-- Triggers automáticos para `updated_at`
-- Constraints de validação (status, forma_pagamento, etc.)
-- Check constraints para integridade de dados
-
-## 🎨 Design System
-
-### Cores por Município
-- **Alagoa Nova**: Primária #FFD100 (amarelo)
-- **Esperança**: Primária #00D4FF (azul ciano)
-- **Alagoa Grande**: Primária #00FF85 (verde)
-- **Todas**: Secundária #1A1A1A (preto)
-
-### Fonte
-- Poppins (300, 400, 500, 600, 700, 800)
-
-## 🚀 Como Rodar
-
-```bash
-cd pedai-nextjs
-npm install
-npm run dev
-```
-
-Acesse: http://localhost:5000
-
-## 📦 Dependências Principais
-
-- next: ^14.2.0
-- react: ^18.3.0
-- @supabase/ssr: ^0.7.0
-- zustand: ^4.5.0 (planejado)
-- tailwindcss: ^3.4.7
-
-## 🔗 URLs Importantes
-
-- **Home**: /
-- **Municípios**: /[municipio] (alagoa-nova, esperanca, alagoa-grande)
-- **Configs**: /tenants
-- **API Test**: /api/test-supabase
-
-## 👥 Personas Suportadas
-
-1. **Cliente** - Faz pedidos
-2. **Lojista** - Gerencia loja e produtos
-3. **Entregador** - Realiza entregas
-4. **Admin** - Administra plataforma
-
-## 📝 Notas do Desenvolvedor
-
-- Projeto criado inteiramente com IA (Gemini/ChatGPT) 
-- Desenvolvedor sem experiência prévia em programação
-- Migração para facilitar expansão multi-municipal
-- Foco em manutenibilidade e escalabilidade
-
----
-
-**Última atualização**: 17 de novembro de 2025  
-**Versão**: 2.0.0-alpha (migração em andamento)
+## Overview
+
+PedeAí is a functional, full-stack Next.js 14 platform designed for local delivery services across multiple municipalities in Paraíba, Brazil. Its primary purpose is to provide a robust, scalable, and user-friendly delivery ecosystem. The platform supports multi-tenancy, allowing different municipalities to have their own themed interfaces and configurations. Key capabilities include a complete order placement and checkout flow, a comprehensive order management system for shopkeepers, and a universal administration panel.
+
+The project's vision is to offer a production-ready MVP for deployment, ensuring financial integrity and exploit-proof security. It aims to streamline local delivery operations, enhance user experience for customers, and provide efficient management tools for businesses. The platform is designed for maintainability and scalability, setting the stage for future expansion and feature enhancements.
+
+## User Preferences
+
+- This project was created entirely with AI (Gemini/ChatGPT).
+- The developer has no prior programming experience.
+- The focus is on maintainability and scalability.
+
+## System Architecture
+
+**UI/UX Decisions:**
+- **Dynamic Theming:** Each municipality (Alagoa Nova, Esperança, Lagoa Seca) has a distinct primary color theme (yellow, cyan, green respectively), with a consistent secondary dark color.
+- **Font:** Poppins (weights 300-800) is used throughout the application for a modern and readable interface.
+- **ClientLayout:** Injects CSS variables for dynamic theming and manages the overall look and feel.
+- **Shared Components:** Components like SimpleHeader, Footer, CartButton, Logo, and LoginForm are designed to be tenant-aware and reusable across municipalities.
+
+**Technical Implementations:**
+- **Next.js 14 Fullstack:** Utilizes the App Router with TypeScript for robust, modern web development.
+- **Multi-Tenancy System:** Implemented with dynamic routes (`/[municipio]/*`), TypeScript types for configurations, and helper functions to manage tenant-specific settings (e.g., `getTenantConfig`, `isTenantValid`).
+- **Server-Side Rendering (SSR):** Data fetching is primarily done in Server Components using Supabase, passing data as props to Client Components for interactivity. This resolves issues with client-side loading states and ensures faster page loads.
+- **State Management:** Currently uses Context API for client-side state like the shopping cart, with plans to integrate Zustand.
+- **Authentication:** Integrated login and registration supporting three user types (client, shop, deliveryman, admin), with API routes for user creation and middleware for route protection and automatic redirection based on user profile.
+- **Shopping Cart:** Persistent cart managed via Context API and LocalStorage, including minimum order validation and delivery fee calculation.
+- **Order Management System for Shopkeepers:**
+    - **API:** Provides authenticated endpoints for listing (`/api/loja/pedidos`) and updating (`/api/loja/pedidos/[id]`) orders, with ownership validation.
+    - **UI:** A dedicated `/loja/pedidos` page allows shopkeepers to view, filter, and update order statuses with contextual actions.
+- **Admin Account System:**
+    - A universal admin profile (`admin@pedai.com`) provides full access to platform statistics and the ability to manage orders for any shop.
+    - An `/admin/dashboard` offers an overview of platform-wide metrics and navigation to shopkeeper and client interfaces.
+
+**Feature Specifications:**
+- **Complete Checkout Flow:** Includes a dynamic shopping cart, a comprehensive checkout page with address forms and payment options (cash, PIX, card), and server-side validation of pricing, quantities, and product ownership.
+- **Secure API for Orders:** Ensures financial integrity by fetching prices and calculating totals server-side, validating all incoming data, and implementing atomic transactions with rollback on errors. Supports guest checkout.
+- **Database Structure:**
+    - **Tables:** `perfis` (user profiles), `lojas` (shops), `produtos` (products), `categorias` (categories), `pedidos` (orders), `pedido_itens` (order items).
+    - **Schema Features:** Foreign keys with appropriate `CASCADE/SET NULL`, indexes for performance, automatic `updated_at` triggers, and validation constraints.
+
+## External Dependencies
+
+- **Supabase:** Used as the primary backend-as-a-service for database management, authentication, and SSR data fetching (`@supabase/ssr`).
+- **Next.js:** The web framework for building the full-stack application.
+- **React:** The JavaScript library for building user interfaces.
+- **Tailwind CSS:** For utility-first CSS styling.

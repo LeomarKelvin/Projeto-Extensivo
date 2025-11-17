@@ -20,28 +20,63 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
     
-    if (!perfil || perfil.tipo !== 'loja') {
+    if (!perfil || (perfil.tipo !== 'loja' && perfil.tipo !== 'admin')) {
       return NextResponse.json(
-        { error: 'Acesso negado. Apenas lojistas podem acessar esta funcionalidade.' },
+        { error: 'Acesso negado. Apenas lojistas e administradores podem acessar esta funcionalidade.' },
         { status: 403 }
-      )
-    }
-    
-    const { data: loja } = await supabase
-      .from('lojas')
-      .select('id, nome_loja')
-      .eq('perfil_id', perfil.id)
-      .single()
-    
-    if (!loja) {
-      return NextResponse.json(
-        { error: 'Loja não encontrada' },
-        { status: 404 }
       )
     }
     
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const lojaIdParam = searchParams.get('loja_id')
+    
+    // Determinar loja_id baseado no tipo de usuário
+    let lojaId: number
+    let loja: any
+    
+    if (perfil.tipo === 'loja') {
+      // Lojista só pode ver sua própria loja
+      const { data: lojaData } = await supabase
+        .from('lojas')
+        .select('id, nome_loja')
+        .eq('perfil_id', perfil.id)
+        .single()
+      
+      if (!lojaData) {
+        return NextResponse.json(
+          { error: 'Loja não encontrada' },
+          { status: 404 }
+        )
+      }
+      
+      lojaId = lojaData.id
+      loja = lojaData
+    } else {
+      // Admin pode especificar loja via query param
+      if (!lojaIdParam) {
+        return NextResponse.json(
+          { error: 'loja_id é obrigatório para admin' },
+          { status: 400 }
+        )
+      }
+      
+      const { data: lojaData } = await supabase
+        .from('lojas')
+        .select('id, nome_loja')
+        .eq('id', parseInt(lojaIdParam))
+        .single()
+      
+      if (!lojaData) {
+        return NextResponse.json(
+          { error: 'Loja não encontrada' },
+          { status: 404 }
+        )
+      }
+      
+      lojaId = lojaData.id
+      loja = lojaData
+    }
     
     let query = supabase
       .from('pedidos')
@@ -60,7 +95,7 @@ export async function GET(request: NextRequest) {
           telefone
         )
       `)
-      .eq('loja_id', loja.id)
+      .eq('loja_id', lojaId)
       .order('created_at', { ascending: false })
     
     if (status && status !== 'todos') {

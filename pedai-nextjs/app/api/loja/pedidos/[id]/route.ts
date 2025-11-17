@@ -24,24 +24,29 @@ export async function PATCH(
       .eq('user_id', user.id)
       .single()
     
-    if (!perfil || perfil.tipo !== 'loja') {
+    if (!perfil || (perfil.tipo !== 'loja' && perfil.tipo !== 'admin')) {
       return NextResponse.json(
-        { error: 'Acesso negado. Apenas lojistas podem atualizar pedidos.' },
+        { error: 'Acesso negado. Apenas lojistas e administradores podem atualizar pedidos.' },
         { status: 403 }
       )
     }
     
-    const { data: loja } = await supabase
-      .from('lojas')
-      .select('id')
-      .eq('perfil_id', perfil.id)
-      .single()
-    
-    if (!loja) {
-      return NextResponse.json(
-        { error: 'Loja não encontrada' },
-        { status: 404 }
-      )
+    // Admin pode atualizar qualquer pedido, lojista só da própria loja
+    let loja = null
+    if (perfil.tipo === 'loja') {
+      const { data: lojaData } = await supabase
+        .from('lojas')
+        .select('id')
+        .eq('perfil_id', perfil.id)
+        .single()
+      
+      if (!lojaData) {
+        return NextResponse.json(
+          { error: 'Loja não encontrada' },
+          { status: 404 }
+        )
+      }
+      loja = lojaData
     }
     
     const body = await request.json()
@@ -75,7 +80,8 @@ export async function PATCH(
       )
     }
     
-    if (pedido.loja_id !== loja.id) {
+    // Apenas lojistas precisam verificar ownership, admin pode tudo
+    if (perfil.tipo === 'loja' && pedido.loja_id !== loja.id) {
       return NextResponse.json(
         { error: 'Você não tem permissão para atualizar este pedido' },
         { status: 403 }

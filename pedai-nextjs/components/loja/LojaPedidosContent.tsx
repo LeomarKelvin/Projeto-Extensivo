@@ -79,7 +79,7 @@ export default function LojaPedidosContent() {
       .eq('user_id', user.id)
       .single()
 
-    if (!perfil || perfil.tipo !== 'loja') {
+    if (!perfil || (perfil.tipo !== 'loja' && perfil.tipo !== 'admin')) {
       router.push('/')
       return
     }

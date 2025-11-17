@@ -43,17 +43,23 @@ export default function LojaDashboard() {
       .eq('user_id', user.id)
       .single()
 
-    if (!perfil || perfil.tipo !== 'loja') {
+    if (!perfil || (perfil.tipo !== 'loja' && perfil.tipo !== 'admin')) {
       router.push('/')
       return
     }
 
     // Get loja data
-    const { data: lojaData } = await supabase
-      .from('lojas')
-      .select('*')
-      .eq('perfil_id', perfil.id)
-      .single()
+    // Admin pode acessar qualquer loja, mas precisa selecionar uma
+    // Por padrão, pega a primeira loja disponível para admin
+    let lojaQuery = supabase.from('lojas').select('*')
+    
+    if (perfil.tipo === 'loja') {
+      lojaQuery = lojaQuery.eq('perfil_id', perfil.id)
+    }
+    
+    const { data: lojaData } = perfil.tipo === 'admin' 
+      ? await lojaQuery.limit(1).single()
+      : await lojaQuery.single()
 
     if (!lojaData) {
       console.error('Loja não encontrada para o perfil')
