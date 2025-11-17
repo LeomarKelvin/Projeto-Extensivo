@@ -2,7 +2,14 @@ import Link from 'next/link'
 import { getAllTenants } from '@/lib/tenantConfig'
 
 export default function Home() {
-  const tenants = getAllTenants()
+  const allTenants = getAllTenants()
+  
+  // Reorder to put Alagoa Nova in the center
+  const orderedTenants = [
+    allTenants.find(t => t.slug === 'esperanca'),
+    allTenants.find(t => t.slug === 'alagoa-nova'),
+    allTenants.find(t => t.slug === 'lagoa-seca'),
+  ].filter((t): t is NonNullable<typeof t> => t !== undefined)
   
   return (
     <div className="min-h-screen bg-secondary text-white">
@@ -27,7 +34,7 @@ export default function Home() {
               Escolha seu município:
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {tenants.map((tenant) => (
+              {orderedTenants.map((tenant) => (
                 <Link
                   key={tenant.id}
                   href={`/${tenant.slug}`}
