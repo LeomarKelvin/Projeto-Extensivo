@@ -29,10 +29,8 @@ app.use('/api/lojas', lojasRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/dashboard/loja', lojaDashboardRoutes);
 
-app.use('/clientes', express.static(path.join(__dirname, '../../frontend/Clientes')));
-app.use('/admin', express.static(path.join(__dirname, '../../frontend/Admin')));
-app.use('/loja', express.static(path.join(__dirname, '../../loja-frontend')));
-app.use('/js', express.static(path.join(__dirname, '../../frontend/js')));
+app.use('/frontend', express.static(path.join(__dirname, '../../frontend')));
+app.use('/loja-frontend', express.static(path.join(__dirname, '../../loja-frontend')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/Clientes/Inicio.html'));
