@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: #FFD100;
+  --color-secondary: #1A1A1A;
+  --color-accent: #FFFFFF;
+}
+
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -12,4 +18,25 @@ body {
 
 .lightning-logo {
   filter: drop-shadow(0 0 8px rgba(255, 209, 0, 0.5));
+}
+
+/* Utility classes for tenant theming */
+.bg-tenant-primary {
+  background-color: var(--color-primary);
+}
+
+.text-tenant-primary {
+  color: var(--color-primary);
+}
+
+.border-tenant-primary {
+  border-color: var(--color-primary);
+}
+
+.bg-tenant-secondary {
+  background-color: var(--color-secondary);
+}
+
+.text-tenant-secondary {
+  color: var(--color-secondary);
 }
