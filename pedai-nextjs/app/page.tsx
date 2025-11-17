@@ -1,4 +1,9 @@
+import Link from 'next/link'
+import { getAllTenants } from '@/lib/tenantConfig'
+
 export default function Home() {
+  const tenants = getAllTenants()
+  
   return (
     <div className="min-h-screen bg-secondary text-white">
       <div className="container mx-auto px-4 py-16">
@@ -16,8 +21,42 @@ export default function Home() {
           <p className="text-2xl text-gray-300 mb-8">
             Delivery local para sua cidade
           </p>
-          <div className="bg-green-500 text-white px-6 py-3 rounded-lg">
-            ✅ Next.js 14 configurado com sucesso!
+          
+          <div className="bg-green-500 text-white px-6 py-3 rounded-lg mb-8">
+            ✅ Next.js 14 + Multi-Tenancy configurado!
+          </div>
+
+          <div className="w-full max-w-2xl">
+            <h2 className="text-2xl font-bold text-center mb-6">
+              Escolha seu município:
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {tenants.map((tenant) => (
+                <Link
+                  key={tenant.id}
+                  href={`/${tenant.slug}`}
+                  className="p-6 rounded-lg border-2 text-center hover:scale-105 transition-transform"
+                  style={{ borderColor: tenant.theme.primary }}
+                >
+                  <h3 
+                    className="text-xl font-bold mb-2"
+                    style={{ color: tenant.theme.primary }}
+                  >
+                    {tenant.name}
+                  </h3>
+                  <p className="text-sm text-gray-400">{tenant.state}</p>
+                </Link>
+              ))}
+            </div>
+            
+            <div className="text-center mt-8">
+              <Link
+                href="/tenants"
+                className="text-gray-400 hover:text-primary transition-colors"
+              >
+                Ver configurações detalhadas →
+              </Link>
+            </div>
           </div>
         </div>
       </div>

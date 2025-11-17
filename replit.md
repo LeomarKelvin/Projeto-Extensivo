@@ -1,133 +1,159 @@
-# PedeAí - Local Delivery Platform
+# PedeAí - Plataforma de Delivery Multi-Municipal
 
-## Overview
-PedeAí is a comprehensive local delivery application for Alagoa Nova, connecting customers with local stores for fast delivery of food, medicine, shopping, and more. The platform features separate interfaces for customers, store owners, and administrators.
+## 📋 Visão Geral do Projeto
 
-**Current State**: Fully configured and running on Replit with proper environment setup.
+**Status**: 🚧 Migração de Express/Vanilla JS → Next.js 14 em andamento
 
-## Project Architecture
+PedeAí é uma plataforma de delivery local que atende 3 municípios da Paraíba:
+- Alagoa Nova (tema amarelo #FFD100)
+- Esperança (tema azul ciano #00D4FF)  
+- Alagoa Grande (tema verde #00FF85)
 
-### Technology Stack
-- **Backend**: Node.js with Express.js
-- **Frontend**: Static HTML/CSS/JavaScript with Tailwind CSS
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
+## 🎯 Objetivo da Migração
 
-### Directory Structure
+Migrar de Express + HTML/JS vanilla para **Next.js 14 fullstack** com:
+- ✅ App Router com TypeScript
+- ✅ Sistema multi-tenancy robusto
+- ✅ Tailwind CSS
+- 🔄 Supabase com SSR (@supabase/ssr)
+- 🔄 Zustand para state management
+- 🔄 Autenticação integrada
+- 🔄 API Routes para backend
+
+## 📊 Progresso da Migração
+
+### ✅ Concluído
+1. **Estrutura base Next.js 14** 
+   - App Router configurado
+   - TypeScript + Tailwind CSS
+   - Package.json e configs otimizados
+   
+2. **Sistema Multi-Tenancy**
+   - Tipos TypeScript para configurações
+   - Configs para 3 municípios (taxas, cores, localização)
+   - Páginas dinâmicas /[municipio]
+   - Página /tenants com detalhes completos
+   - Funções helper (getTenantConfig, isTenantValid)
+
+3. **Clientes Supabase**
+   - Client-side com @supabase/ssr
+   - Server-side com cookies
+   - Middleware para sessões
+
+### 🔄 Em Progresso
+- Resolução de problemas de conectividade Supabase
+- Rotação de chaves de segurança (ver SECURITY.md)
+
+### 📋 Próximos Passos
+1. Middleware de tenant resolution
+2. Sistema de autenticação (login/registro)
+3. Componentes compartilhados (Header, Footer)
+4. Migração de páginas do cliente
+5. Migração de dashboards de loja
+6. APIs Routes (lojas, pedidos, perfil)
+
+## ⚠️ SEGURANÇA CRÍTICA
+
+**AÇÃO NECESSÁRIA**: A SUPABASE_SERVICE_ROLE_KEY exposta precisa ser rotacionada!
+
+Leia o arquivo **`pedai-nextjs/SECURITY.md`** para instruções completas de como:
+1. Rotacionar a chave no Supabase Dashboard
+2. Adicionar a nova chave como Secret no Replit
+3. Manter práticas de segurança adequadas
+
+## 🏗️ Estrutura do Projeto
+
 ```
-.
-├── backend/              # Express.js API server
-│   ├── src/
-│   │   ├── config/      # Supabase client configuration
-│   │   ├── controllers/ # Business logic
-│   │   ├── middleware/  # Authentication middleware
-│   │   └── routes/      # API routes
-│   └── package.json
-├── frontend/            # Customer & Admin interfaces
-│   ├── Clientes/       # Customer pages
-│   ├── Admin/          # Admin dashboard
-│   └── js/             # Shared JavaScript modules
-└── loja-frontend/       # Store owner dashboard
+pedai-nextjs/
+├── app/
+│   ├── layout.tsx              # Layout raiz
+│   ├── page.tsx                # Home com seletor de municípios
+│   ├── globals.css             # Estilos globais
+│   ├── [municipio]/            # Rotas dinâmicas por município
+│   │   ├── page.tsx
+│   │   └── not-found.tsx
+│   ├── tenants/                # Página de configs dos municípios
+│   │   └── page.tsx
+│   └── api/
+│       └── test-supabase/      # Teste de conexão
+│           └── route.ts
+├── lib/
+│   ├── types/
+│   │   └── tenant.ts           # Tipos TypeScript
+│   ├── tenantConfig/
+│   │   └── index.ts            # Configs multi-tenancy
+│   └── supabase/
+│       ├── client.ts           # Cliente browser
+│       ├── server.ts           # Cliente server
+│       └── middleware.ts       # Sessões
+├── middleware.ts               # Middleware Next.js
+└── SECURITY.md                 # Notas de segurança
 ```
 
-### Key Features
-1. **Customer Interface** (`/frontend/Clientes/`)
-   - Browse stores and products
-   - Shopping cart functionality
-   - Order tracking
-   - User profile management
+## 🗄️ Banco de Dados (Supabase)
 
-2. **Store Dashboard** (`/loja-frontend/`)
-   - Order management
-   - Product catalog management
-   - Sales analytics
-   - Customer reviews
+**URL**: https://jrskruadcwuytvjeqybh.supabase.co
 
-3. **Admin Panel** (`/frontend/Admin/`)
-   - Platform oversight
-   - Store approval/management
+### Tabelas Principais
+- `usuarios` - Clientes, lojistas, entregadores, admin
+- `lojas` - Estabelecimentos por município
+- `produtos` - Catálogo de produtos
+- `pedidos` - Pedidos e tracking
+- `categorias` - Categorias de produtos/lojas
+- `avaliacoes` - Avaliações de lojas
+- `enderecos` - Endereços de entrega
 
-## Recent Changes (November 17, 2025)
+## 🎨 Design System
 
-### Replit Setup
-1. Configured backend to serve all frontend files on port 5000
-2. Updated all API URLs to use `window.location.origin` for environment flexibility
-3. Configured Express to bind to `0.0.0.0:5000` for Replit webview compatibility
-4. Set up workflow to auto-start the application
-5. Configured deployment settings for production
+### Cores por Município
+- **Alagoa Nova**: Primária #FFD100 (amarelo)
+- **Esperança**: Primária #00D4FF (azul ciano)
+- **Alagoa Grande**: Primária #00FF85 (verde)
+- **Todas**: Secundária #1A1A1A (preto)
 
-### Configuration Files
-- **Port**: Changed from 3000 to 5000 (required for Replit webview)
-- **Host**: Configured to bind to `0.0.0.0` instead of localhost
-- **Static Files**: Configured Express to serve `/frontend` and `/loja-frontend` directories
-- **API Base URLs**: All frontend files updated to use dynamic URLs
+### Fonte
+- Poppins (300, 400, 500, 600, 700, 800)
 
-## Environment Variables
+## 🚀 Como Rodar
 
-The following environment variables are configured in `backend/.env`:
+```bash
+cd pedai-nextjs
+npm install
+npm run dev
+```
 
-- `SUPABASE_URL`: Supabase project URL
-- `SUPABASE_ANON_KEY`: Supabase anonymous key for client-side operations
-- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key for admin operations
-- `PORT`: Server port (5000)
-- `NOME_MUNICIPIO`: Target city name ("Alagoa Nova")
+Acesse: http://localhost:5000
 
-**⚠️ SECURITY WARNING**: The current Supabase keys in `backend/.env` were imported from the original repository and should be rotated immediately. The service role key provides admin access to the database and should never be committed to version control. 
+## 📦 Dependências Principais
 
-**Recommended Actions**:
-1. Rotate all Supabase keys in the Supabase dashboard
-2. Store new keys in Replit Secrets (not in `.env` file)
-3. Update code to read from environment variables provided by Replit
+- next: ^14.2.0
+- react: ^18.3.0
+- @supabase/ssr: ^0.7.0
+- zustand: ^4.5.0 (planejado)
+- tailwindcss: ^3.4.7
 
-## Running the Application
+## 🔗 URLs Importantes
 
-### Development
-The application automatically starts via the configured workflow:
-- Command: `cd backend && node src/index.js`
-- Accessible at: The Replit webview URL
-- Port: 5000
+- **Home**: /
+- **Municípios**: /[municipio] (alagoa-nova, esperanca, alagoa-grande)
+- **Configs**: /tenants
+- **API Test**: /api/test-supabase
 
-### Deployment
-Configured for Replit Autoscale deployment:
-- Uses production-ready Express server
-- Automatically scales based on traffic
-- No build step required (static frontend)
+## 👥 Personas Suportadas
 
-## API Routes
+1. **Cliente** - Faz pedidos
+2. **Lojista** - Gerencia loja e produtos
+3. **Entregador** - Realiza entregas
+4. **Admin** - Administra plataforma
 
-### Public Routes
-- `POST /api/perfil/register` - User registration
-- `POST /api/perfil/login` - User authentication
+## 📝 Notas do Desenvolvedor
 
-### Protected Routes (require authentication)
-- `GET /api/perfil` - Get user profile
-- `PUT /api/perfil` - Update user profile
-- `GET /api/lojas` - List all stores
-- `GET /api/pedidos` - Get user orders
-- `POST /api/pedidos` - Create new order
-- `GET /api/dashboard/loja/*` - Store dashboard endpoints
+- Projeto criado inteiramente com IA (Gemini/ChatGPT) 
+- Desenvolvedor sem experiência prévia em programação
+- Migração para facilitar expansão multi-municipal
+- Foco em manutenibilidade e escalabilidade
 
-## User Roles
-- **cliente**: Regular customers
-- **loja**: Store owners with dashboard access
-- **entregador**: Delivery personnel (future feature)
+---
 
-## Development Notes
-
-### Important Considerations
-1. **Static File Serving**: The backend serves all frontend files - no separate frontend server needed
-2. **CORS**: Configured to accept all origins (`origin: '*'`) for development
-3. **Authentication**: Uses Supabase Auth with JWT tokens stored in localStorage
-4. **Image Storage**: Uses Supabase Storage for product images
-
-### Known Limitations
-- Tailwind CSS loaded via CDN (should be compiled for production)
-- No build process for frontend assets
-- Authentication redirects assume specific path structure
-
-## Future Improvements
-- Implement Tailwind CSS build process
-- Add delivery personnel features
-- Implement real-time order tracking
-- Add payment gateway integration
-- Optimize image loading and caching
+**Última atualização**: 17 de novembro de 2025  
+**Versão**: 2.0.0-alpha (migração em andamento)
