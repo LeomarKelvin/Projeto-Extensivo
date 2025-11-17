@@ -44,18 +44,14 @@ export default function LojasContent({ tenant }: LojasContentProps) {
 
   const loadLojas = async () => {
     try {
-      const supabase = createClient()
+      // Call API with municipio parameter for tenant isolation
+      const response = await fetch(`/api/lojas?municipio=${encodeURIComponent(tenant.name)}`)
       
-      let query = supabase
-        .from('lojas')
-        .select('*')
-        .eq('municipio', tenant.name)
-        .eq('ativo', true)
-
-      const { data, error } = await query
-
-      if (error) throw error
-
+      if (!response.ok) {
+        throw new Error('Erro ao carregar lojas')
+      }
+      
+      const data = await response.json()
       setLojas(data || [])
     } catch (error) {
       console.error('Erro ao carregar lojas:', error)

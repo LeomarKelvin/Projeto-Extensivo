@@ -29,19 +29,33 @@ export default function CarrinhoContent({ tenant }: CarrinhoContentProps) {
       return
     }
 
-    // TODO: Criar pedido no backend
-    console.log('Finalizando pedido:', {
-      items,
-      endereco,
-      observacoes,
-      taxaEntrega,
-      total: totalComEntrega,
-    })
+    try {
+      const response = await fetch('/api/pedidos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items,
+          endereco,
+          observacoes,
+          taxa_entrega: taxaEntrega,
+          total: totalComEntrega,
+        }),
+      })
 
-    // For now, just show success and clear cart
-    alert('Pedido realizado com sucesso!')
-    clearCart()
-    router.push(`/${tenant.slug}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao criar pedido')
+      }
+
+      alert('Pedido realizado com sucesso!')
+      clearCart()
+      router.push(`/${tenant.slug}`)
+    } catch (error: any) {
+      alert('Erro ao finalizar pedido: ' + error.message)
+    }
   }
 
   if (items.length === 0) {

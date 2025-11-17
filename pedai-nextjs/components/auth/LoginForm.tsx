@@ -66,15 +66,17 @@ export default function LoginForm({ tenant }: LoginFormProps) {
       }
 
       // Redirect based on user type
-      const basePath = tenant ? `/${tenant.slug}` : ''
+      // Note: Loja and entregador dashboards are not tenant-specific
       switch (perfil.tipo) {
         case 'loja':
-          router.push(`${basePath}/loja/dashboard`)
+          router.push('/loja/dashboard')
           break
         case 'entregador':
-          router.push(`${basePath}/entregador/dashboard`)
+          router.push('/entregador/dashboard')
           break
         default:
+          // Clientes go to tenant home
+          const basePath = tenant ? `/${tenant.slug}` : ''
           router.push(basePath || '/')
       }
     } catch (err: any) {
