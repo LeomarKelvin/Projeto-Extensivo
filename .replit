@@ -15,15 +15,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "PedeAí Application"
+args = "Next.js PedeAí"
 
 [[workflows.workflow]]
-name = "PedeAí Application"
+name = "Next.js PedeAí"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd backend && node src/index.js"
+args = "cd pedai-nextjs && npm run dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -34,7 +34,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 46875
+localPort = 36445
 externalPort = 3000
 
 [deployment]
