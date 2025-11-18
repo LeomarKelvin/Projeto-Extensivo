@@ -167,6 +167,17 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
                 >
                   Lojas
                 </Link>
+                {userProfile?.tipo === 'cliente' && (
+                  <Link 
+                    href={`${basePath}/meus-pedidos`}
+                    className="transition-colors text-white"
+                    style={{ color: 'white' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
+                  >
+                    Meus Pedidos
+                  </Link>
+                )}
                 <Link 
                   href="/"
                   className="transition-colors text-white"
@@ -237,6 +248,15 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
                 >
                   Lojas
                 </Link>
+                {userProfile?.tipo === 'cliente' && (
+                  <Link 
+                    href={`${basePath}/meus-pedidos`}
+                    className="text-white hover:opacity-80 transition-opacity py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Meus Pedidos
+                  </Link>
+                )}
                 <Link 
                   href="/"
                   className="text-white hover:opacity-80 transition-opacity py-2"

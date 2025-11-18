@@ -29,10 +29,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 async function getLojas(municipio: string) {
   const supabase = await createClient()
   
-  const { data, error } = await supabase
+  const { data, error} = await supabase
     .from('lojas')
     .select('*')
     .eq('municipio', municipio)
+    .eq('aprovada', true)
     .order('nome_loja')
   
   if (error) {
@@ -50,7 +51,7 @@ export default async function LojasPage({ params }: PageProps) {
     notFound()
   }
 
-  const lojas = await getLojas(tenant.name)
+  const lojas = await getLojas(tenant.slug)
 
   return (
     <ClientLayout tenant={tenant}>
