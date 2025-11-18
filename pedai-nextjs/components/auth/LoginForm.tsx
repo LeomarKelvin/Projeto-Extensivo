@@ -114,10 +114,51 @@ export default function LoginForm({ tenant }: LoginFormProps) {
         throw new Error(data.error || 'Erro ao criar conta')
       }
 
-      // Switch to login tab
-      setIsLogin(true)
-      setError('')
-      alert('Conta criada com sucesso! Faça login para continuar.')
+      // Automatically login after successful registration
+      const supabase = createClient()
+      
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: registerData.email,
+        password: registerData.password,
+      })
+
+      if (authError) throw authError
+
+      if (!authData.user) {
+        throw new Error('Erro ao fazer login automático')
+      }
+
+      // Get user profile via API (bypasses RLS)
+      const profileResponse = await fetch('/api/auth/get-profile')
+      const profileData = await profileResponse.json()
+
+      if (!profileResponse.ok) {
+        throw new Error(profileData.error || 'Erro ao buscar perfil')
+      }
+
+      const { perfil } = profileData
+
+      // Store profile in localStorage for compatibility
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userProfile', JSON.stringify(perfil))
+      }
+
+      // Redirect based on user type
+      switch (perfil.tipo) {
+        case 'admin':
+          router.push('/admin/dashboard')
+          break
+        case 'loja':
+          router.push('/loja/dashboard')
+          break
+        case 'entregador':
+          router.push('/entregador/dashboard')
+          break
+        default:
+          // Clientes go to tenant home
+          const basePath = tenant ? `/${tenant.slug}` : ''
+          router.push(basePath || '/')
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao criar conta')
     } finally {
