@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -9,6 +9,12 @@ import type { TenantConfig } from '@/lib/types/tenant'
 interface LoginFormProps {
   tenant?: TenantConfig
 }
+
+const MUNICIPIOS = [
+  { slug: 'alagoa-nova', nome: 'Alagoa Nova' },
+  { slug: 'esperanca', nome: 'Esperança' },
+  { slug: 'lagoa-seca', nome: 'Lagoa Seca' },
+]
 
 export default function LoginForm({ tenant }: LoginFormProps) {
   const router = useRouter()
@@ -29,7 +35,15 @@ export default function LoginForm({ tenant }: LoginFormProps) {
     nome: '',
     tipo: 'cliente' as 'cliente' | 'loja' | 'entregador',
     nome_loja: '',
+    municipio: tenant?.slug || 'alagoa-nova',
   })
+
+  // Auto-detect municipality from URL
+  useEffect(() => {
+    if (tenant?.slug) {
+      setRegisterData(prev => ({ ...prev, municipio: tenant.slug }))
+    }
+  }, [tenant])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -335,6 +349,28 @@ export default function LoginForm({ tenant }: LoginFormProps) {
               />
             </div>
           )}
+
+          <div>
+            <label htmlFor="register-municipio" className="block text-sm font-medium text-gray-300 mb-2">
+              Município
+            </label>
+            <select
+              id="register-municipio"
+              required
+              value={registerData.municipio}
+              onChange={(e) => setRegisterData({ ...registerData, municipio: e.target.value })}
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-tenant-primary focus:border-transparent"
+            >
+              {MUNICIPIOS.map((mun) => (
+                <option key={mun.slug} value={mun.slug}>
+                  {mun.nome}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-400">
+              {tenant ? `Detectado automaticamente: ${tenant.name}` : 'Selecione seu município'}
+            </p>
+          </div>
 
           <div>
             <label htmlFor="register-email" className="block text-sm font-medium text-gray-300 mb-2">

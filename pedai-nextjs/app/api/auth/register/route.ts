@@ -4,11 +4,26 @@ import { createClient } from '@supabase/supabase-js'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, nome, tipo, nome_loja } = body
+    const { email, password, nome, tipo, nome_loja, municipio } = body
 
     if (!email || !password || !nome || !tipo) {
       return NextResponse.json(
         { error: 'Todos os campos são obrigatórios' },
+        { status: 400 }
+      )
+    }
+
+    if (!municipio) {
+      return NextResponse.json(
+        { error: 'O município é obrigatório' },
+        { status: 400 }
+      )
+    }
+
+    const municipiosValidos = ['alagoa-nova', 'esperanca', 'lagoa-seca']
+    if (!municipiosValidos.includes(municipio)) {
+      return NextResponse.json(
+        { error: 'Município inválido' },
         { status: 400 }
       )
     }
@@ -66,6 +81,7 @@ export async function POST(request: NextRequest) {
           email,
           nome_completo: nome,
           tipo: tipo.toLowerCase(),
+          municipio,
         })
         .select()
         .single()
@@ -78,6 +94,7 @@ export async function POST(request: NextRequest) {
           .from('lojas')
           .insert({
             nome_loja: nome_loja,
+            municipio,
             user_id: userId,
             perfil_id: perfilData.id,
           })
