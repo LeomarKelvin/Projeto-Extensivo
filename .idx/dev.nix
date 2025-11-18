@@ -1,4 +1,4 @@
-# .idx/dev.nix - Configuração Corrigida para Subpasta
+# .idx/dev.nix - Configuração Final Robusta para Subpasta
 { pkgs, ... }: {
   # Canal estável do Nix
   channel = "stable-23.11";
@@ -20,12 +20,11 @@
 
     workspace = {
       onCreate = {
-        # MUDANÇA AQUI: Entra na pasta pedai-nextjs antes de instalar
+        # Ação: Instalação é feita na subpasta
         npm-install = "cd pedai-nextjs && npm install"; 
       };
       onStart = {
-        # MUDANÇA AQUI: Entra na pasta antes de rodar
-        watch-build = "cd pedai-nextjs && npm run dev";
+        # Removemos o onStart desnecessário para evitar conflito
       };
     };
 
@@ -33,11 +32,9 @@
       enable = true;
       previews = {
         web = {
-          # Comando para rodar o servidor
-          command = ["npm" "run" "dev" "--" "--port" "$PORT" "--hostname" "0.0.0.0"];
+          # MUDANÇA CRÍTICA: Forçando o shell a entrar na pasta antes de rodar o Next.js
+          command = ["sh" "-c" "cd pedai-nextjs && npm run dev -- --port $PORT --hostname 0.0.0.0"];
           manager = "web";
-          # MUDANÇA AQUI: Diz para o preview olhar dentro da pasta correta
-          cwd = "pedai-nextjs";
         };
       };
     };
