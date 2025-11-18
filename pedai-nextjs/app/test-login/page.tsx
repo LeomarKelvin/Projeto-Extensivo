@@ -35,9 +35,9 @@ export default function TestLogin() {
       addLog(`✅ Login bem-sucedido! User ID: ${authData.user?.id}`)
 
       addLog('3. Verificando sessão via getSession()...')
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        addLog(`✅ Sessão encontrada! Expires: ${new Date(session.expires_at! * 1000).toLocaleString()}`)
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (currentSession) {
+        addLog(`✅ Sessão encontrada! Expires: ${new Date(currentSession.expires_at! * 1000).toLocaleString()}`)
       } else {
         addLog('❌ Sessão não encontrada via getSession()!')
       }
@@ -59,7 +59,12 @@ export default function TestLogin() {
       }
 
       addLog('4. Chamando API /api/auth/get-profile...')
-      const response = await fetch('/api/auth/get-profile')
+      const { data: { session: apiSession } } = await supabase.auth.getSession()
+      const response = await fetch('/api/auth/get-profile', {
+        headers: apiSession ? {
+          'Authorization': `Bearer ${apiSession.access_token}`
+        } : {}
+      })
       const data = await response.json()
 
       if (response.ok) {

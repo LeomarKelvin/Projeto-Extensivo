@@ -52,7 +52,13 @@ export default function LoginForm({ tenant }: LoginFormProps) {
       }
 
       // Get user profile via API (bypasses RLS)
-      const response = await fetch('/api/auth/get-profile')
+      // Send access token in Authorization header for localStorage-based auth
+      const session = (await supabase.auth.getSession()).data.session
+      const response = await fetch('/api/auth/get-profile', {
+        headers: session ? {
+          'Authorization': `Bearer ${session.access_token}`
+        } : {}
+      })
       const data = await response.json()
 
       if (!response.ok) {
@@ -129,7 +135,13 @@ export default function LoginForm({ tenant }: LoginFormProps) {
       }
 
       // Get user profile via API (bypasses RLS)
-      const profileResponse = await fetch('/api/auth/get-profile')
+      // Send access token in Authorization header for localStorage-based auth
+      const session = (await supabase.auth.getSession()).data.session
+      const profileResponse = await fetch('/api/auth/get-profile', {
+        headers: session ? {
+          'Authorization': `Bearer ${session.access_token}`
+        } : {}
+      })
       const profileData = await profileResponse.json()
 
       if (!profileResponse.ok) {
