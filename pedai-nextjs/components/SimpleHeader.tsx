@@ -187,6 +187,17 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
                 >
                   Municípios
                 </Link>
+                {userProfile?.tipo === 'admin' && (
+                  <Link 
+                    href="/admin/dashboard"
+                    className="transition-colors text-white"
+                    style={{ color: 'white' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
+                  >
+                    Dashboard
+                  </Link>
+                )}
               </>
             )}
             {userProfile ? (
@@ -264,6 +275,15 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
                 >
                   Municípios
                 </Link>
+                {userProfile?.tipo === 'admin' && (
+                  <Link 
+                    href="/admin/dashboard"
+                    className="text-white hover:opacity-80 transition-opacity py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                )}
               </>
             )}
             {userProfile ? (
