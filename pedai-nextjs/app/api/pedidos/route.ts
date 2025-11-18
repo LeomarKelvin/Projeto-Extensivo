@@ -4,7 +4,14 @@ import { getTenantBySlug } from '@/lib/tenantConfig'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    // Check for Authorization header (localStorage-based sessions in iframe)
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+    
+    // Create Supabase client with token if available
+    const supabase = token 
+      ? await createClient(token)
+      : await createClient()
     
     const body = await request.json()
     const { 
