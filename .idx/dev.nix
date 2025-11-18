@@ -1,39 +1,36 @@
-# .idx/dev.nix - Configuração Final Robusta para Subpasta
+# .idx/dev.nix - Configuração para Next.js em subpasta
 { pkgs, ... }: {
-  # Canal estável do Nix
   channel = "stable-23.11";
 
-  # Pacotes necessários
   packages = [
     pkgs.nodejs_20
     pkgs.nodePackages.npm
   ];
 
-  # MUDANÇA CRÍTICA: Define o diretório de trabalho para todos os comandos
   idx = {
+    extensions = [
+      "esbenp.prettier-vscode"
+      "dbaeumer.vscode-eslint"
+    ];
+
     workspace = {
-      root = "pedai-nextjs"; # <--- ISSO FORÇA A RAIZ DO PROJETO
+      # Força a instalação das dependências na subpasta pedai-nextjs
       onCreate = {
-        # Agora o npm install roda direto porque o root está definido
-        npm-install = "npm install"; 
+        npm-install = "cd pedai-nextjs && npm install";
       };
+      # Comandos onStart não são necessários e podem gerar conflitos
     };
 
     previews = {
       enable = true;
       previews = {
         web = {
-          # O comando é simples, pois o 'root' já está definido
-          command = ["npm" "run" "dev" "--" "--port" "$PORT" "--hostname" "0.0.0.0"];
+          # Executa o servidor Next.js APÓS entrar na subpasta
+          command = ["sh" "-c" "cd pedai-nextjs && npm run dev -- --port $PORT --hostname 0.0.0.0"];
           manager = "web";
         };
       };
     };
-    
-    extensions = [
-      "esbenp.prettier-vscode"
-      "dbaeumer.vscode-eslint"
-    ];
   };
   env = {};
 }
