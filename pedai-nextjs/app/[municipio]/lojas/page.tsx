@@ -36,6 +36,7 @@ async function getLojas(municipio: string) {
     .from('lojas')
     .select('*')
     .eq('municipio', municipio)
+    .eq('aprovada', true)
     .order('nome_loja')
   
   if (error) {
@@ -43,16 +44,7 @@ async function getLojas(municipio: string) {
     return []
   }
   
-  console.log('Lojas retornadas do banco:', data?.length || 0, 'para município:', municipio)
-  if (data && data.length > 0) {
-    console.log('Primeira loja:', data[0])
-  }
-  
-  // Filter aprovada in JavaScript (Supabase schema cache issue)
-  const lojasAprovadas = (data || []).filter(loja => loja.aprovada === true)
-  console.log('Lojas aprovadas após filtro:', lojasAprovadas.length)
-  
-  return lojasAprovadas
+  return data || []
 }
 
 export default async function LojasPage({ params, searchParams }: PageProps) {
