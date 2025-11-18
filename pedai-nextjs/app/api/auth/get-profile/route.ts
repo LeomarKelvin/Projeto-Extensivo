@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
     const supabase = await createClient()
 
-    // Get authenticated user
+    // Get authenticated user from session
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
@@ -15,8 +16,20 @@ export async function GET() {
       )
     }
 
+    // Create service role client to bypass RLS
+    const supabaseAdmin = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    )
+
     // Get user profile using service role (bypasses RLS)
-    const { data: perfil, error: perfilError } = await supabase
+    const { data: perfil, error: perfilError } = await supabaseAdmin
       .from('perfis')
       .select('*')
       .eq('user_id', user.id)
