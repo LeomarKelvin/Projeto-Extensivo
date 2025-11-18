@@ -46,15 +46,24 @@ export default function PedidoPage() {
           .eq('id', id)
           .single()
         
-        if (fetchError || !data) {
+        if (fetchError || !data || !data.loja) {
           console.error('Erro ao buscar pedido:', fetchError)
           setError(true)
           setLoading(false)
           return
         }
         
+        // Normalize município from database to slug format for comparison
+        const municipioSlug = data.loja.municipio
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/\s+/g, '-')
+          .trim()
+        
         // Verify pedido is from correct municipality
-        if (data.loja.municipio !== tenant?.name) {
+        if (municipioSlug !== tenant.slug) {
+          console.error('Municipality mismatch:', { municipioSlug, tenantSlug: tenant.slug })
           setError(true)
           setLoading(false)
           return
