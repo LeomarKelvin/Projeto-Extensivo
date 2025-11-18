@@ -3,7 +3,7 @@ import AdminUsuarios from '@/components/admin/usuarios/AdminUsuarios'
 
 export default function UsuariosPage() {
   return (
-    <AdminLayout>
+    <AdminLayout currentPage="usuarios">
       <AdminUsuarios />
     </AdminLayout>
   )

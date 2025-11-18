@@ -3,7 +3,7 @@ import AdminFinanceiro from '@/components/admin/financeiro/AdminFinanceiro'
 
 export default function FinanceiroPage() {
   return (
-    <AdminLayout>
+    <AdminLayout currentPage="financeiro">
       <AdminFinanceiro />
     </AdminLayout>
   )

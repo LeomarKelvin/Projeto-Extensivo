@@ -14,6 +14,7 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
   const router = useRouter()
   const [adminName, setAdminName] = useState('')
   const [loading, setLoading] = useState(true)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -61,8 +62,18 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
 
   return (
     <div className="min-h-screen bg-gray-900 flex">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Fixed Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+      <aside className={`fixed left-0 top-0 h-screen w-64 bg-gray-800 border-r border-gray-700 flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
         {/* Logo */}
         <div className="p-6 border-b border-gray-700">
           <h1 className="text-2xl font-bold text-white">PedeAí</h1>
@@ -140,12 +151,21 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
       </aside>
 
       {/* Main Content Area */}
-      <div className="ml-64 flex-1 flex flex-col">
+      <div className="lg:ml-64 flex-1 flex flex-col">
         {/* Top Header */}
-        <header className="bg-gray-800 border-b border-gray-700 px-8 py-4">
+        <header className="bg-gray-800 border-b border-gray-700 px-4 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-white">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden text-white p-2 rounded-lg hover:bg-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="flex-1 lg:flex-none">
+              <h2 className="text-lg lg:text-xl font-semibold text-white">
                 {currentPage === 'dashboard' && 'Dashboard'}
                 {currentPage === 'usuarios' && 'Gestão de Usuários'}
                 {currentPage === 'lojas' && 'Gestão de Lojas'}
@@ -154,20 +174,20 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
               </h2>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
+            <div className="flex items-center space-x-2 lg:space-x-4">
+              <div className="hidden sm:block text-right">
                 <p className="text-sm text-gray-400">Bem-vindo,</p>
                 <p className="font-medium text-white">{adminName}</p>
               </div>
               
               <button
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
+                className="bg-red-600 hover:bg-red-700 text-white px-3 lg:px-4 py-2 rounded-lg transition flex items-center space-x-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <span>Sair</span>
+                <span className="hidden sm:inline">Sair</span>
               </button>
             </div>
           </div>

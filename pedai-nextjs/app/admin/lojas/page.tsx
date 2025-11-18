@@ -3,7 +3,7 @@ import AdminLojas from '@/components/admin/lojas/AdminLojas'
 
 export default function LojasPage() {
   return (
-    <AdminLayout>
+    <AdminLayout currentPage="lojas">
       <AdminLojas />
     </AdminLayout>
   )

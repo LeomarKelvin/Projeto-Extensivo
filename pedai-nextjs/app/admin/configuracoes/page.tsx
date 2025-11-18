@@ -3,7 +3,7 @@ import AdminConfiguracoes from '@/components/admin/configuracoes/AdminConfigurac
 
 export default function ConfiguracoesPage() {
   return (
-    <AdminLayout>
+    <AdminLayout currentPage="configuracoes">
       <AdminConfiguracoes />
     </AdminLayout>
   )
