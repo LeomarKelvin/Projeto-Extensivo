@@ -144,7 +144,7 @@ pedai-nextjs/
 ## 🚀 Como Rodar
 
 ```bash
-cd pedai-nextjs
+cd pedai-nextjs 
 npm install
 npm run dev
 ```
@@ -242,7 +242,3 @@ A migração foi **concluída com sucesso**! O projeto agora possui:
 **MVP está pronto para uso e expansão!** 🚀
 
 ---
-
-**Desenvolvido com IA** (Gemini/ChatGPT)  
-**Versão**: 2.0.0  
-**Última atualização**: 17 de novembro de 2025
