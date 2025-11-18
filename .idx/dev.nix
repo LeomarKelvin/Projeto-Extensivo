@@ -1,7 +1,8 @@
-# .idx/dev.nix - Configuração para Next.js em subpasta
+# .idx/dev.nix - Configuração para Next.js em subpasta (Final Fix)
 { pkgs, ... }: {
   channel = "stable-23.11";
 
+  # Instala Node e NPM
   packages = [
     pkgs.nodejs_20
     pkgs.nodePackages.npm
@@ -14,18 +15,17 @@
     ];
 
     workspace = {
-      # Força a instalação das dependências na subpasta pedai-nextjs
+      # 1. Comando de instalação: Entra na pasta e instala.
       onCreate = {
         npm-install = "cd pedai-nextjs && npm install";
       };
-      # Comandos onStart não são necessários e podem gerar conflitos
     };
 
     previews = {
       enable = true;
       previews = {
         web = {
-          # Executa o servidor Next.js APÓS entrar na subpasta
+          # 2. Comando de Preview: Usa 'sh -c' para forçar a mudança de pasta antes de rodar o servidor.
           command = ["sh" "-c" "cd pedai-nextjs && npm run dev -- --port $PORT --hostname 0.0.0.0"];
           manager = "web";
         };
