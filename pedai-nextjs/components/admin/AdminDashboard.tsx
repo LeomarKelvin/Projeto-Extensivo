@@ -44,7 +44,13 @@ export default function AdminDashboard() {
     }
 
     // Get profile via API (bypasses RLS)
-    const profileResponse = await fetch('/api/auth/get-profile')
+    // Send access token in Authorization header for localStorage-based auth
+    const { data: { session } } = await supabase.auth.getSession()
+    const profileResponse = await fetch('/api/auth/get-profile', {
+      headers: session ? {
+        'Authorization': `Bearer ${session.access_token}`
+      } : {}
+    })
     const profileData = await profileResponse.json()
 
     if (!profileResponse.ok || !profileData.perfil || profileData.perfil.tipo !== 'admin') {
