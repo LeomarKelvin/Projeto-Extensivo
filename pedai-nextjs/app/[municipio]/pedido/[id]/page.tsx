@@ -61,8 +61,8 @@ export default function PedidoPage() {
           .replace(/\s+/g, '-')
           .trim()
         
-        // Verify pedido is from correct municipality
-        if (municipioSlug !== tenant.slug) {
+        // Verify pedido is from correct municipality (FIX: Added tenant check)
+        if (tenant && municipioSlug !== tenant.slug) {
           console.error('Municipality mismatch:', { municipioSlug, tenantSlug: tenant.slug })
           setError(true)
           setLoading(false)
