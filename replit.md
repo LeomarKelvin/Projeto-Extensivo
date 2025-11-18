@@ -229,6 +229,32 @@ The project's vision is to offer a production-ready MVP for deployment, ensuring
 
 ## Recent Changes
 
+**2025-11-18: Municipality-Based User Segmentation**
+- Implemented municipality field in user registration for all user types (cliente, loja, entregador)
+- **Database Schema:**
+  - Added `municipio` column to `perfis` table with CHECK constraint for valid municipalities
+  - Column validates only: 'alagoa-nova', 'esperanca', 'lagoa-seca'
+  - Municipality propagates from perfis to lojas table during shop registration
+- **Registration Form (LoginForm.tsx):**
+  - Added municipality select dropdown with three options
+  - Implements intelligent auto-detection based on URL (tenant.slug)
+  - Pre-selects municipality automatically from current tenant context
+  - Users can manually change if needed
+  - Visual hint shows detected municipality: "Detectado automaticamente: [Nome do Município]"
+- **API Validation (/api/auth/register):**
+  - Municipality is required field with server-side validation
+  - Validates against allowed list of municipalities
+  - Returns clear error messages for invalid values
+  - Saves municipality in both `perfis` and `lojas` tables (for shop owners)
+- **User Experience:**
+  - Hybrid approach: Auto-detect from URL + manual override capability
+  - Seamless experience: User registers in `/alagoa-nova/auth/login` → municipality pre-selected
+  - Flexibility: Can change municipality in dropdown if needed
+- **Benefits:**
+  - Enables future filtering of shops, deliverers, and clients by municipality
+  - Ensures data integrity with proper geographic segmentation
+  - Foundation for municipality-specific features and analytics
+
 **2025-11-18: Authentication Fix & Header Responsiveness**
 - Fixed critical authentication bug in Replit iframe environment:
   - Cookies don't work in iframes due to browser security
