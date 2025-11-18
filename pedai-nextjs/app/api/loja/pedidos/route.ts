@@ -1,20 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
+    // Try to get token from Authorization header (for localStorage-based auth)
+    const authHeader = request.headers.get('Authorization')
+    let user = null
+
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.substring(7)
+      
+      // Verify token with Supabase
+      const supabaseAdmin = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      )
+
+      const { data: { user: tokenUser }, error: tokenError } = await supabaseAdmin.auth.getUser(token)
+      
+      if (!tokenError && tokenUser) {
+        user = tokenUser
+      }
+    }
+
+    // Fallback to cookie-based auth
+    if (!user) {
+      const supabase = await createClient()
+      const { data: { user: cookieUser }, error: userError } = await supabase.auth.getUser()
+      
+      if (!userError && cookieUser) {
+        user = cookieUser
+      }
+    }
+
+    if (!user) {
       return NextResponse.json(
         { error: 'Autenticação necessária' },
         { status: 401 }
       )
     }
+
+    // Create service role client to bypass RLS
+    const supabaseAdmin = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    )
     
-    const { data: perfil } = await supabase
+    const { data: perfil } = await supabaseAdmin
       .from('perfis')
       .select('id, tipo')
       .eq('user_id', user.id)
@@ -37,7 +82,7 @@ export async function GET(request: NextRequest) {
     
     if (perfil.tipo === 'loja') {
       // Lojista só pode ver sua própria loja
-      const { data: lojaData } = await supabase
+      const { data: lojaData } = await supabaseAdmin
         .from('lojas')
         .select('id, nome_loja')
         .eq('perfil_id', perfil.id)
@@ -61,7 +106,7 @@ export async function GET(request: NextRequest) {
         )
       }
       
-      const { data: lojaData } = await supabase
+      const { data: lojaData } = await supabaseAdmin
         .from('lojas')
         .select('id, nome_loja')
         .eq('id', parseInt(lojaIdParam))
@@ -78,7 +123,7 @@ export async function GET(request: NextRequest) {
       loja = lojaData
     }
     
-    let query = supabase
+    let query = supabaseAdmin
       .from('pedidos')
       .select(`
         id,
@@ -114,7 +159,7 @@ export async function GET(request: NextRequest) {
     
     const pedidosWithItems = await Promise.all(
       pedidos.map(async (pedido) => {
-        const { data: items } = await supabase
+        const { data: items } = await supabaseAdmin
           .from('pedido_itens')
           .select(`
             quantidade,

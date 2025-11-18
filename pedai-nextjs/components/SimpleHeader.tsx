@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import Logo from './Logo'
 import type { TenantConfig } from '@/lib/types/tenant'
 
@@ -9,8 +10,73 @@ interface SimpleHeaderProps {
   tenant?: TenantConfig
 }
 
+interface UserProfile {
+  id: number
+  nome_completo: string
+  tipo: string
+  email: string
+}
+
+interface Loja {
+  nome_loja: string
+}
+
 export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [lojaName, setLojaName] = useState<string | null>(null)
+  
+  // Check if user is logged in
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = async () => {
+    try {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        setUserProfile(null)
+        setLojaName(null)
+        return
+      }
+
+      // Get user profile
+      const profileResponse = await fetch('/api/auth/get-profile', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      
+      if (profileResponse.ok) {
+        const data = await profileResponse.json()
+        setUserProfile(data.perfil)
+
+        // If user is loja, get store name
+        if (data.perfil.tipo === 'loja') {
+          const { data: lojaData } = await supabase
+            .from('lojas')
+            .select('nome_loja')
+            .eq('perfil_id', data.perfil.id)
+            .single()
+          
+          if (lojaData) {
+            setLojaName(lojaData.nome_loja)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error)
+    }
+  }
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    localStorage.clear()
+    window.location.href = '/'
+  }
   
   // Handle keyboard navigation for mobile menu
   useEffect(() => {
@@ -90,16 +156,30 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
             >
               Municípios
             </Link>
-            <Link
-              href={loginUrl}
-              className="font-medium py-2 px-6 rounded-full hover:opacity-90 transition-opacity"
-              style={{
-                backgroundColor: primaryColor,
-                color: tenant?.theme.secondary || '#1A1A1A',
-              }}
-            >
-              Entrar
-            </Link>
+            {userProfile ? (
+              <>
+                <span className="text-white font-medium">
+                  Olá, {lojaName || userProfile.nome_completo.split(' ')[0]}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="font-medium py-2 px-6 rounded-full hover:opacity-90 transition-opacity bg-red-500 text-white"
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <Link
+                href={loginUrl}
+                className="font-medium py-2 px-6 rounded-full hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: tenant?.theme.secondary || '#1A1A1A',
+                }}
+              >
+                Entrar
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -132,17 +212,34 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
             >
               Municípios
             </Link>
-            <Link
-              href={loginUrl}
-              className="font-medium py-2 px-6 rounded-full text-center hover:opacity-90 transition-opacity"
-              style={{
-                backgroundColor: primaryColor,
-                color: tenant?.theme.secondary || '#1A1A1A',
-              }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Entrar
-            </Link>
+            {userProfile ? (
+              <>
+                <span className="text-white font-medium py-2">
+                  Olá, {lojaName || userProfile.nome_completo.split(' ')[0]}
+                </span>
+                <button
+                  onClick={() => {
+                    handleLogout()
+                    setMobileMenuOpen(false)
+                  }}
+                  className="font-medium py-2 px-6 rounded-full text-center hover:opacity-90 transition-opacity bg-red-500 text-white"
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <Link
+                href={loginUrl}
+                className="font-medium py-2 px-6 rounded-full text-center hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: tenant?.theme.secondary || '#1A1A1A',
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Entrar
+              </Link>
+            )}
           </nav>
         )}
       </div>

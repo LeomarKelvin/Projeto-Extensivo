@@ -229,6 +229,20 @@ The project's vision is to offer a production-ready MVP for deployment, ensuring
 
 ## Recent Changes
 
+**2025-11-18: Authentication Fix & Header Responsiveness**
+- Fixed critical authentication bug in Replit iframe environment:
+  - Cookies don't work in iframes due to browser security
+  - Implemented localStorage-based session storage for client
+  - Modified `/api/auth/get-profile` to accept tokens via Authorization header
+  - Updated all dashboard components (Admin, Loja) to send tokens in requests
+- Made SimpleHeader component responsive to user login:
+  - Shows "Olá, [primeiro nome]" for logged-in clients
+  - Shows "Olá, [nome da loja]" for logged-in store owners
+  - Adds logout button when user is authenticated
+  - Works on both desktop and mobile views
+- Created diagnostic `/test-login` page for authentication troubleshooting
+- All login flows now work correctly in Replit environment
+
 **2025-11-18: Complete Admin Panel Expansion**
 - Extended database schema with:
   - `configuracoes_plataforma` table for platform settings

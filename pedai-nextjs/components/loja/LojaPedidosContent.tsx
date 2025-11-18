@@ -74,7 +74,13 @@ export default function LojaPedidosContent() {
     }
 
     // Get user profile via API (bypasses RLS)
-    const profileResponse = await fetch('/api/auth/get-profile')
+    // Send access token in Authorization header for localStorage-based auth
+    const { data: { session } } = await supabase.auth.getSession()
+    const profileResponse = await fetch('/api/auth/get-profile', {
+      headers: session ? {
+        'Authorization': `Bearer ${session.access_token}`
+      } : {}
+    })
     const profileData = await profileResponse.json()
 
     if (!profileResponse.ok || !profileData.perfil) {
@@ -95,11 +101,18 @@ export default function LojaPedidosContent() {
   const loadPedidos = async () => {
     setLoading(true)
     try {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const url = filtroStatus === 'todos' 
         ? '/api/loja/pedidos'
         : `/api/loja/pedidos?status=${filtroStatus}`
       
-      const response = await fetch(url)
+      const response = await fetch(url, {
+        headers: session ? {
+          'Authorization': `Bearer ${session.access_token}`
+        } : {}
+      })
       const data = await response.json()
 
       if (response.ok) {
