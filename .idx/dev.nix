@@ -1,9 +1,9 @@
-# .idx/dev.nix - Configuração para Next.js no Firebase Studio
+# .idx/dev.nix - Configuração Corrigida para Subpasta
 { pkgs, ... }: {
-  # Qual canal do Nix usar (estável é melhor)
+  # Canal estável do Nix
   channel = "stable-23.11";
 
-  # Pacotes que precisam ser instalados no computador da nuvem
+  # Pacotes necessários
   packages = [
     pkgs.nodejs_20
     pkgs.nodePackages.npm
@@ -12,27 +12,23 @@
   # Variáveis de ambiente
   env = {};
 
-  # Configuração do ícone e busca
   idx = {
     extensions = [
-      # Extensões úteis para VS Code
       "esbenp.prettier-vscode"
       "dbaeumer.vscode-eslint"
     ];
 
-    # O que fazer quando o ambiente abrir pela primeira vez
     workspace = {
       onCreate = {
-        # Instalar as dependências (substitui o npm install manual)
-        npm-install = "npm install";
+        # MUDANÇA AQUI: Entra na pasta pedai-nextjs antes de instalar
+        npm-install = "cd pedai-nextjs && npm install"; 
       };
       onStart = {
-        # Sempre que abrir, garantir que está tudo pronto
-        watch-build = "npm run dev";
+        # MUDANÇA AQUI: Entra na pasta antes de rodar
+        watch-build = "cd pedai-nextjs && npm run dev";
       };
     };
 
-    # Configuração do Preview (a janelinha do site)
     previews = {
       enable = true;
       previews = {
@@ -40,6 +36,8 @@
           # Comando para rodar o servidor
           command = ["npm" "run" "dev" "--" "--port" "$PORT" "--hostname" "0.0.0.0"];
           manager = "web";
+          # MUDANÇA AQUI: Diz para o preview olhar dentro da pasta correta
+          cwd = "pedai-nextjs";
         };
       };
     };
