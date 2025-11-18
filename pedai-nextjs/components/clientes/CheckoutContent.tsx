@@ -98,10 +98,15 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
     try {
       const endereco = `${formData.rua}, ${formData.numero} - ${formData.bairro}${formData.complemento ? ` (${formData.complemento})` : ''}`
       
+      // Get access token for authentication (localStorage-based session)
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const response = await fetch('/api/pedidos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
         },
         body: JSON.stringify({
           items: items.map(item => ({
