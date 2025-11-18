@@ -36,7 +36,7 @@ async function getLojas(municipio: string) {
     .from('lojas')
     .select('*')
     .eq('municipio', municipio)
-    .eq('aprovada', true)
+    
     .order('nome_loja')
   
   if (error) {

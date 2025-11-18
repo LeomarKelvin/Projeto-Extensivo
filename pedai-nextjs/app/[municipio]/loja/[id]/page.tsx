@@ -37,7 +37,7 @@ async function getLojaDetalhes(lojaId: string, municipio: string) {
     .select('*')
     .eq('id', lojaId)
     .eq('municipio', municipio)
-    .eq('aprovada', true)
+    
     .single()
   
   if (lojaError || !loja) {
