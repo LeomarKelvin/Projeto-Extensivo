@@ -15,6 +15,7 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
   const { items, total, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
+  const [pedidoCriado, setPedidoCriado] = useState(false)
 
   // Check authentication on mount
   useEffect(() => {
@@ -35,12 +36,12 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
     checkAuth()
   }, [router, tenant])
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not if order was just created)
   useEffect(() => {
-    if (items.length === 0 && !checkingAuth) {
+    if (items.length === 0 && !checkingAuth && !pedidoCriado) {
       router.push(`/${tenant.slug}/carrinho`)
     }
-  }, [items, router, tenant, checkingAuth])
+  }, [items, router, tenant, checkingAuth, pedidoCriado])
 
   // Form state
   const [formData, setFormData] = useState({
@@ -137,6 +138,9 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
         throw new Error(data.error || 'Erro ao criar pedido')
       }
 
+      // Mark order as created to prevent cart empty redirect
+      setPedidoCriado(true)
+      
       // Clear cart and redirect to success page
       clearCart()
       router.push(`/${tenant.slug}/pedido/${data.id}`)
