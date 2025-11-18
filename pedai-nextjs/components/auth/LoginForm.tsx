@@ -37,32 +37,25 @@ export default function LoginForm({ tenant }: LoginFormProps) {
     setError('')
 
     try {
-      const supabase = createClient()
-      
-      // Sign in with Supabase
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password,
+      // Call server-side login endpoint
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: loginData.email,
+          password: loginData.password,
+        }),
       })
 
-      if (authError) throw authError
+      const data = await response.json()
 
-      if (!authData.user) {
-        throw new Error('Erro ao fazer login')
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao fazer login')
       }
 
-      // Get user profile
-      const { data: perfil, error: perfilError } = await supabase
-        .from('perfis')
-        .select('*')
-        .eq('user_id', authData.user.id)
-        .maybeSingle()
-
-      if (perfilError) throw perfilError
-      
-      if (!perfil) {
-        throw new Error('Perfil de usuário não encontrado. Entre em contato com o suporte.')
-      }
+      const { perfil } = data
 
       // Store profile in localStorage for compatibility
       if (typeof window !== 'undefined') {
