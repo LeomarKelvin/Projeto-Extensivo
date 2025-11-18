@@ -14,11 +14,6 @@ ON perfis
 FOR SELECT 
 USING (auth.uid() = user_id);
 
--- Allow service role to have full access (for server-side operations)
-CREATE POLICY "Service role has full access" 
-ON perfis 
-FOR ALL 
-USING (true);
-
 -- Note: Apply this in Supabase Dashboard > SQL Editor
--- This ensures users can read their profiles when authenticated
+-- The service role already bypasses RLS naturally in Supabase
+-- No additional policy is needed for server-side operations
