@@ -9,6 +9,9 @@ interface PageProps {
   params: {
     municipio: string
   }
+  searchParams: {
+    categoria?: string
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -33,7 +36,6 @@ async function getLojas(municipio: string) {
     .from('lojas')
     .select('*')
     .eq('municipio', municipio)
-    .eq('aprovada', true)
     .order('nome_loja')
   
   if (error) {
@@ -41,10 +43,19 @@ async function getLojas(municipio: string) {
     return []
   }
   
-  return data || []
+  console.log('Lojas retornadas do banco:', data?.length || 0, 'para município:', municipio)
+  if (data && data.length > 0) {
+    console.log('Primeira loja:', data[0])
+  }
+  
+  // Filter aprovada in JavaScript (Supabase schema cache issue)
+  const lojasAprovadas = (data || []).filter(loja => loja.aprovada === true)
+  console.log('Lojas aprovadas após filtro:', lojasAprovadas.length)
+  
+  return lojasAprovadas
 }
 
-export default async function LojasPage({ params }: PageProps) {
+export default async function LojasPage({ params, searchParams }: PageProps) {
   const tenant = getTenantBySlug(params.municipio)
 
   if (!tenant) {
@@ -55,7 +66,11 @@ export default async function LojasPage({ params }: PageProps) {
 
   return (
     <ClientLayout tenant={tenant}>
-      <LojasContent tenant={tenant} initialLojas={lojas} />
+      <LojasContent 
+        tenant={tenant} 
+        initialLojas={lojas}
+        categoriaInicial={searchParams.categoria || 'todas'}
+      />
     </ClientLayout>
   )
 }

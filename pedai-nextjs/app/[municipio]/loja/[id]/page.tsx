@@ -31,16 +31,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 async function getLojaDetalhes(lojaId: string, municipio: string) {
   const supabase = await createClient()
   
-  // Buscar loja (apenas aprovadas)
+  // Buscar loja
   const { data: loja, error: lojaError } = await supabase
     .from('lojas')
     .select('*')
     .eq('id', lojaId)
     .eq('municipio', municipio)
-    .eq('aprovada', true)
     .single()
   
-  if (lojaError || !loja) {
+  // Filter aprovada in JavaScript (Supabase schema cache issue)
+  if (lojaError || !loja || loja.aprovada !== true) {
     return null
   }
   

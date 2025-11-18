@@ -20,21 +20,24 @@ interface Loja {
 interface LojasContentProps {
   tenant: TenantConfig
   initialLojas: Loja[]
+  categoriaInicial?: string
 }
 
 const CATEGORIAS = [
   { id: 'todas', nome: 'Todas', icone: '🏪' },
-  { id: 'Restaurantes', nome: 'Restaurantes', icone: '🍔' },
-  { id: 'Mercados', nome: 'Mercados', icone: '🛒' },
-  { id: 'Farmácias', nome: 'Farmácias', icone: '💊' },
-  { id: 'Padarias', nome: 'Padarias', icone: '🥖' },
-  { id: 'Bebidas', nome: 'Bebidas', icone: '🍺' },
-  { id: 'Outros', nome: 'Outros', icone: '📦' },
+  { id: 'restaurante', nome: 'Restaurantes', icone: '🍔' },
+  { id: 'mercado', nome: 'Mercados', icone: '🛒' },
+  { id: 'farmacia', nome: 'Farmácias', icone: '💊' },
+  { id: 'padaria', nome: 'Padarias', icone: '🥖' },
+  { id: 'bebidas', nome: 'Bebidas', icone: '🍺' },
+  { id: 'lanchonete', nome: 'Lanchonetes', icone: '🌭' },
+  { id: 'pizzaria', nome: 'Pizzarias', icone: '🍕' },
+  { id: 'outros', nome: 'Outros', icone: '📦' },
 ]
 
-export default function LojasContent({ tenant, initialLojas }: LojasContentProps) {
+export default function LojasContent({ tenant, initialLojas, categoriaInicial = 'todas' }: LojasContentProps) {
   const [lojas] = useState<Loja[]>(initialLojas)
-  const [categoriaAtiva, setCategoriaAtiva] = useState('todas')
+  const [categoriaAtiva, setCategoriaAtiva] = useState(categoriaInicial)
   const [busca, setBusca] = useState('')
 
   const lojasFiltradas = lojas.filter(loja => {
