@@ -37,22 +37,26 @@ export default function LoginForm({ tenant }: LoginFormProps) {
     setError('')
 
     try {
-      // Call server-side login endpoint
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: loginData.email,
-          password: loginData.password,
-        }),
+      const supabase = createClient()
+      
+      // Authenticate user (establishes session in browser)
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
       })
 
+      if (authError) throw authError
+
+      if (!authData.user) {
+        throw new Error('Erro ao fazer login')
+      }
+
+      // Get user profile via API (bypasses RLS)
+      const response = await fetch('/api/auth/get-profile')
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao fazer login')
+        throw new Error(data.error || 'Erro ao buscar perfil')
       }
 
       const { perfil } = data
