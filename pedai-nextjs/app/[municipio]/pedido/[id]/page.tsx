@@ -1,15 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { getTenantBySlug } from '@/lib/tenantConfig'
-import { notFound } from 'next/navigation'
 import ClientLayout from '@/components/ClientLayout'
 import PedidoConfirmacaoContent from '@/components/clientes/PedidoConfirmacaoContent'
 import { createClient } from '@/lib/supabase/client'
 
 export default function PedidoPage() {
   const params = useParams()
+  const router = useRouter()
   const municipio = params.municipio as string
   const id = params.id as string
   
@@ -20,6 +20,12 @@ export default function PedidoPage() {
   const tenant = getTenantBySlug(municipio)
 
   useEffect(() => {
+    // Redirect if tenant not found
+    if (!tenant) {
+      router.replace('/')
+      return
+    }
+
     async function fetchPedido() {
       try {
         const supabase = createClient()
@@ -66,10 +72,10 @@ export default function PedidoPage() {
     if (tenant) {
       fetchPedido()
     }
-  }, [id, tenant])
+  }, [id, tenant, router])
 
   if (!tenant) {
-    notFound()
+    return null // Will redirect via useEffect
   }
 
   if (loading) {
@@ -86,7 +92,31 @@ export default function PedidoPage() {
   }
 
   if (error || !pedido) {
-    notFound()
+    return (
+      <ClientLayout tenant={tenant}>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+          <div className="max-w-md w-full mx-auto px-4 text-center">
+            <div className="text-6xl mb-6">😔</div>
+            <h1 className="text-3xl font-bold text-white mb-4">Pedido não encontrado</h1>
+            <p className="text-gray-400 mb-8">
+              Não conseguimos encontrar este pedido. Ele pode ter sido cancelado ou você não tem permissão para visualizá-lo.
+            </p>
+            <button
+              onClick={() => router.push(`/${municipio}/meus-pedidos`)}
+              className="w-full py-3 px-6 bg-tenant-primary text-white font-semibold rounded-lg hover:opacity-90 transition-opacity mb-3"
+            >
+              Ver meus pedidos
+            </button>
+            <button
+              onClick={() => router.push(`/${municipio}`)}
+              className="w-full py-3 px-6 bg-gray-700 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Voltar ao início
+            </button>
+          </div>
+        </div>
+      </ClientLayout>
+    )
   }
 
   return (
