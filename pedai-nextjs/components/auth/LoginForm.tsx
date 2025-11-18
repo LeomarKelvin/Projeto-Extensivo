@@ -66,12 +66,9 @@ export default function LoginForm({ tenant }: LoginFormProps) {
       }
 
       // Get user profile via API (bypasses RLS)
-      // Send access token in Authorization header for localStorage-based auth
-      const session = (await supabase.auth.getSession()).data.session
+      // Send cookies for server-side session validation
       const response = await fetch('/api/auth/get-profile', {
-        headers: session ? {
-          'Authorization': `Bearer ${session.access_token}`
-        } : {}
+        credentials: 'include'
       })
       const data = await response.json()
 
@@ -88,19 +85,24 @@ export default function LoginForm({ tenant }: LoginFormProps) {
 
       // Redirect based on user type
       // Note: Loja, entregador and admin dashboards are not tenant-specific
+      console.log('[LOGIN DEBUG] User tipo:', perfil.tipo)
       switch (perfil.tipo) {
         case 'admin':
+          console.log('[LOGIN DEBUG] Redirecting admin to /admin/dashboard')
           router.push('/admin/dashboard')
           break
         case 'loja':
+          console.log('[LOGIN DEBUG] Redirecting loja to /loja/dashboard')
           router.push('/loja/dashboard')
           break
         case 'entregador':
+          console.log('[LOGIN DEBUG] Redirecting entregador to /entregador/dashboard')
           router.push('/entregador/dashboard')
           break
         default:
           // Clientes go to tenant home
           const basePath = tenant ? `/${tenant.slug}` : ''
+          console.log('[LOGIN DEBUG] Redirecting cliente to', basePath || '/')
           router.push(basePath || '/')
       }
     } catch (err: any) {
@@ -149,12 +151,9 @@ export default function LoginForm({ tenant }: LoginFormProps) {
       }
 
       // Get user profile via API (bypasses RLS)
-      // Send access token in Authorization header for localStorage-based auth
-      const session = (await supabase.auth.getSession()).data.session
+      // Send cookies for server-side session validation
       const profileResponse = await fetch('/api/auth/get-profile', {
-        headers: session ? {
-          'Authorization': `Bearer ${session.access_token}`
-        } : {}
+        credentials: 'include'
       })
       const profileData = await profileResponse.json()
 

@@ -44,12 +44,9 @@ export default function AdminDashboard() {
     }
 
     // Get profile via API (bypasses RLS)
-    // Send access token in Authorization header for localStorage-based auth
-    const { data: { session } } = await supabase.auth.getSession()
+    // Send cookies for server-side session validation
     const profileResponse = await fetch('/api/auth/get-profile', {
-      headers: session ? {
-        'Authorization': `Bearer ${session.access_token}`
-      } : {}
+      credentials: 'include'
     })
     const profileData = await profileResponse.json()
 

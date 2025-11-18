@@ -23,15 +23,17 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
   const checkAuth = async () => {
     const supabase = createClient()
     
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
     
-    if (!user) {
+    if (!session) {
       router.push('/auth/login')
       return
     }
 
-    // Get profile via API (bypasses RLS)
-    const response = await fetch('/api/auth/get-profile')
+    // Get profile via API (bypasses RLS) - Send cookies for server-side session validation
+    const response = await fetch('/api/auth/get-profile', {
+      credentials: 'include'
+    })
     const data = await response.json()
 
     if (!response.ok || !data.perfil || data.perfil.tipo !== 'admin') {
@@ -39,7 +41,7 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
       return
     }
 
-    setAdminName(data.perfil.nome_completo || user.email || 'Admin')
+    setAdminName(data.perfil.nome_completo || session.user.email || 'Admin')
     setLoading(false)
   }
 
