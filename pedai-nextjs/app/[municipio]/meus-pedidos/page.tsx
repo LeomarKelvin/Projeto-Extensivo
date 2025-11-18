@@ -1,6 +1,6 @@
 import { getTenantBySlug } from '@/lib/tenantConfig'
 import { notFound, redirect } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import ClientLayout from '@/components/ClientLayout'
 import MeusPedidosContent from '@/components/clientes/MeusPedidosContent'
 
@@ -17,7 +17,7 @@ export default async function MeusPedidosPage({ params }: Props) {
     notFound()
   }
 
-  const supabase = await createServerClient()
+  const supabase = await createClient()
   
   const { data: { session } } = await supabase.auth.getSession()
   
