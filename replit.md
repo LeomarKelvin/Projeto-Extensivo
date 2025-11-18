@@ -23,10 +23,10 @@ PedeAí is a full-stack Next.js 14 platform for local delivery services across m
 - **Multi-Tenancy System:** Implemented with dynamic routes (`/[municipio]/*`), TypeScript types, and helper functions for tenant-specific settings.
 - **Server-Side Rendering (SSR):** Primarily uses Server Components with Supabase for data fetching, passing data to Client Components for interactivity.
 - **State Management:** Currently uses Context API for client-side state (e.g., shopping cart), with plans for Zustand integration.
-- **Authentication:** Supports four user types (client, shop, deliveryman, admin) with API routes for user creation and middleware for route protection. Session storage is adapted for Replit's iframe environment using localStorage.
+- **Authentication:** Supports four user types (client, shop, deliveryman, admin) with API routes for user creation and middleware for route protection. Session storage uses localStorage + Authorization Bearer tokens (optimized for Replit's iframe environment where third-party cookies are blocked). API endpoints accept both Bearer tokens and cookies for flexibility.
 - **Shopping Cart:** Persistent cart via Context API and LocalStorage, including minimum order validation and delivery fee calculation.
 - **Order Management System for Shopkeepers:** Authenticated API endpoints and a dedicated UI page (`/loja/pedidos`) for viewing, filtering, and updating order statuses.
-- **Admin Account System:** A universal admin profile provides full access to platform statistics and comprehensive management modules via a professional admin panel.
+- **Admin Account System:** A universal admin profile provides full access to platform statistics and comprehensive management modules via a professional admin panel. Default credentials: `admin@pedai.com` / `admin123`.
 
 **Feature Specifications:**
 - **Complete Checkout Flow:** Dynamic shopping cart, checkout page with address forms and payment options (cash, PIX, card), and server-side validation.
