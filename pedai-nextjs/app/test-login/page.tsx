@@ -34,12 +34,28 @@ export default function TestLogin() {
 
       addLog(`✅ Login bem-sucedido! User ID: ${authData.user?.id}`)
 
-      addLog('3. Verificando sessão...')
+      addLog('3. Verificando sessão via getSession()...')
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         addLog(`✅ Sessão encontrada! Expires: ${new Date(session.expires_at! * 1000).toLocaleString()}`)
       } else {
-        addLog('❌ Sessão não encontrada!')
+        addLog('❌ Sessão não encontrada via getSession()!')
+      }
+
+      addLog('3b. Verificando cookies no navegador...')
+      const cookies = document.cookie
+      if (cookies.includes('sb-')) {
+        addLog(`✅ Cookies Supabase encontrados: ${cookies.substring(0, 100)}...`)
+      } else {
+        addLog(`❌ Nenhum cookie Supabase encontrado! Cookies: ${cookies || '(vazio)'}`)
+      }
+
+      addLog('3c. Verificando usuário via getUser()...')
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (currentUser) {
+        addLog(`✅ getUser() retornou: ${currentUser.id}`)
+      } else {
+        addLog('❌ getUser() não retornou usuário!')
       }
 
       addLog('4. Chamando API /api/auth/get-profile...')
