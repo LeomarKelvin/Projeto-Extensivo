@@ -56,9 +56,13 @@ export default function LoginForm({ tenant }: LoginFormProps) {
         .from('perfis')
         .select('*')
         .eq('user_id', authData.user.id)
-        .single()
+        .maybeSingle()
 
       if (perfilError) throw perfilError
+      
+      if (!perfil) {
+        throw new Error('Perfil de usuário não encontrado. Entre em contato com o suporte.')
+      }
 
       // Store profile in localStorage for compatibility
       if (typeof window !== 'undefined') {
