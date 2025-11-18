@@ -8,9 +8,6 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.replace('Bearer ', '')
     
-    console.log('[DEBUG] Authorization header present:', !!authHeader)
-    console.log('[DEBUG] Token extracted:', token ? `${token.substring(0, 20)}...` : 'NONE')
-    
     // Create Supabase client with token if available
     const supabase = token 
       ? await createClient(token)
@@ -43,17 +40,12 @@ export async function POST(request: NextRequest) {
     // AUTHENTICATION REQUIRED: User must be logged in to create orders
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    console.log('[DEBUG] getUser() result - User:', user ? user.id : 'NONE', 'Error:', authError?.message || 'NONE')
-    
     if (authError || !user) {
-      console.log('[DEBUG] Authentication failed, returning 401')
       return NextResponse.json(
         { error: 'Autenticação necessária. Faça login para fazer pedidos.' },
         { status: 401 }
       )
     }
-    
-    console.log('[DEBUG] Authentication successful! User ID:', user.id)
     
     // Get user profile - only clientes can create orders
     const { data: perfil } = await supabase
