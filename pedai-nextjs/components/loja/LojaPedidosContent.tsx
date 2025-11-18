@@ -73,13 +73,18 @@ export default function LojaPedidosContent() {
       return
     }
 
-    const { data: perfil } = await supabase
-      .from('perfis')
-      .select('tipo')
-      .eq('user_id', user.id)
-      .single()
+    // Get user profile via API (bypasses RLS)
+    const profileResponse = await fetch('/api/auth/get-profile')
+    const profileData = await profileResponse.json()
 
-    if (!perfil || (perfil.tipo !== 'loja' && perfil.tipo !== 'admin')) {
+    if (!profileResponse.ok || !profileData.perfil) {
+      router.push('/')
+      return
+    }
+
+    const perfil = profileData.perfil
+
+    if (perfil.tipo !== 'loja' && perfil.tipo !== 'admin') {
       router.push('/')
       return
     }
