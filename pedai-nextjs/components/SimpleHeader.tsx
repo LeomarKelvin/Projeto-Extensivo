@@ -138,24 +138,38 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
             >
               Início
             </Link>
-            <Link 
-              href={lojasUrl}
-              className="transition-colors text-white"
-              style={{ color: 'white' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
-            >
-              Lojas
-            </Link>
-            <Link 
-              href="/"
-              className="transition-colors text-white"
-              style={{ color: 'white' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
-            >
-              Municípios
-            </Link>
+            {userProfile?.tipo === 'loja' ? (
+              <Link 
+                href="/loja/dashboard"
+                className="transition-colors text-white"
+                style={{ color: 'white' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link 
+                  href={lojasUrl}
+                  className="transition-colors text-white"
+                  style={{ color: 'white' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
+                >
+                  Lojas
+                </Link>
+                <Link 
+                  href="/"
+                  className="transition-colors text-white"
+                  style={{ color: 'white' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'white'}
+                >
+                  Municípios
+                </Link>
+              </>
+            )}
             {userProfile ? (
               <>
                 <span className="text-white font-medium">
@@ -198,20 +212,32 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
             >
               Início
             </Link>
-            <Link 
-              href={lojasUrl}
-              className="text-white hover:opacity-80 transition-opacity py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Lojas
-            </Link>
-            <Link 
-              href="/"
-              className="text-white hover:opacity-80 transition-opacity py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Municípios
-            </Link>
+            {userProfile?.tipo === 'loja' ? (
+              <Link 
+                href="/loja/dashboard"
+                className="text-white hover:opacity-80 transition-opacity py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link 
+                  href={lojasUrl}
+                  className="text-white hover:opacity-80 transition-opacity py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Lojas
+                </Link>
+                <Link 
+                  href="/"
+                  className="text-white hover:opacity-80 transition-opacity py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Municípios
+                </Link>
+              </>
+            )}
             {userProfile ? (
               <>
                 <span className="text-white font-medium py-2">
