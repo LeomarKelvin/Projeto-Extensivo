@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 export async function createClient(accessToken?: string) {
   const cookieStore = await cookies()
 
-  const client = createServerClient(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -24,20 +24,11 @@ export async function createClient(accessToken?: string) {
           }
         },
       },
+      global: {
+        headers: accessToken ? {
+          Authorization: `Bearer ${accessToken}`,
+        } : {},
+      },
     }
   )
-
-  // If an access token is provided (from Authorization header), use it
-  if (accessToken) {
-    const { data: { user } } = await client.auth.getUser(accessToken)
-    if (user) {
-      // Set the session manually for this request
-      await client.auth.setSession({
-        access_token: accessToken,
-        refresh_token: '', // Not needed for single request
-      })
-    }
-  }
-
-  return client
 }
