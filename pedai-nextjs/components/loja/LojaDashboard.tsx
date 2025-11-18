@@ -37,9 +37,11 @@ export default function LojaDashboard() {
     }
 
     // Get user profile via API (bypasses RLS)
-    // Send cookies for server-side session validation
+    const { data: { session } } = await supabase.auth.getSession()
     const profileResponse = await fetch('/api/auth/get-profile', {
-      credentials: 'include'
+      headers: session ? {
+        'Authorization': `Bearer ${session.access_token}`
+      } : {}
     })
     const profileData = await profileResponse.json()
 

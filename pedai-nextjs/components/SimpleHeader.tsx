@@ -43,9 +43,11 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
         return
       }
 
-      // Get user profile (send cookies for server-side session validation)
+      // Get user profile
       const profileResponse = await fetch('/api/auth/get-profile', {
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
       })
       
       if (profileResponse.ok) {

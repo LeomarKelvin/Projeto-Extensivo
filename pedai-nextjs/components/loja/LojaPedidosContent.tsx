@@ -74,9 +74,11 @@ export default function LojaPedidosContent() {
     }
 
     // Get user profile via API (bypasses RLS)
-    // Send cookies for server-side session validation
+    const { data: { session } } = await supabase.auth.getSession()
     const profileResponse = await fetch('/api/auth/get-profile', {
-      credentials: 'include'
+      headers: session ? {
+        'Authorization': `Bearer ${session.access_token}`
+      } : {}
     })
     const profileData = await profileResponse.json()
 
@@ -98,12 +100,17 @@ export default function LojaPedidosContent() {
   const loadPedidos = async () => {
     setLoading(true)
     try {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const url = filtroStatus === 'todos' 
         ? '/api/loja/pedidos'
         : `/api/loja/pedidos?status=${filtroStatus}`
       
       const response = await fetch(url, {
-        credentials: 'include'
+        headers: session ? {
+          'Authorization': `Bearer ${session.access_token}`
+        } : {}
       })
       const data = await response.json()
 
@@ -123,12 +130,15 @@ export default function LojaPedidosContent() {
   const handleUpdateStatus = async (pedidoId: number, newStatus: string) => {
     setUpdating(pedidoId)
     try {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const response = await fetch(`/api/loja/pedidos/${pedidoId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          ...(session && { 'Authorization': `Bearer ${session.access_token}` })
         },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
       })
 

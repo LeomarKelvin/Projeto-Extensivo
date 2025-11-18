@@ -30,9 +30,11 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
       return
     }
 
-    // Get profile via API (bypasses RLS) - Send cookies for server-side session validation
+    // Get profile via API (bypasses RLS)
     const response = await fetch('/api/auth/get-profile', {
-      credentials: 'include'
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`
+      }
     })
     const data = await response.json()
 
