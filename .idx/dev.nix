@@ -9,22 +9,13 @@
     pkgs.nodePackages.npm
   ];
 
-  # Variáveis de ambiente
-  env = {};
-
+  # MUDANÇA CRÍTICA: Define o diretório de trabalho para todos os comandos
   idx = {
-    extensions = [
-      "esbenp.prettier-vscode"
-      "dbaeumer.vscode-eslint"
-    ];
-
     workspace = {
+      root = "pedai-nextjs"; # <--- ISSO FORÇA A RAIZ DO PROJETO
       onCreate = {
-        # Ação: Instalação é feita na subpasta
-        npm-install = "cd pedai-nextjs && npm install"; 
-      };
-      onStart = {
-        # Removemos o onStart desnecessário para evitar conflito
+        # Agora o npm install roda direto porque o root está definido
+        npm-install = "npm install"; 
       };
     };
 
@@ -32,11 +23,17 @@
       enable = true;
       previews = {
         web = {
-          # MUDANÇA CRÍTICA: Forçando o shell a entrar na pasta antes de rodar o Next.js
-          command = ["sh" "-c" "cd pedai-nextjs && npm run dev -- --port $PORT --hostname 0.0.0.0"];
+          # O comando é simples, pois o 'root' já está definido
+          command = ["npm" "run" "dev" "--" "--port" "$PORT" "--hostname" "0.0.0.0"];
           manager = "web";
         };
       };
     };
+    
+    extensions = [
+      "esbenp.prettier-vscode"
+      "dbaeumer.vscode-eslint"
+    ];
   };
+  env = {};
 }
