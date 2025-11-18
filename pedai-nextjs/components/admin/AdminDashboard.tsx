@@ -43,13 +43,11 @@ export default function AdminDashboard() {
       return
     }
 
-    const { data: perfil } = await supabase
-      .from('perfis')
-      .select('tipo')
-      .eq('user_id', user.id)
-      .single()
+    // Get profile via API (bypasses RLS)
+    const profileResponse = await fetch('/api/auth/get-profile')
+    const profileData = await profileResponse.json()
 
-    if (!perfil || perfil.tipo !== 'admin') {
+    if (!profileResponse.ok || !profileData.perfil || profileData.perfil.tipo !== 'admin') {
       router.push('/')
       return
     }

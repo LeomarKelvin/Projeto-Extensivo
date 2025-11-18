@@ -29,18 +29,16 @@ export default function AdminLayout({ children, currentPage = 'dashboard' }: Adm
       return
     }
 
-    const { data: perfil } = await supabase
-      .from('perfis')
-      .select('tipo, nome')
-      .eq('user_id', user.id)
-      .single()
+    // Get profile via API (bypasses RLS)
+    const response = await fetch('/api/auth/get-profile')
+    const data = await response.json()
 
-    if (!perfil || perfil.tipo !== 'admin') {
+    if (!response.ok || !data.perfil || data.perfil.tipo !== 'admin') {
       router.push('/')
       return
     }
 
-    setAdminName(perfil.nome || user.email || 'Admin')
+    setAdminName(data.perfil.nome_completo || user.email || 'Admin')
     setLoading(false)
   }
 
