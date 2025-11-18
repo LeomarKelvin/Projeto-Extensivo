@@ -25,6 +25,7 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [lojaName, setLojaName] = useState<string | null>(null)
+  const [lojaMunicipio, setLojaMunicipio] = useState<string | null>(null)
   
   // Check if user is logged in
   useEffect(() => {
@@ -53,16 +54,17 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
         const data = await profileResponse.json()
         setUserProfile(data.perfil)
 
-        // If user is loja, get store name
+        // If user is loja, get store name and municipality
         if (data.perfil.tipo === 'loja') {
           const { data: lojaData } = await supabase
             .from('lojas')
-            .select('nome_loja')
+            .select('nome_loja, municipio')
             .eq('perfil_id', data.perfil.id)
             .single()
           
           if (lojaData) {
             setLojaName(lojaData.nome_loja)
+            setLojaMunicipio(lojaData.municipio)
           }
         }
       }
@@ -94,7 +96,13 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
   
   // Build tenant-aware URLs (all routes maintain tenant context)
   const basePath = tenant ? `/${tenant.slug}` : ''
-  const homeUrl = basePath || '/'
+  
+  // For lojistas, home URL points to their municipality
+  let homeUrl = basePath || '/'
+  if (userProfile?.tipo === 'loja' && lojaMunicipio) {
+    homeUrl = `/${lojaMunicipio}`
+  }
+  
   const lojasUrl = `${basePath}/lojas`
   const loginUrl = `${basePath}/auth/login`
 
