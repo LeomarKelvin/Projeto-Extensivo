@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+// ... (Interfaces e statusConfig mantidos iguais, vou encurtar para caber)
+// Mantenha as interfaces Pedido e statusConfig do código anterior aqui...
 interface Pedido {
   id: number
   status: string
@@ -47,38 +49,28 @@ export default function LojaPedidosContent() {
   const [filtroStatus, setFiltroStatus] = useState('ativos')
   const [lojaId, setLojaId] = useState<number | null>(null)
   
-  // Som de alerta (Google Sounds)
   const audioUrl = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'
 
-  // Função Poderosa de Notificação (Agora pede permissão no clique)
   const triggerAlert = async () => {
-    // 1. Toca o som (Audio Context precisa de interação)
     try {
       const audio = new Audio(audioUrl)
       await audio.play()
     } catch (e) {
       console.error("Erro som:", e)
     }
-
-    // 2. Muda o título da aba
     document.title = "🔔 (1) NOVO PEDIDO! - PedeAí"
 
-    // 3. Envia notificação do sistema
     if (typeof window !== 'undefined' && 'Notification' in window) {
-      // Se não tiver permissão, pede agora!
       if (Notification.permission !== 'granted') {
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') {
-          alert('⚠️ Para receber alertas, você precisa clicar no cadeado 🔒 ao lado da URL e permitir "Notificações".')
+          alert('⚠️ Habilite as notificações no navegador.')
           return
         }
       }
-
-      // Se chegou aqui, tem permissão
       new Notification('NOVO PEDIDO RECEBIDO! 🍕', {
         body: 'Um cliente acabou de fazer um pedido. Clique para ver.',
-        requireInteraction: true, // Fica na tela até clicar
-        silent: false
+        requireInteraction: true
       })
     }
   }
@@ -93,18 +85,22 @@ export default function LojaPedidosContent() {
         return
       }
 
-      const { data: loja } = await supabase
+      // Busca robusta da loja
+      const { data: loja, error } = await supabase
         .from('lojas')
         .select('id')
         .eq('user_id', user.id)
         .single()
 
-      if (loja) {
-        setLojaId(loja.id)
-        loadPedidos(loja.id)
-      } else {
-        router.push('/')
+      if (error || !loja) {
+        console.error("Erro ao buscar loja:", error)
+        alert("Erro: Loja não encontrada para este usuário.")
+        return
       }
+
+      console.log("Loja encontrada ID:", loja.id)
+      setLojaId(loja.id)
+      loadPedidos(loja.id)
     }
     init()
   }, [])
@@ -114,8 +110,6 @@ export default function LojaPedidosContent() {
     if (!lojaId) return
 
     const supabase = createClient()
-    console.log("Ouvindo pedidos para loja:", lojaId)
-    
     const channel = supabase
       .channel('pedidos-loja')
       .on(
@@ -128,8 +122,7 @@ export default function LojaPedidosContent() {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            console.log("Novo pedido!")
-            triggerAlert() // Dispara Som + Notificação + Título
+            triggerAlert()
             loadPedidos(lojaId)
           } else if (payload.eventType === 'UPDATE') {
             loadPedidos(lojaId)
@@ -146,22 +139,39 @@ export default function LojaPedidosContent() {
   const loadPedidos = async (id: number) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/loja/pedidos?loja_id=${id}&status=todos`)
-      const data = await response.json()
-      if (data.pedidos) setPedidos(data.pedidos)
+      // MUDANÇA AQUI: Buscando direto do Supabase para evitar cache da API
+      const supabase = createClient()
+      const { data: pedidosData, error } = await supabase
+        .from('pedidos')
+        .select(`
+          *,
+          perfil:perfis(nome_completo, telefone),
+          items:pedido_itens(
+            quantidade,
+            preco_unitario,
+            observacao,
+            produto:produtos(id, nome)
+          )
+        `)
+        .eq('loja_id', id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      console.log("Pedidos carregados:", pedidosData?.length)
+      if (pedidosData) setPedidos(pedidosData as any) // Cast rápido para evitar erro de tipo complexo
       
-      // Reseta título ao carregar lista (lê-se como "visto")
       document.title = "Gestão de Pedidos - PedeAí"
       
     } catch (error) {
-      console.error('Erro:', error)
+      console.error('Erro ao carregar:', error)
     } finally {
       setLoading(false)
     }
   }
 
   const handleStatusUpdate = async (pedidoId: number, novoStatus: string) => {
-    document.title = "Gestão de Pedidos - PedeAí" // Reseta título
+    document.title = "Gestão de Pedidos - PedeAí"
 
     const supabase = createClient()
     await supabase
@@ -193,7 +203,9 @@ export default function LojaPedidosContent() {
               <button onClick={() => router.push('/loja/dashboard')} className="text-gray-400 hover:text-white">←</button>
               <h1 className="text-3xl font-bold text-white">Gestão de Pedidos</h1>
             </div>
-            <p className="text-gray-400 mt-1 text-sm pl-6">Painel em Tempo Real ⚡</p>
+            <p className="text-gray-400 mt-1 text-sm pl-6">
+              Painel em Tempo Real ⚡ (Loja ID: {lojaId})
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-2 items-center">
@@ -218,11 +230,11 @@ export default function LojaPedidosContent() {
           </div>
         </div>
 
-        {/* GRID DE PEDIDOS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {pedidosFiltrados.length === 0 && (
             <div className="col-span-full text-center py-20 bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-700">
-              <p className="text-gray-500 text-lg">Nenhum pedido nesta lista.</p>
+              <p className="text-gray-500 text-lg">Nenhum pedido encontrado.</p>
+              <p className="text-gray-600 text-sm mt-2">Aguardando novos pedidos...</p>
             </div>
           )}
 
@@ -244,8 +256,8 @@ export default function LojaPedidosContent() {
 
                 <div className="p-4 flex-1">
                   <div className="mb-4 pb-4 border-b border-gray-700/50">
-                    <p className="text-white font-bold truncate">{pedido.perfil.nome_completo}</p>
-                    <p className="text-sm text-gray-400">📞 {pedido.perfil.telefone || 'Sem tel'}</p>
+                    <p className="text-white font-bold truncate">{pedido.perfil?.nome_completo || 'Cliente'}</p>
+                    <p className="text-sm text-gray-400">📞 {pedido.perfil?.telefone || 'Sem tel'}</p>
                     <p className="text-xs text-gray-500 mt-1 truncate">{pedido.endereco_entrega}</p>
                   </div>
 
@@ -254,7 +266,7 @@ export default function LojaPedidosContent() {
                       <div key={idx} className="text-sm">
                         <div className="flex justify-between text-white">
                           <span className="font-bold text-primary">{item.quantidade}x</span>
-                          <span className="flex-1 mx-2">{item.produto.nome}</span>
+                          <span className="flex-1 mx-2">{item.produto?.nome || 'Item removido'}</span>
                         </div>
                         {item.observacao && (
                           <p className="text-yellow-400 text-xs mt-1 bg-yellow-400/10 p-1 rounded border border-yellow-400/20">
