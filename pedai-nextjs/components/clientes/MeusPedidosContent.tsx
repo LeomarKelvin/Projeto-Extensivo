@@ -18,17 +18,20 @@ interface Pedido {
   lojas: { nome_loja: string; url_imagem?: string } | null
   pedido_itens: Array<{
     quantidade: number
-    nome_produto: string
+    produto: {
+      nome: string
+    } | null
   }>
 }
 
+// MUDANÇA AQUI: Cor do 'entregue' atualizada para verde
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; step: number }> = {
   pendente: { label: 'Aguardando Confirmação', color: 'text-yellow-400', bg: 'bg-yellow-400/10', step: 1 },
   aceito: { label: 'Em Preparação', color: 'text-blue-400', bg: 'bg-blue-400/10', step: 2 },
   preparando: { label: 'Em Preparação', color: 'text-blue-400', bg: 'bg-blue-400/10', step: 2 },
   pronto: { label: 'Pronto para Entrega', color: 'text-green-400', bg: 'bg-green-400/10', step: 3 },
   em_entrega: { label: 'Saiu para Entrega', color: 'text-cyan-400', bg: 'bg-cyan-400/10', step: 4 },
-  entregue: { label: 'Entregue', color: 'text-gray-400', bg: 'bg-gray-800', step: 5 },
+  entregue: { label: 'Entregue', color: 'text-green-400', bg: 'bg-green-400/10', step: 5 }, // <-- FICOU VERDE!
   cancelado: { label: 'Cancelado', color: 'text-red-500', bg: 'bg-red-900/20', step: 0 },
 }
 
@@ -36,65 +39,52 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
-  const [debugInfo, setDebugInfo] = useState<string>('Carregando...')
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [perfilId, setPerfilId] = useState<number | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
       const supabase = createClient()
       
-      // 1. Verifica Auth
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push(`/${tenant.slug}/auth/login?redirect=/${tenant.slug}/meus-pedidos`)
         return
       }
 
-      // 2. Pega Perfil
-      const { data: perfil, error: perfilError } = await supabase
+      const { data: perfil } = await supabase
         .from('perfis')
         .select('*')
         .eq('user_id', user.id)
         .single()
 
-      if (perfilError || !perfil) {
-        console.error("Erro Perfil:", perfilError)
-        setDebugInfo(`Erro ao achar perfil: ${perfilError?.message}`)
-        return
-      }
+      if (!perfil) return
       
       if (perfil.tipo === 'loja') {
         router.push('/loja/dashboard')
         return
       }
 
-      setDebugInfo(`Perfil ID: ${perfil.id} | Buscando pedidos...`)
+      setPerfilId(perfil.id)
 
-      // 3. Busca Pedidos
       const { data: pedidosData, error: pedidosError } = await supabase
         .from('pedidos')
         .select(`
           id, status, total, created_at,
           lojas ( nome_loja, url_imagem ),
-          pedido_itens ( quantidade, nome_produto )
+          pedido_itens ( 
+            quantidade,
+            produto:produtos ( nome ) 
+          )
         `)
         .eq('perfil_id', perfil.id)
         .order('created_at', { ascending: false })
 
-      if (pedidosError) {
-        console.error("Erro Pedidos:", pedidosError)
-        setErrorMsg(pedidosError.message)
-        setDebugInfo(`Erro no banco: ${pedidosError.message}`)
-      } else {
-        // CORREÇÃO AQUI: Formata os dados para garantir que 'lojas' seja um objeto, não array
+      if (!pedidosError) {
         const pedidosFormatados = (pedidosData || []).map((p: any) => ({
           ...p,
           lojas: Array.isArray(p.lojas) ? p.lojas[0] : p.lojas
         }))
-
-        console.log("Pedidos formatados:", pedidosFormatados)
         setPedidos(pedidosFormatados)
-        setDebugInfo(`Perfil ID: ${perfil.id} | Pedidos encontrados: ${pedidosFormatados.length}`)
       }
 
       setLoading(false)
@@ -103,22 +93,42 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
     loadData()
   }, [tenant.slug, router])
 
+  // Realtime
+  useEffect(() => {
+    if (!perfilId) return
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel('meus-pedidos-cliente')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'pedidos',
+          filter: `perfil_id=eq.${perfilId}`
+        },
+        (payload) => {
+          setPedidos((current) => 
+            current.map((p) => 
+              p.id === payload.new.id ? { ...p, ...payload.new } : p
+            )
+          )
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [perfilId])
+
   if (loading) {
     return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Carregando...</div>
   }
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
-      {/* BARRA DE DEBUG (Pode remover depois) */}
-      <div className="bg-gray-800 text-xs text-gray-400 p-2 text-center border-b border-gray-700">
-        DEBUG: {debugInfo}
-      </div>
-
-      {errorMsg && (
-        <div className="bg-red-900 text-white p-4 text-center">
-          ERRO AO CARREGAR: {errorMsg}
-        </div>
-      )}
       
       <div className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10 shadow-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -137,7 +147,7 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
             <div className="text-6xl mb-4">🧾</div>
             <h3 className="text-xl font-bold text-white mb-2">Nenhum pedido encontrado</h3>
             <p className="text-gray-400 mb-6">Seus pedidos recentes aparecerão aqui.</p>
-            <Link href={`/${tenant.slug}/lojas`} className="px-6 py-3 bg-tenant-primary text-tenant-secondary rounded-lg font-bold">
+            <Link href={`/${tenant.slug}/lojas`} className="px-6 py-3 bg-tenant-primary text-tenant-secondary rounded-lg font-bold hover:opacity-90 transition-opacity">
               Fazer um Pedido
             </Link>
           </div>
@@ -149,7 +159,8 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
               const progress = status.step > 0 ? Math.min((status.step / 4) * 100, 100) : 0
 
               return (
-                <div key={pedido.id} className="rounded-xl border border-gray-700 overflow-hidden bg-gray-800 shadow-lg">
+                <div key={pedido.id} className="rounded-xl border border-gray-700 overflow-hidden bg-gray-800 shadow-lg transition-all hover:border-gray-600">
+                  
                   <div className="p-4 flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
@@ -182,7 +193,7 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
                       <div className="text-sm text-gray-300 space-y-1">
                          {pedido.pedido_itens?.map((item, i) => (
                            <div key={i} className="line-clamp-1">
-                             <span className="text-tenant-primary font-bold">{item.quantidade}x</span> {item.nome_produto}
+                             <span className="text-tenant-primary font-bold">{item.quantidade}x</span> {item.produto?.nome || 'Item indisponível'}
                            </div>
                          ))}
                       </div>
@@ -191,6 +202,13 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
                       </div>
                     </div>
                   </div>
+
+                  <div className="bg-gray-900/50 p-3 text-center border-t border-gray-700/50">
+                    <Link href={`/${tenant.slug}/pedido/${pedido.id}`} className="text-sm text-tenant-primary hover:underline font-medium">
+                      Ver detalhes completos
+                    </Link>
+                  </div>
+
                 </div>
               )
             })}
