@@ -4,8 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// ... (Interfaces e statusConfig mantidos iguais, vou encurtar para caber)
-// Mantenha as interfaces Pedido e statusConfig do código anterior aqui...
 interface Pedido {
   id: number
   status: string
@@ -56,21 +54,20 @@ export default function LojaPedidosContent() {
       const audio = new Audio(audioUrl)
       await audio.play()
     } catch (e) {
-      console.error("Erro som:", e)
+      // Som bloqueado pelo navegador (comum sem interação prévia)
     }
+    
     document.title = "🔔 (1) NOVO PEDIDO! - PedeAí"
 
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission !== 'granted') {
         const permission = await Notification.requestPermission()
-        if (permission !== 'granted') {
-          alert('⚠️ Habilite as notificações no navegador.')
-          return
-        }
+        if (permission !== 'granted') return
       }
       new Notification('NOVO PEDIDO RECEBIDO! 🍕', {
         body: 'Um cliente acabou de fazer um pedido. Clique para ver.',
-        requireInteraction: true
+        requireInteraction: true,
+        silent: false
       })
     }
   }
@@ -85,7 +82,6 @@ export default function LojaPedidosContent() {
         return
       }
 
-      // Busca robusta da loja
       const { data: loja, error } = await supabase
         .from('lojas')
         .select('id')
@@ -93,12 +89,10 @@ export default function LojaPedidosContent() {
         .single()
 
       if (error || !loja) {
-        console.error("Erro ao buscar loja:", error)
         alert("Erro: Loja não encontrada para este usuário.")
         return
       }
 
-      console.log("Loja encontrada ID:", loja.id)
       setLojaId(loja.id)
       loadPedidos(loja.id)
     }
@@ -139,7 +133,6 @@ export default function LojaPedidosContent() {
   const loadPedidos = async (id: number) => {
     setLoading(true)
     try {
-      // MUDANÇA AQUI: Buscando direto do Supabase para evitar cache da API
       const supabase = createClient()
       const { data: pedidosData, error } = await supabase
         .from('pedidos')
@@ -158,9 +151,7 @@ export default function LojaPedidosContent() {
 
       if (error) throw error
 
-      console.log("Pedidos carregados:", pedidosData?.length)
-      if (pedidosData) setPedidos(pedidosData as any) // Cast rápido para evitar erro de tipo complexo
-      
+      if (pedidosData) setPedidos(pedidosData as any)
       document.title = "Gestão de Pedidos - PedeAí"
       
     } catch (error) {
@@ -203,9 +194,7 @@ export default function LojaPedidosContent() {
               <button onClick={() => router.push('/loja/dashboard')} className="text-gray-400 hover:text-white">←</button>
               <h1 className="text-3xl font-bold text-white">Gestão de Pedidos</h1>
             </div>
-            <p className="text-gray-400 mt-1 text-sm pl-6">
-              Painel em Tempo Real ⚡ (Loja ID: {lojaId})
-            </p>
+            <p className="text-gray-400 mt-1 text-sm pl-6">Painel em Tempo Real ⚡</p>
           </div>
 
           <div className="flex flex-wrap gap-2 items-center">
@@ -233,8 +222,7 @@ export default function LojaPedidosContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {pedidosFiltrados.length === 0 && (
             <div className="col-span-full text-center py-20 bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-700">
-              <p className="text-gray-500 text-lg">Nenhum pedido encontrado.</p>
-              <p className="text-gray-600 text-sm mt-2">Aguardando novos pedidos...</p>
+              <p className="text-gray-500 text-lg">Nenhum pedido nesta lista.</p>
             </div>
           )}
 

@@ -1,6 +1,5 @@
 import { getTenantBySlug } from '@/lib/tenantConfig'
-import { notFound, redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
 import ClientLayout from '@/components/ClientLayout'
 import MeusPedidosContent from '@/components/clientes/MeusPedidosContent'
 
@@ -17,55 +16,12 @@ export default async function MeusPedidosPage({ params }: Props) {
     notFound()
   }
 
-  const supabase = await createClient()
-  
-  const { data: { session } } = await supabase.auth.getSession()
-  
-  if (!session) {
-    redirect(`/${municipio}/auth/login?redirect=/${municipio}/meus-pedidos`)
-  }
-
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .single()
-
-  if (!perfil || perfil.tipo !== 'cliente') {
-    redirect(`/${municipio}`)
-  }
-
-  const { data: pedidos, error } = await supabase
-    .from('pedidos')
-    .select(`
-      *,
-      lojas:loja_id (
-        id,
-        nome_loja
-      ),
-      pedido_itens (
-        id,
-        produto_id,
-        nome_produto,
-        quantidade,
-        preco_unitario,
-        subtotal
-      )
-    `)
-    .eq('perfil_id', perfil.id)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Erro ao carregar pedidos:', error)
-  }
+  // Removemos toda a lógica de servidor daqui.
+  // O componente MeusPedidosContent vai cuidar de tudo no navegador.
 
   return (
     <ClientLayout tenant={tenant}>
-      <MeusPedidosContent 
-        pedidos={pedidos || []} 
-        tenant={tenant}
-        perfil={perfil}
-      />
+      <MeusPedidosContent tenant={tenant} />
     </ClientLayout>
   )
 }
