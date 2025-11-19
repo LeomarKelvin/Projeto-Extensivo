@@ -81,7 +81,8 @@ export async function PATCH(
     }
     
     // Apenas lojistas precisam verificar ownership, admin pode tudo
-    if (perfil.tipo === 'loja' && pedido.loja_id !== loja.id) {
+    // FIX: Added 'loja &&' check to satisfy TypeScript
+    if (perfil.tipo === 'loja' && loja && pedido.loja_id !== loja.id) {
       return NextResponse.json(
         { error: 'Você não tem permissão para atualizar este pedido' },
         { status: 403 }
