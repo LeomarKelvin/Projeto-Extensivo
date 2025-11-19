@@ -10,7 +10,6 @@ interface MeusPedidosContentProps {
   tenant: TenantConfig
 }
 
-// Interfaces ajustadas para evitar erros de tipo
 interface Pedido {
   id: number
   status: string
@@ -64,7 +63,6 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
         return
       }
       
-      // Se for loja, tchau
       if (perfil.tipo === 'loja') {
         router.push('/loja/dashboard')
         return
@@ -72,7 +70,7 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
 
       setDebugInfo(`Perfil ID: ${perfil.id} | Buscando pedidos...`)
 
-      // 3. Busca Pedidos (Query Simplificada para Teste)
+      // 3. Busca Pedidos
       const { data: pedidosData, error: pedidosError } = await supabase
         .from('pedidos')
         .select(`
@@ -88,9 +86,15 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
         setErrorMsg(pedidosError.message)
         setDebugInfo(`Erro no banco: ${pedidosError.message}`)
       } else {
-        console.log("Pedidos encontrados:", pedidosData)
-        setPedidos(pedidosData || [])
-        setDebugInfo(`Perfil ID: ${perfil.id} | Pedidos encontrados: ${pedidosData?.length || 0}`)
+        // CORREÇÃO AQUI: Formata os dados para garantir que 'lojas' seja um objeto, não array
+        const pedidosFormatados = (pedidosData || []).map((p: any) => ({
+          ...p,
+          lojas: Array.isArray(p.lojas) ? p.lojas[0] : p.lojas
+        }))
+
+        console.log("Pedidos formatados:", pedidosFormatados)
+        setPedidos(pedidosFormatados)
+        setDebugInfo(`Perfil ID: ${perfil.id} | Pedidos encontrados: ${pedidosFormatados.length}`)
       }
 
       setLoading(false)
@@ -105,19 +109,17 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
-      {/* BARRA DE DEBUG (Remover depois que funcionar) */}
+      {/* BARRA DE DEBUG (Pode remover depois) */}
       <div className="bg-gray-800 text-xs text-gray-400 p-2 text-center border-b border-gray-700">
         DEBUG: {debugInfo}
       </div>
 
-      {/* Mensagem de Erro Crítico */}
       {errorMsg && (
         <div className="bg-red-900 text-white p-4 text-center">
           ERRO AO CARREGAR: {errorMsg}
         </div>
       )}
       
-      {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10 shadow-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -144,8 +146,6 @@ export default function MeusPedidosContent({ tenant }: MeusPedidosContentProps) 
             {pedidos.map((pedido) => {
               const status = STATUS_CONFIG[pedido.status] || STATUS_CONFIG['pendente']
               const data = new Date(pedido.created_at).toLocaleDateString('pt-BR')
-              
-              // Safe check para barra de progresso
               const progress = status.step > 0 ? Math.min((status.step / 4) * 100, 100) : 0
 
               return (
