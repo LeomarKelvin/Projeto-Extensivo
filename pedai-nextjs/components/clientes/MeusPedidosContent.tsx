@@ -1,6 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import type { TenantConfig } from '@/lib/types/tenant'
 
 interface Perfil {
@@ -12,6 +14,7 @@ interface Perfil {
 interface Loja {
   id: number
   nome_loja: string
+  url_imagem?: string
 }
 
 interface PedidoItem {
@@ -25,9 +28,9 @@ interface PedidoItem {
 
 interface Pedido {
   id: number
-  numero_pedido: string
   status: string
-  valor_total: number
+  valor_total: number // O banco usa 'total', mas vamos mapear
+  total: number
   taxa_entrega: number
   endereco_entrega: string
   forma_pagamento: string
@@ -37,164 +40,158 @@ interface Pedido {
 }
 
 interface MeusPedidosContentProps {
-  pedidos: Pedido[]
+  pedidos: any[] // Recebe inicial do server
   tenant: TenantConfig
   perfil: Perfil
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  pendente: { label: 'Pendente', color: 'text-yellow-500', bgColor: 'bg-yellow-500/10' },
-  confirmado: { label: 'Confirmado', color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-  preparando: { label: 'Preparando', color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
-  em_entrega: { label: 'Em Entrega', color: 'text-cyan-500', bgColor: 'bg-cyan-500/10' },
-  entregue: { label: 'Entregue', color: 'text-green-500', bgColor: 'bg-green-500/10' },
-  cancelado: { label: 'Cancelado', color: 'text-red-500', bgColor: 'bg-red-500/10' },
+// Configuração Visual dos Status
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; step: number }> = {
+  pendente: { label: 'Aguardando Confirmação', color: 'text-yellow-400', bg: 'bg-yellow-400/10', step: 1 },
+  aceito: { label: 'Em Preparação', color: 'text-blue-400', bg: 'bg-blue-400/10', step: 2 },
+  preparando: { label: 'Em Preparação', color: 'text-blue-400', bg: 'bg-blue-400/10', step: 2 },
+  pronto: { label: 'Pronto para Entrega', color: 'text-green-400', bg: 'bg-green-400/10', step: 3 },
+  em_entrega: { label: 'Saiu para Entrega', color: 'text-cyan-400', bg: 'bg-cyan-400/10', step: 4 },
+  entregue: { label: 'Entregue', color: 'text-gray-400', bg: 'bg-gray-800', step: 5 },
+  cancelado: { label: 'Cancelado', color: 'text-red-500', bg: 'bg-red-900/20', step: 0 },
 }
 
-export default function MeusPedidosContent({ pedidos, tenant, perfil }: MeusPedidosContentProps) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Header */}
-      <div className="bg-gray-900 border-b border-gray-800">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
-            <Link href={`/${tenant.slug}`} className="hover:text-tenant-primary transition-colors">
-              Início
-            </Link>
-            <span>›</span>
-            <span className="text-white">Meus Pedidos</span>
-          </div>
+export default function MeusPedidosContent({ pedidos: initialPedidos, tenant, perfil }: MeusPedidosContentProps) {
+  const [pedidos, setPedidos] = useState<Pedido[]>(initialPedidos || [])
 
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Meus Pedidos
-          </h1>
-          <p className="text-gray-400">
-            Olá, {perfil.nome_completo.split(' ')[0]}! Acompanhe seus pedidos aqui
-          </p>
+  // Escuta atualizações em tempo real (Para o cliente ver o status mudar)
+  useEffect(() => {
+    const supabase = createClient()
+    
+    // Inscreve no canal para ouvir mudanças na tabela 'pedidos'
+    const channel = supabase
+      .channel('meus-pedidos-cliente')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'pedidos',
+          filter: `perfil_id=eq.${perfil.id}` // Só escuta os meus pedidos
+        },
+        (payload) => {
+          console.log("Status atualizado!", payload)
+          // Atualiza o pedido específico na lista
+          setPedidos((current) => 
+            current.map((p) => 
+              p.id === payload.new.id ? { ...p, ...payload.new } : p
+            )
+          )
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [perfil.id])
+
+  return (
+    <div className="min-h-screen bg-gray-900 pb-20">
+      
+      {/* Header */}
+      <div className="bg-gray-800 border-b border-gray-700 sticky top-0 z-10 shadow-md">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href={`/${tenant.slug}`} className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
+              ← Voltar
+            </Link>
+            <h1 className="text-xl font-bold text-white">Meus Pedidos</h1>
+          </div>
+          <div className="text-xs text-gray-500">
+            Atualização em tempo real ⚡
+          </div>
         </div>
       </div>
 
-      {/* Lista de Pedidos */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 max-w-3xl">
         {pedidos.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-2xl font-bold text-white mb-2">
-              Você ainda não fez nenhum pedido
-            </h3>
-            <p className="text-gray-400 mb-6">
-              Explore as lojas e faça seu primeiro pedido!
-            </p>
-            <Link
-              href={`/${tenant.slug}/lojas`}
-              className="inline-block px-8 py-3 bg-tenant-primary text-tenant-secondary rounded-lg font-semibold hover:opacity-90 transition-opacity"
-            >
+          <div className="text-center py-16 opacity-50">
+            <div className="text-6xl mb-4">🧾</div>
+            <h3 className="text-xl font-bold text-white mb-2">Nenhum pedido ainda</h3>
+            <p className="text-gray-400 mb-6">Bateu a fome? Peça agora!</p>
+            <Link href={`/${tenant.slug}/lojas`} className="px-6 py-3 bg-tenant-primary text-tenant-secondary rounded-lg font-bold">
               Ver Lojas
             </Link>
           </div>
         ) : (
-          <div className="space-y-6 max-w-4xl mx-auto">
+          <div className="space-y-6">
             {pedidos.map((pedido) => {
-              const statusInfo = STATUS_CONFIG[pedido.status] || STATUS_CONFIG.pendente
-              const dataFormatada = new Date(pedido.created_at).toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })
+              const status = STATUS_CONFIG[pedido.status] || STATUS_CONFIG['pendente']
+              const data = new Date(pedido.created_at).toLocaleDateString('pt-BR')
+              const hora = new Date(pedido.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+              
+              // Calcula progresso (0 a 100%)
+              const progress = status.step > 0 ? Math.min((status.step / 4) * 100, 100) : 0
 
               return (
-                <div
-                  key={pedido.id}
-                  className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-tenant-primary transition-colors"
-                >
-                  {/* Cabeçalho do Pedido */}
-                  <div className="p-6 border-b border-gray-700">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div key={pedido.id} className={`rounded-xl border border-gray-700 overflow-hidden bg-gray-800 shadow-lg transition-all hover:border-gray-600`}>
+                  
+                  {/* Topo: Loja e Status */}
+                  <div className="p-4 flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
+                         {pedido.lojas?.url_imagem ? <img src={pedido.lojas.url_imagem} className="w-full h-full object-cover rounded-lg"/> : '🏪'}
+                      </div>
                       <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-bold text-white">
-                            Pedido #{pedido.numero_pedido}
-                          </h3>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color} ${statusInfo.bgColor}`}>
-                            {statusInfo.label}
-                          </span>
-                        </div>
-                        <p className="text-gray-400 text-sm">
-                          📅 {dataFormatada}
+                        <h3 className="font-bold text-white text-lg leading-tight">{pedido.lojas?.nome_loja || 'Loja'}</h3>
+                        <p className="text-gray-500 text-xs">Pedido #{pedido.id} • {data} às {hora}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${status.color} ${status.bg} border-current`}>
+                        {status.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Barra de Progresso (Visual de Rastreio) */}
+                  {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
+                    <div className="px-4 pb-4">
+                      <div className="h-1.5 w-full bg-gray-700 rounded-full overflow-hidden mt-2">
+                        <div 
+                          className="h-full bg-tenant-primary transition-all duration-1000 ease-out"
+                          style={{ width: `${progress}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-right text-xs text-gray-400 mt-1">
+                        {progress < 100 ? 'Acompanhe o status...' : 'Chegando!'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Detalhes (Colapsável ou Resumo) */}
+                  <div className="px-4 pb-4 border-t border-gray-700/50 pt-3">
+                    <div className="flex justify-between items-end">
+                      <div className="text-sm text-gray-300 space-y-1">
+                         {pedido.pedido_itens?.map((item, i) => (
+                           <div key={i} className="line-clamp-1">
+                             <span className="text-tenant-primary font-bold">{item.quantidade}x</span> {item.nome_produto}
+                           </div>
+                         ))}
+                         {pedido.pedido_itens?.length > 2 && <div className="text-xs text-gray-500 italic">+ mais itens...</div>}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">Total</p>
+                        <p className="text-xl font-bold text-white">
+                          R$ {pedido.total ? pedido.total.toFixed(2) : '0.00'}
                         </p>
                       </div>
-
-                      <div className="text-right">
-                        <div className="text-sm text-gray-400 mb-1">Loja</div>
-                        <div className="font-semibold text-white">
-                          {pedido.lojas.nome_loja}
-                        </div>
-                      </div>
                     </div>
                   </div>
 
-                  {/* Itens do Pedido */}
-                  <div className="p-6 bg-gray-900/50">
-                    <h4 className="text-sm font-semibold text-gray-400 mb-3">
-                      Itens do Pedido
-                    </h4>
-                    <div className="space-y-2">
-                      {pedido.pedido_itens.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between text-sm"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-tenant-primary font-medium">
-                              {item.quantidade}x
-                            </span>
-                            <span className="text-white">{item.nome_produto}</span>
-                          </div>
-                          <span className="text-gray-400">
-                            R$ {item.subtotal.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                  {/* Botão de Ajuda/Detalhes */}
+                  <div className="bg-gray-900/50 p-3 text-center border-t border-gray-700/50">
+                    <Link href={`/${tenant.slug}/pedido/${pedido.id}`} className="text-sm text-tenant-primary hover:underline font-medium">
+                      Ver detalhes completos
+                    </Link>
                   </div>
 
-                  {/* Rodapé do Pedido */}
-                  <div className="p-6 border-t border-gray-700">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Subtotal</span>
-                        <span className="text-white">
-                          R$ {(pedido.valor_total - pedido.taxa_entrega).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Taxa de Entrega</span>
-                        <span className="text-white">
-                          R$ {pedido.taxa_entrega.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-700">
-                        <span className="text-lg font-bold text-white">Total</span>
-                        <span className="text-2xl font-bold text-tenant-primary">
-                          R$ {pedido.valor_total.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-700 space-y-2 text-sm text-gray-400">
-                      <div>
-                        <span className="font-medium">Endereço:</span> {pedido.endereco_entrega}
-                      </div>
-                      <div>
-                        <span className="font-medium">Pagamento:</span>{' '}
-                        {pedido.forma_pagamento === 'dinheiro' && 'Dinheiro'}
-                        {pedido.forma_pagamento === 'pix' && 'PIX'}
-                        {pedido.forma_pagamento === 'cartao' && 'Cartão'}
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )
             })}

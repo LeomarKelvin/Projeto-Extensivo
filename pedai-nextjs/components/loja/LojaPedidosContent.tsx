@@ -19,7 +19,6 @@ interface Pedido {
     nome_completo: string
     telefone: string
   }
-  // Ajuste para bater com o retorno da API
   items?: Array<{
     quantidade: number
     preco_unitario: number
@@ -29,14 +28,12 @@ interface Pedido {
       nome: string
     }
   }>
-  // Para quando vier do Realtime (estrutura simplificada do banco)
-  pedido_itens?: any[]
 }
 
 const statusConfig: Record<string, { label: string, color: string, bg: string }> = {
   pendente: { label: '🔔 Pendente', color: 'text-yellow-500', bg: 'bg-yellow-500/10 border-yellow-500' },
   aceito: { label: '👨‍🍳 Aceito / Preparando', color: 'text-blue-500', bg: 'bg-blue-500/10 border-blue-500' },
-  preparando: { label: '🔥 No Fogo', color: 'text-orange-500', bg: 'bg-orange-500/10 border-orange-500' }, // Opcional, pode usar só Aceito
+  preparando: { label: '🔥 No Fogo', color: 'text-orange-500', bg: 'bg-orange-500/10 border-orange-500' },
   pronto: { label: '✨ Pronto', color: 'text-green-500', bg: 'bg-green-500/10 border-green-500' },
   em_entrega: { label: '🛵 Em Entrega', color: 'text-cyan-500', bg: 'bg-cyan-500/10 border-cyan-500' },
   entregue: { label: '✅ Concluído', color: 'text-gray-400', bg: 'bg-gray-800 border-gray-700' },
@@ -47,24 +44,45 @@ export default function LojaPedidosContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
-  const [filtroStatus, setFiltroStatus] = useState('ativos') // 'ativos' = Pendente, Aceito, Pronto, Entrega
+  const [filtroStatus, setFiltroStatus] = useState('ativos')
   const [lojaId, setLojaId] = useState<number | null>(null)
   
-  // Áudio de notificação
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  // Som de alerta (Google Sounds)
+  const audioUrl = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'
 
-  useEffect(() => {
-    // Cria o elemento de áudio uma única vez
-    audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
-  }, [])
+  // Função Poderosa de Notificação (Agora pede permissão no clique)
+  const triggerAlert = async () => {
+    // 1. Toca o som (Audio Context precisa de interação)
+    try {
+      const audio = new Audio(audioUrl)
+      await audio.play()
+    } catch (e) {
+      console.error("Erro som:", e)
+    }
 
-  const playNotification = () => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log("Interação necessária para tocar som"))
+    // 2. Muda o título da aba
+    document.title = "🔔 (1) NOVO PEDIDO! - PedeAí"
+
+    // 3. Envia notificação do sistema
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      // Se não tiver permissão, pede agora!
+      if (Notification.permission !== 'granted') {
+        const permission = await Notification.requestPermission()
+        if (permission !== 'granted') {
+          alert('⚠️ Para receber alertas, você precisa clicar no cadeado 🔒 ao lado da URL e permitir "Notificações".')
+          return
+        }
+      }
+
+      // Se chegou aqui, tem permissão
+      new Notification('NOVO PEDIDO RECEBIDO! 🍕', {
+        body: 'Um cliente acabou de fazer um pedido. Clique para ver.',
+        requireInteraction: true, // Fica na tela até clicar
+        silent: false
+      })
     }
   }
 
-  // 1. Inicialização e Busca de Dados
   useEffect(() => {
     const init = async () => {
       const supabase = createClient()
@@ -91,31 +109,29 @@ export default function LojaPedidosContent() {
     init()
   }, [])
 
-  // 2. Realtime: Escutar novos pedidos
+  // REALTIME
   useEffect(() => {
     if (!lojaId) return
 
     const supabase = createClient()
+    console.log("Ouvindo pedidos para loja:", lojaId)
     
     const channel = supabase
       .channel('pedidos-loja')
       .on(
         'postgres_changes',
         {
-          event: '*', // Escuta INSERT e UPDATE
+          event: '*', 
           schema: 'public',
           table: 'pedidos',
           filter: `loja_id=eq.${lojaId}`
         },
         (payload) => {
-          console.log('Alteração recebida:', payload)
-          
           if (payload.eventType === 'INSERT') {
-            playNotification() // TOCA O SOM!
-            loadPedidos(lojaId) // Recarrega para pegar os detalhes completos (itens, cliente)
-            alert('🔔 NOVO PEDIDO RECEBIDO!')
+            console.log("Novo pedido!")
+            triggerAlert() // Dispara Som + Notificação + Título
+            loadPedidos(lojaId)
           } else if (payload.eventType === 'UPDATE') {
-            // Atualiza a lista suavemente
             loadPedidos(lojaId)
           }
         }
@@ -130,15 +146,13 @@ export default function LojaPedidosContent() {
   const loadPedidos = async (id: number) => {
     setLoading(true)
     try {
-      // Usamos a API interna para trazer os dados já formatados com relacionamentos
-      // Em um app real de alta escala, faríamos a query direto no Supabase aqui para ser mais rápido no Realtime
-      // Mas a API garante consistência com o que já fizemos
-      const response = await fetch(`/api/loja/pedidos?loja_id=${id}&status=todos`) // Traz todos e filtramos no front
+      const response = await fetch(`/api/loja/pedidos?loja_id=${id}&status=todos`)
       const data = await response.json()
+      if (data.pedidos) setPedidos(data.pedidos)
       
-      if (data.pedidos) {
-        setPedidos(data.pedidos)
-      }
+      // Reseta título ao carregar lista (lê-se como "visto")
+      document.title = "Gestão de Pedidos - PedeAí"
+      
     } catch (error) {
       console.error('Erro:', error)
     } finally {
@@ -147,19 +161,19 @@ export default function LojaPedidosContent() {
   }
 
   const handleStatusUpdate = async (pedidoId: number, novoStatus: string) => {
+    document.title = "Gestão de Pedidos - PedeAí" // Reseta título
+
     const supabase = createClient()
     await supabase
       .from('pedidos')
       .update({ status: novoStatus })
       .eq('id', pedidoId)
     
-    // O Realtime vai cuidar de atualizar a tela, mas podemos forçar para ser instantâneo visualmente
     setPedidos(current => 
       current.map(p => p.id === pedidoId ? { ...p, status: novoStatus } : p)
     )
   }
 
-  // Filtros de Visualização
   const pedidosFiltrados = pedidos.filter(p => {
     if (filtroStatus === 'ativos') {
       return ['pendente', 'aceito', 'preparando', 'pronto', 'em_entrega'].includes(p.status)
@@ -179,24 +193,32 @@ export default function LojaPedidosContent() {
               <button onClick={() => router.push('/loja/dashboard')} className="text-gray-400 hover:text-white">←</button>
               <h1 className="text-3xl font-bold text-white">Gestão de Pedidos</h1>
             </div>
-            <p className="text-gray-400 mt-1 text-sm pl-6">Acompanhamento em Tempo Real ⚡</p>
+            <p className="text-gray-400 mt-1 text-sm pl-6">Painel em Tempo Real ⚡</p>
           </div>
 
-          {/* Filtros (Abas) */}
-          <div className="flex bg-gray-800 p-1 rounded-lg overflow-x-auto w-full md:w-auto">
-            <button onClick={() => setFiltroStatus('ativos')} className={`px-4 py-2 rounded-md text-sm font-bold transition-all whitespace-nowrap ${filtroStatus === 'ativos' ? 'bg-primary text-secondary' : 'text-gray-400 hover:text-white'}`}>
-              Em Andamento ({pedidos.filter(p => ['pendente', 'aceito', 'preparando', 'pronto', 'em_entrega'].includes(p.status)).length})
+          <div className="flex flex-wrap gap-2 items-center">
+            <button 
+              onClick={triggerAlert}
+              className="px-4 py-2 bg-gray-700 text-yellow-400 rounded-md font-bold text-sm hover:bg-gray-600 border border-yellow-400/30 flex items-center gap-2"
+            >
+              🔔 Ativar Alertas
             </button>
-            <button onClick={() => setFiltroStatus('entregue')} className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filtroStatus === 'entregue' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}>
-              Concluídos
-            </button>
-            <button onClick={() => setFiltroStatus('cancelado')} className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filtroStatus === 'cancelado' ? 'bg-red-900/50 text-red-200' : 'text-gray-400 hover:text-white'}`}>
-              Cancelados
-            </button>
+
+            <div className="flex bg-gray-800 p-1 rounded-lg overflow-x-auto">
+              <button onClick={() => setFiltroStatus('ativos')} className={`px-4 py-2 rounded-md text-sm font-bold transition-all whitespace-nowrap ${filtroStatus === 'ativos' ? 'bg-primary text-secondary' : 'text-gray-400 hover:text-white'}`}>
+                Em Andamento ({pedidos.filter(p => ['pendente', 'aceito', 'preparando', 'pronto', 'em_entrega'].includes(p.status)).length})
+              </button>
+              <button onClick={() => setFiltroStatus('entregue')} className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filtroStatus === 'entregue' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}>
+                Concluídos
+              </button>
+              <button onClick={() => setFiltroStatus('cancelado')} className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filtroStatus === 'cancelado' ? 'bg-red-900/50 text-red-200' : 'text-gray-400 hover:text-white'}`}>
+                Cancelados
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* GRID DE PEDIDOS (Estilo Comanda) */}
+        {/* GRID DE PEDIDOS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {pedidosFiltrados.length === 0 && (
             <div className="col-span-full text-center py-20 bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-700">
@@ -208,9 +230,8 @@ export default function LojaPedidosContent() {
             const config = statusConfig[pedido.status] || statusConfig['pendente']
             
             return (
-              <div key={pedido.id} className={`bg-gray-800 rounded-xl border-2 overflow-hidden flex flex-col ${config.bg} transition-all hover:shadow-lg`}>
+              <div key={pedido.id} className={`bg-gray-800 rounded-xl border-2 overflow-hidden flex flex-col ${config.bg} transition-all hover:shadow-lg animate-fadeIn`}>
                 
-                {/* Cabeçalho da Comanda */}
                 <div className="p-4 border-b border-gray-700/50 bg-gray-900/30">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-lg font-bold text-white">#{pedido.id}</span>
@@ -221,16 +242,13 @@ export default function LojaPedidosContent() {
                   </div>
                 </div>
 
-                {/* Corpo da Comanda */}
                 <div className="p-4 flex-1">
-                  {/* Cliente */}
                   <div className="mb-4 pb-4 border-b border-gray-700/50">
                     <p className="text-white font-bold truncate">{pedido.perfil.nome_completo}</p>
                     <p className="text-sm text-gray-400">📞 {pedido.perfil.telefone || 'Sem tel'}</p>
                     <p className="text-xs text-gray-500 mt-1 truncate">{pedido.endereco_entrega}</p>
                   </div>
 
-                  {/* Itens */}
                   <div className="space-y-3">
                     {pedido.items?.map((item, idx) => (
                       <div key={idx} className="text-sm">
@@ -240,7 +258,7 @@ export default function LojaPedidosContent() {
                         </div>
                         {item.observacao && (
                           <p className="text-yellow-400 text-xs mt-1 bg-yellow-400/10 p-1 rounded border border-yellow-400/20">
-                            ⚠️ Obs: {item.observacao}
+                            ⚠️ {item.observacao}
                           </p>
                         )}
                       </div>
@@ -254,7 +272,6 @@ export default function LojaPedidosContent() {
                   )}
                 </div>
 
-                {/* Rodapé / Ações */}
                 <div className="p-4 bg-gray-900/50 border-t border-gray-700/50">
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-gray-400 text-sm">Total</span>
@@ -266,7 +283,6 @@ export default function LojaPedidosContent() {
                     {pedido.troco_para && <span className="block text-green-400">Troco p/ R$ {pedido.troco_para}</span>}
                   </div>
 
-                  {/* Botões de Ação Dinâmicos */}
                   <div className="grid grid-cols-1 gap-2">
                     {pedido.status === 'pendente' && (
                       <>
@@ -278,13 +294,11 @@ export default function LojaPedidosContent() {
                         </button>
                       </>
                     )}
-
                     {pedido.status === 'aceito' && (
                       <button onClick={() => handleStatusUpdate(pedido.id, 'em_entrega')} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg">
                         SAIU PARA ENTREGA 🛵
                       </button>
                     )}
-
                     {pedido.status === 'em_entrega' && (
                       <button onClick={() => handleStatusUpdate(pedido.id, 'entregue')} className="w-full py-3 bg-gray-600 hover:bg-green-600 text-white font-bold rounded-lg">
                         MARCAR ENTREGUE ✅
@@ -292,12 +306,10 @@ export default function LojaPedidosContent() {
                     )}
                   </div>
                 </div>
-
               </div>
             )
           })}
         </div>
-
       </div>
     </div>
   )
