@@ -28,33 +28,40 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [isLoaded, setIsLoaded] = useState(false)
 
-  // Load cart from localStorage on mount
+  // Carrega do LocalStorage apenas no cliente (evita erro de hidratação)
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart))
-      } catch (error) {
-        console.error('Erro ao carregar carrinho:', error)
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('pedai_cart')
+      if (savedCart) {
+        try {
+          setItems(JSON.parse(savedCart))
+        } catch (error) {
+          console.error('Erro ao carregar carrinho:', error)
+        }
       }
+      setIsLoaded(true)
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Salva no LocalStorage sempre que mudar
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items))
-  }, [items])
+    if (isLoaded && typeof window !== 'undefined') {
+      localStorage.setItem('pedai_cart', JSON.stringify(items))
+    }
+  }, [items, isLoaded])
 
   const addItem = (newItem: Omit<CartItem, 'id'>) => {
     setItems(currentItems => {
-      // Check if item from same store exists
+      // Verifica se já existe item igual (mesmo produto + mesma observação)
       const existingItem = currentItems.find(
-        item => item.produto_id === newItem.produto_id && item.loja_id === newItem.loja_id
+        item => item.produto_id === newItem.produto_id && 
+                item.loja_id === newItem.loja_id &&
+                item.observacao === newItem.observacao
       )
 
       if (existingItem) {
-        // Update quantity if item exists
         return currentItems.map(item =>
           item.id === existingItem.id
             ? { ...item, quantidade: item.quantidade + newItem.quantidade }
@@ -62,14 +69,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         )
       }
 
-      // Add new item
-      return [
-        ...currentItems,
-        {
-          ...newItem,
-          id: `${newItem.produto_id}-${Date.now()}`,
-        },
-      ]
+      return [...currentItems, { ...newItem, id: `${newItem.produto_id}-${Date.now()}` }]
     })
   }
 
@@ -82,33 +82,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeItem(id)
       return
     }
-
     setItems(currentItems =>
-      currentItems.map(item =>
-        item.id === id ? { ...item, quantidade } : item
-      )
+      currentItems.map(item => item.id === id ? { ...item, quantidade } : item)
     )
   }
 
   const clearCart = () => {
     setItems([])
+    if (typeof window !== 'undefined') localStorage.removeItem('pedai_cart')
   }
 
   const total = items.reduce((sum, item) => sum + item.preco * item.quantidade, 0)
   const itemCount = items.reduce((sum, item) => sum + item.quantidade, 0)
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeItem,
-        updateQuantity,
-        clearCart,
-        total,
-        itemCount,
-      }}
-    >
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount }}>
       {children}
     </CartContext.Provider>
   )
@@ -116,8 +104,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const context = useContext(CartContext)
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider')
-  }
+  if (context === undefined) throw new Error('useCart must be used within a CartProvider')
   return context
 }

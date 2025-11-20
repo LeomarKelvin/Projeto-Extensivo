@@ -9,8 +9,8 @@ interface Loja {
   id: number
   nome_loja: string
   categoria?: string
-  url_imagem?: string // Logo
-  url_capa?: string   // Capa
+  url_imagem?: string
+  url_capa?: string
   nota_avaliacao?: number
   municipio: string
   created_at: string
@@ -26,7 +26,7 @@ interface Produto {
   imagem_url?: string
   disponivel: boolean
   loja_id: number
-  created_at: string
+  permite_observacao?: boolean // Novo campo
 }
 
 interface LojaDetalhesContentProps {
@@ -40,6 +40,7 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
   const [selectedProduct, setSelectedProduct] = useState<Produto | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [observation, setObservation] = useState('')
+  const [showToast, setShowToast] = useState(false) // Estado para notificação visual
 
   const openModal = (produto: Produto) => {
     if (!loja.aberta || !produto.disponivel) return
@@ -52,6 +53,7 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
 
   const handleConfirmAdd = () => {
     if (!selectedProduct) return
+
     addItem({
       produto_id: selectedProduct.id.toString(),
       nome: selectedProduct.nome,
@@ -62,12 +64,24 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
       loja_nome: loja.nome_loja,
       imagem_url: selectedProduct.imagem_url
     })
+
     closeModal()
-    alert(`Adicionado: ${quantity}x ${selectedProduct.nome}`)
+    
+    // Mostra feedback visual (Toast) em vez de alert/confirm
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-900 pb-20 relative">
+      
+      {/* TOAST DE SUCESSO AO ADICIONAR */}
+      {showToast && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-2xl animate-fade-in-down flex items-center gap-2 font-bold border-2 border-green-400">
+          <span>🛒</span> Produto adicionado ao carrinho!
+        </div>
+      )}
+
       {/* HEADER COM CAPA */}
       <div className="relative w-full h-48 md:h-64 bg-gray-800">
         {loja.url_capa ? (
@@ -75,9 +89,7 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-black/50 to-transparent"></div>
           </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-gray-700 flex items-center justify-center text-gray-600">
-            <span className="text-4xl opacity-20">🏠</span>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-800 to-gray-700 flex items-center justify-center text-gray-600"><span className="text-4xl opacity-20">🏠</span></div>
         )}
         <div className="absolute top-4 left-4 z-20">
           <Link href={`/${tenant.slug}/lojas`} className="bg-black/50 hover:bg-black/70 text-white px-4 py-2 rounded-full backdrop-blur-sm text-sm font-medium transition-colors flex items-center gap-2">← Voltar</Link>
@@ -118,8 +130,8 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
               const isBlocked = !loja.aberta || !produto.disponivel
               return (
                 <div key={produto.id} onClick={() => !isBlocked && openModal(produto)} className={`bg-gray-800 rounded-xl overflow-hidden transition-all border border-gray-700 cursor-pointer flex ${isBlocked ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'hover:border-tenant-primary hover:shadow-xl hover:-translate-y-1'}`}>
-                  <div className="w-1/3 bg-gray-900 relative">
-                    {produto.imagem_url ? <img src={produto.imagem_url} alt={produto.nome} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>}
+                  <div className="w-1/3 bg-gray-900 relative flex items-center justify-center overflow-hidden">
+                    {produto.imagem_url ? <img src={produto.imagem_url} alt={produto.nome} className="w-full h-full object-cover" /> : <span className="text-4xl">🍽️</span>}
                   </div>
                   <div className="w-2/3 p-4 flex flex-col justify-between">
                     <div><h3 className="text-base font-bold text-white leading-tight mb-1">{produto.nome}</h3>{produto.descricao && <p className="text-gray-400 text-xs line-clamp-2 mb-2">{produto.descricao}</p>}</div>
@@ -132,18 +144,26 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
         )}
       </div>
 
-      {/* MODAL */}
+      {/* MODAL PRODUTO */}
       {selectedProduct && (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 animate-fadeIn backdrop-blur-sm">
-          <div className="bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-700">
-            <div className="h-48 bg-gray-700 flex items-center justify-center text-6xl relative">
-               {selectedProduct.imagem_url ? <img src={selectedProduct.imagem_url} className="w-full h-full object-cover" /> : '🍔'}
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 animate-fadeIn backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+          <div className="bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]">
+            <div className="h-48 bg-gray-700 flex items-center justify-center text-6xl relative shrink-0">
+               {selectedProduct.imagem_url ? <img src={selectedProduct.imagem_url} className="w-full h-full object-cover" /> : '🍽️'}
                <button onClick={closeModal} className="absolute top-4 right-4 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600">✕</button>
             </div>
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto">
               <h2 className="text-2xl font-bold text-white mb-1">{selectedProduct.nome}</h2>
               <p className="text-gray-400 text-sm mb-6">{selectedProduct.descricao}</p>
-              <div className="mb-6"><label className="block text-sm font-medium text-gray-300 mb-2">Alguma observação?</label><textarea value={observation} onChange={(e) => setObservation(e.target.value)} placeholder="Ex: Tirar a cebola..." className="w-full bg-gray-900 text-white rounded-lg p-3 text-sm focus:ring-2 focus:ring-tenant-primary h-20 resize-none" maxLength={140} /></div>
+              
+              {/* CONDICIONAL: Só mostra campo de observação se o produto permitir */}
+              {selectedProduct.permite_observacao !== false && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Alguma observação?</label>
+                  <textarea value={observation} onChange={(e) => setObservation(e.target.value)} placeholder="Ex: Tirar a cebola..." className="w-full bg-gray-900 text-white rounded-lg p-3 text-sm focus:ring-2 focus:ring-tenant-primary h-20 resize-none" maxLength={140} />
+                </div>
+              )}
+
               <div className="flex items-center gap-4 pt-4 border-t border-gray-700">
                 <div className="flex items-center bg-gray-900 rounded-lg p-1"><button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-10 h-10 flex items-center justify-center text-white hover:bg-gray-700 rounded-md font-bold">-</button><span className="w-8 text-center text-white font-bold">{quantity}</span><button onClick={() => setQuantity(q => Math.min(50, q + 1))} className="w-10 h-10 flex items-center justify-center text-white hover:bg-gray-700 rounded-md font-bold">+</button></div>
                 <button onClick={handleConfirmAdd} className="flex-1 bg-tenant-primary text-tenant-secondary py-3 rounded-xl font-bold hover:opacity-90 flex justify-between px-6"><span>Adicionar</span><span>R$ {(selectedProduct.preco * quantity).toFixed(2)}</span></button>
