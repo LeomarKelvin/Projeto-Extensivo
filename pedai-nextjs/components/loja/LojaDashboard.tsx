@@ -36,7 +36,6 @@ export default function LojaDashboard() {
       return
     }
 
-    // Get user profile via API (bypasses RLS)
     const { data: { session } } = await supabase.auth.getSession()
     const profileResponse = await fetch('/api/auth/get-profile', {
       headers: session ? {
@@ -57,9 +56,6 @@ export default function LojaDashboard() {
       return
     }
 
-    // Get loja data
-    // Admin pode acessar qualquer loja, mas precisa selecionar uma
-    // Por padrão, pega a primeira loja disponível para admin
     let lojaQuery = supabase.from('lojas').select('*')
     
     if (perfil.tipo === 'loja') {
@@ -78,19 +74,16 @@ export default function LojaDashboard() {
 
     setLoja(lojaData)
     
-    // Load real stats from database
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayISO = today.toISOString()
 
-    // Count pedidos hoje
     const { count: pedidosHojeCount } = await supabase
       .from('pedidos')
       .select('*', { count: 'exact', head: true })
       .eq('loja_id', lojaData.id)
       .gte('created_at', todayISO)
 
-    // Sum receita hoje
     const { data: pedidosHoje } = await supabase
       .from('pedidos')
       .select('total')
@@ -100,14 +93,12 @@ export default function LojaDashboard() {
 
     const receitaHoje = pedidosHoje?.reduce((sum, p) => sum + (p.total || 0), 0) || 0
 
-    // Count pendentes
     const { count: pendentesCount } = await supabase
       .from('pedidos')
       .select('*', { count: 'exact', head: true })
       .eq('loja_id', lojaData.id)
       .in('status', ['pendente', 'aceito', 'preparando', 'pronto'])
 
-    // Count produtos ativos
     const { count: produtosCount } = await supabase
       .from('produtos')
       .select('*', { count: 'exact', head: true })
@@ -138,7 +129,6 @@ export default function LojaDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
             Dashboard
@@ -148,7 +138,6 @@ export default function LojaDashboard() {
           </p>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-800 rounded-xl p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
@@ -183,7 +172,6 @@ export default function LojaDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <button
             onClick={() => router.push('/loja/pedidos')}
@@ -201,6 +189,16 @@ export default function LojaDashboard() {
             <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🛒</div>
             <h3 className="text-xl font-bold text-white mb-2">Produtos</h3>
             <p className="text-gray-400">Adicione e edite produtos do cardápio</p>
+          </button>
+
+          {/* NOVO BOTÃO: ENTREGADORES */}
+          <button
+            onClick={() => router.push('/loja/entregadores')}
+            className="bg-gray-800 rounded-xl p-6 hover:bg-gray-700 transition-colors text-left group"
+          >
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🏍️</div>
+            <h3 className="text-xl font-bold text-white mb-2">Entregadores</h3>
+            <p className="text-gray-400">Cadastre sua equipe de entrega</p>
           </button>
 
           <button

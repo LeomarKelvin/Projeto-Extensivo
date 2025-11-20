@@ -27,7 +27,11 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
   const [lojaName, setLojaName] = useState<string | null>(null)
   const [lojaMunicipio, setLojaMunicipio] = useState<string | null>(null)
   
-  // Check if user is logged in
+  // Novos estados para o controle de abertura
+  const [lojaId, setLojaId] = useState<number | null>(null)
+  const [lojaAberta, setLojaAberta] = useState(false)
+  const [loadingStatus, setLoadingStatus] = useState(false)
+  
   useEffect(() => {
     checkAuth()
   }, [])
@@ -43,7 +47,6 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
         return
       }
 
-      // Get user profile
       const profileResponse = await fetch('/api/auth/get-profile', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -54,17 +57,18 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
         const data = await profileResponse.json()
         setUserProfile(data.perfil)
 
-        // If user is loja, get store name and municipality
         if (data.perfil.tipo === 'loja') {
           const { data: lojaData } = await supabase
             .from('lojas')
-            .select('nome_loja, municipio')
+            .select('id, nome_loja, municipio, aberta')
             .eq('perfil_id', data.perfil.id)
             .single()
           
           if (lojaData) {
             setLojaName(lojaData.nome_loja)
             setLojaMunicipio(lojaData.municipio)
+            setLojaId(lojaData.id)
+            setLojaAberta(lojaData.aberta)
           }
         }
       }
@@ -79,8 +83,18 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
     localStorage.clear()
     window.location.href = '/'
   }
+
+  const toggleLojaStatus = async () => {
+    if (!lojaId) return
+    setLoadingStatus(true)
+    const novoStatus = !lojaAberta
+    const supabase = createClient()
+    
+    await supabase.from('lojas').update({ aberta: novoStatus }).eq('id', lojaId)
+    setLojaAberta(novoStatus)
+    setLoadingStatus(false)
+  }
   
-  // Handle keyboard navigation for mobile menu
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && mobileMenuOpen) {
@@ -94,10 +108,8 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
     }
   }, [mobileMenuOpen])
   
-  // Build tenant-aware URLs (all routes maintain tenant context)
   const basePath = tenant ? `/${tenant.slug}` : ''
   
-  // For lojistas, home URL points to their municipality
   let homeUrl = basePath || '/'
   if (userProfile?.tipo === 'loja' && lojaMunicipio) {
     homeUrl = `/${lojaMunicipio}`
@@ -116,7 +128,6 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
             <Logo tenant={tenant} />
           </Link>
 
-          {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-white p-2"
@@ -137,6 +148,23 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center space-x-6">
+            
+            {/* --- BOTÃO DE STATUS MOVIDO PARA CÁ (ANTES DO INÍCIO) --- */}
+            {userProfile?.tipo === 'loja' && lojaId && (
+              <button 
+                onClick={toggleLojaStatus}
+                disabled={loadingStatus}
+                className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg transition-all flex items-center gap-2 ${
+                  lojaAberta 
+                    ? 'bg-green-600 hover:bg-green-500 text-white' 
+                    : 'bg-red-600 hover:bg-red-500 text-white'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full bg-white ${loadingStatus ? 'animate-pulse' : ''}`}></span>
+                {lojaAberta ? 'ABERTA' : 'FECHADA'}
+              </button>
+            )}
+
             <Link 
               href={homeUrl}
               className="transition-colors text-white"
@@ -235,6 +263,22 @@ export default function SimpleHeader({ tenant }: SimpleHeaderProps) {
             role="navigation"
             aria-label="Menu mobile"
           >
+             {/* BOTÃO DE STATUS MOBILE TAMBÉM NO TOPO */}
+             {userProfile?.tipo === 'loja' && lojaId && (
+                <button 
+                  onClick={toggleLojaStatus}
+                  disabled={loadingStatus}
+                  className={`w-full px-4 py-3 rounded-lg font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${
+                    lojaAberta 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-red-600 text-white'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full bg-white ${loadingStatus ? 'animate-pulse' : ''}`}></span>
+                  {lojaAberta ? 'LOJA ABERTA' : 'LOJA FECHADA'}
+                </button>
+              )}
+
             <Link 
               href={homeUrl}
               className="text-white hover:opacity-80 transition-opacity py-2"
