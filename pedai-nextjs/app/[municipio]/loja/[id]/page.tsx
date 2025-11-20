@@ -5,70 +5,62 @@ import ClientLayout from '@/components/ClientLayout'
 import LojaDetalhesContent from '@/components/clientes/LojaDetalhesContent'
 import { getTenantBySlug, isTenantValid } from '@/lib/tenantConfig'
 import { createClient } from '@/lib/supabase/server'
+import { verificarLojaAberta } from '@/lib/utils/shopStatus'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 interface PageProps {
-  params: {
-    municipio: string
-    id: string
-  }
+  params: Promise<{ municipio: string; id: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const tenant = getTenantBySlug(params.municipio)
-  
-  if (!tenant) {
-    return {
-      title: 'Município não encontrado'
-    }
-  }
-
-  return {
-    title: `Loja - ${tenant.name} | PedeAí`,
-    description: `Detalhes da loja em ${tenant.name}`
-  }
+  const { municipio } = await params
+  const tenant = getTenantBySlug(municipio)
+  if (!tenant) return { title: 'Município não encontrado' }
+  return { title: `Loja - ${tenant.name} | PedeAí` }
 }
 
 async function getLojaDetalhes(lojaId: string, municipio: string) {
   const supabase = await createClient()
   
-  // Buscar loja (apenas aprovadas)
+  // REMOVI O FILTRO .eq('aprovada', true)
   const { data: loja, error: lojaError } = await supabase
     .from('lojas')
     .select('*')
     .eq('id', lojaId)
     .eq('municipio', municipio)
-    
     .single()
   
-  if (lojaError || !loja) {
-    return null
-  }
+  if (lojaError || !loja) return null
+
+  // Verifica Horário
+  const estaAberta = verificarLojaAberta(
+    loja.tipo_horario,
+    loja.horarios_funcionamento,
+    loja.aberta
+  )
+  const lojaAtualizada = { ...loja, aberta: estaAberta }
   
-  // Buscar produtos da loja
-  const { data: produtos, error: produtosError } = await supabase
+  const { data: produtos } = await supabase
     .from('produtos')
     .select('*')
     .eq('loja_id', lojaId)
     .eq('disponivel', true)
     .order('nome')
   
-  return {
-    loja,
-    produtos: produtos || []
-  }
+  return { loja: lojaAtualizada, produtos: produtos || [] }
 }
 
 export default async function LojaPage({ params }: PageProps) {
-  if (!isTenantValid(params.municipio)) {
-    notFound()
-  }
+  const { municipio, id } = await params
 
-  const tenant = getTenantBySlug(params.municipio)!
-  const data = await getLojaDetalhes(params.id, tenant.slug)
+  if (!isTenantValid(municipio)) notFound()
 
-  if (!data) {
-    notFound()
-  }
+  const tenant = getTenantBySlug(municipio)!
+  const data = await getLojaDetalhes(id, tenant.slug)
+
+  if (!data) notFound()
 
   return (
     <ClientLayout tenant={tenant}>

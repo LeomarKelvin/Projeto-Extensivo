@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { verificarLojaAberta } from '@/lib/utils/shopStatus'
+
+// FORÇA O NEXT.JS A NÃO FAZER CACHE DESTA ROTA
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,42 +11,40 @@ export async function GET(request: NextRequest) {
     const municipio = searchParams.get('municipio')
     const categoria = searchParams.get('categoria')
     
-    // Validate that municipio is provided for tenant isolation
     if (!municipio) {
-      return NextResponse.json(
-        { error: 'Município é obrigatório' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Município é obrigatório' }, { status: 400 })
     }
     
     const supabase = await createClient()
     
-    // Always filter by municipio for tenant isolation
     let query = supabase
       .from('lojas')
       .select('*')
       .eq('municipio', municipio)
+      .eq('aprovada', true) // Só mostra lojas aprovadas
     
     if (categoria && categoria !== 'todas') {
       query = query.eq('categoria', categoria)
     }
     
-    const { data, error } = await query.order('created_at', { ascending: false })
+    const { data: lojas, error } = await query.order('created_at', { ascending: false })
     
-    if (error) {
-      console.error('Erro ao buscar lojas:', error)
-      return NextResponse.json(
-        { error: 'Erro ao buscar lojas' },
-        { status: 500 }
+    if (error) throw error
+
+    // Recalcula status de aberto/fechado em tempo real
+    const lojasAtualizadas = lojas.map((loja) => {
+      const estaAberta = verificarLojaAberta(
+        loja.tipo_horario || 'sempre_aberto',
+        loja.horarios_funcionamento,
+        loja.aberta
       )
-    }
+      return { ...loja, aberta: estaAberta }
+    })
     
-    return NextResponse.json(data)
+    return NextResponse.json(lojasAtualizadas)
+
   } catch (error: any) {
-    console.error('Erro no endpoint de lojas:', error)
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    )
+    console.error('Erro na API de lojas:', error)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

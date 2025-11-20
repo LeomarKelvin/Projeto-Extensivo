@@ -17,14 +17,52 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [pedidoCriado, setPedidoCriado] = useState(false)
 
-  // Check authentication on mount
+  // Estado das Opções de Pagamento da Loja (Padrão: tudo true até carregar)
+  const [opcoesPagamento, setOpcoesPagamento] = useState({
+    dinheiro: true,
+    pix: true,
+    cartao: true
+  })
+
+  // Efeito para buscar configurações da loja em tempo real
+  useEffect(() => {
+    const fetchLojaConfig = async () => {
+      if (items.length === 0) return
+      
+      // Pega o ID da loja do primeiro item do carrinho
+      const lojaId = items[0].loja_id 
+      const supabase = createClient()
+      
+      const { data: loja } = await supabase
+        .from('lojas')
+        .select('aceita_dinheiro, aceita_pix, aceita_cartao')
+        .eq('id', lojaId)
+        .single()
+
+      if (loja) {
+        setOpcoesPagamento({
+          dinheiro: loja.aceita_dinheiro ?? true,
+          pix: loja.aceita_pix ?? true,
+          cartao: loja.aceita_cartao ?? true
+        })
+        
+        // Se a forma atual não for aceita, reseta
+        if (formData.formaPagamento === 'dinheiro' && !loja.aceita_dinheiro) setFormData(prev => ({ ...prev, formaPagamento: '' }))
+        if (formData.formaPagamento === 'pix' && !loja.aceita_pix) setFormData(prev => ({ ...prev, formaPagamento: '' }))
+        if (formData.formaPagamento === 'cartao' && !loja.aceita_cartao) setFormData(prev => ({ ...prev, formaPagamento: '' }))
+      }
+    }
+    
+    fetchLojaConfig()
+  }, [items]) // Roda sempre que os itens (e a loja) mudarem
+
+  // Verifica Auth
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        // Save current path to redirect back after login
         sessionStorage.setItem('redirectAfterLogin', `/${tenant.slug}/checkout`)
         router.push(`/${tenant.slug}/auth/login`)
         return
@@ -36,21 +74,20 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
     checkAuth()
   }, [router, tenant])
 
-  // Redirect if cart is empty (but not if order was just created)
+  // Redireciona se vazio
   useEffect(() => {
     if (items.length === 0 && !checkingAuth && !pedidoCriado) {
       router.push(`/${tenant.slug}/carrinho`)
     }
   }, [items, router, tenant, checkingAuth, pedidoCriado])
 
-  // Form state
   const [formData, setFormData] = useState({
     rua: '',
     numero: '',
     bairro: '',
     complemento: '',
     referencia: '',
-    formaPagamento: 'dinheiro',
+    formaPagamento: '', // Começa vazio
     trocoPara: '',
     observacoes: ''
   })
@@ -63,7 +100,6 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
@@ -83,6 +119,10 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
       }
     }
 
+    if (!formData.formaPagamento) {
+      newErrors.formaPagamento = 'Selecione uma forma de pagamento'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -99,7 +139,6 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
     try {
       const endereco = `${formData.rua}, ${formData.numero} - ${formData.bairro}${formData.complemento ? ` (${formData.complemento})` : ''}`
       
-      // Get access token for authentication (localStorage-based session)
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -129,7 +168,6 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
       const data = await response.json()
 
       if (!response.ok) {
-        // If 401 Unauthorized, redirect to login
         if (response.status === 401) {
           sessionStorage.setItem('redirectAfterLogin', `/${tenant.slug}/checkout`)
           router.push(`/${tenant.slug}/auth/login`)
@@ -138,10 +176,7 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
         throw new Error(data.error || 'Erro ao criar pedido')
       }
 
-      // Mark order as created to prevent cart empty redirect
       setPedidoCriado(true)
-      
-      // Clear cart and redirect to success page
       clearCart()
       router.push(`/${tenant.slug}/pedido/${data.id}`)
     } catch (error: any) {
@@ -163,7 +198,7 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
   }
 
   if (items.length === 0) {
-    return null // Will redirect via useEffect
+    return null
   }
 
   return (
@@ -264,54 +299,87 @@ export default function CheckoutContent({ tenant }: CheckoutContentProps) {
               <div className="bg-gray-800 rounded-xl p-6">
                 <h2 className="text-2xl font-bold text-white mb-4">💳 Forma de Pagamento</h2>
                 
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="formaPagamento" className="block text-sm font-medium text-gray-300 mb-2">
-                      Pagar com *
-                    </label>
-                    <select
-                      id="formaPagamento"
-                      name="formaPagamento"
-                      value={formData.formaPagamento}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-tenant-primary"
-                    >
-                      <option value="dinheiro">💵 Dinheiro</option>
-                      <option value="pix">📱 PIX</option>
-                      <option value="cartao">💳 Cartão (na entrega)</option>
-                    </select>
-                  </div>
+                {/* SELEÇÃO VISUAL DE PAGAMENTO */}
+                {(!opcoesPagamento.dinheiro && !opcoesPagamento.pix && !opcoesPagamento.cartao) ? (
+                   <p className="text-red-400 text-center py-4 border border-red-900 rounded bg-red-900/10">
+                     ⚠️ Esta loja não está aceitando pedidos no momento (sem meios de pagamento).
+                   </p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    {opcoesPagamento.dinheiro && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, formaPagamento: 'dinheiro' }))}
+                        className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                          formData.formaPagamento === 'dinheiro' 
+                            ? 'border-tenant-primary bg-tenant-primary/10 text-white' 
+                            : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                        }`}
+                      >
+                        <span className="text-2xl">💵</span>
+                        <span className="font-bold text-sm">Dinheiro</span>
+                      </button>
+                    )}
+                    
+                    {opcoesPagamento.pix && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, formaPagamento: 'pix' }))}
+                        className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                          formData.formaPagamento === 'pix' 
+                            ? 'border-tenant-primary bg-tenant-primary/10 text-white' 
+                            : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                        }`}
+                      >
+                        <span className="text-2xl">💠</span>
+                        <span className="font-bold text-sm">Pix</span>
+                      </button>
+                    )}
 
-                  {formData.formaPagamento === 'dinheiro' && (
-                    <div>
-                      <label htmlFor="trocoPara" className="block text-sm font-medium text-gray-300 mb-2">
-                        Troco para (opcional)
-                      </label>
-                      <input
-                        id="trocoPara"
-                        name="trocoPara"
-                        type="number"
-                        step="0.01"
-                        value={formData.trocoPara}
-                        onChange={handleChange}
-                        placeholder={`Mínimo: R$ ${totalComEntrega.toFixed(2)}`}
-                        className={`w-full px-4 py-3 bg-gray-900 border ${errors.trocoPara ? 'border-red-500' : 'border-gray-700'} rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-tenant-primary`}
-                      />
-                      {errors.trocoPara && <p className="text-red-500 text-sm mt-1">{errors.trocoPara}</p>}
-                      {formData.trocoPara && !errors.trocoPara && parseFloat(formData.trocoPara) > totalComEntrega && (
-                        <p className="text-green-500 text-sm mt-1">
-                          Troco: R$ {(parseFloat(formData.trocoPara) - totalComEntrega).toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
+                    {opcoesPagamento.cartao && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, formaPagamento: 'cartao' }))}
+                        className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                          formData.formaPagamento === 'cartao' 
+                            ? 'border-tenant-primary bg-tenant-primary/10 text-white' 
+                            : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                        }`}
+                      >
+                        <span className="text-2xl">💳</span>
+                        <span className="font-bold text-sm">Cartão</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {formData.formaPagamento === 'dinheiro' && (
+                  <div>
+                    <label htmlFor="trocoPara" className="block text-sm font-medium text-gray-300 mb-2">
+                      Troco para (opcional)
+                    </label>
+                    <input
+                      id="trocoPara"
+                      name="trocoPara"
+                      type="number"
+                      step="0.01"
+                      value={formData.trocoPara}
+                      onChange={handleChange}
+                      placeholder={`Mínimo: R$ ${totalComEntrega.toFixed(2)}`}
+                      className={`w-full px-4 py-3 bg-gray-900 border ${errors.trocoPara ? 'border-red-500' : 'border-gray-700'} rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-tenant-primary`}
+                    />
+                    {errors.trocoPara && <p className="text-red-500 text-sm mt-1">{errors.trocoPara}</p>}
+                  </div>
+                )}
+                
+                {errors.formaPagamento && (
+                  <p className="text-red-500 text-sm text-center">{errors.formaPagamento}</p>
+                )}
               </div>
 
               {/* Observações */}
               <div className="bg-gray-800 rounded-xl p-6">
                 <h2 className="text-2xl font-bold text-white mb-4">📝 Observações</h2>
-                
                 <textarea
                   id="observacoes"
                   name="observacoes"

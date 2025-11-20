@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { verificarLojaAberta } from '@/lib/utils/shopStatus'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
@@ -15,24 +18,30 @@ export async function GET(
       .eq('id', lojaId)
       .single()
 
-    if (lojaError) {
-      console.error('Erro ao buscar loja:', lojaError)
+    if (lojaError || !loja) {
       return NextResponse.json({ error: 'Loja não encontrada' }, { status: 404 })
     }
 
-    const { data: produtos, error: produtosError } = await supabase
+    // Verifica horário em tempo real
+    const estaAberta = verificarLojaAberta(
+      loja.tipo_horario || 'sempre_aberto',
+      loja.horarios_funcionamento,
+      loja.aberta
+    )
+    
+    // Atualiza o objeto para o front (não precisa esperar salvar no banco)
+    const lojaAtualizada = { ...loja, aberta: estaAberta }
+
+    // Busca produtos
+    const { data: produtos } = await supabase
       .from('produtos')
       .select('*')
       .eq('loja_id', lojaId)
       .eq('disponivel', true)
       .order('created_at', { ascending: false })
 
-    if (produtosError) {
-      console.error('Erro ao buscar produtos:', produtosError)
-    }
-
     return NextResponse.json({
-      loja,
+      loja: lojaAtualizada,
       produtos: produtos || []
     })
   } catch (error) {

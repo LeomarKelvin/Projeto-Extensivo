@@ -4,7 +4,7 @@ import LojaClientesContent from '@/components/loja/LojaClientesContent'
 
 export const metadata: Metadata = {
   title: 'Meus Clientes - PedeAí',
-  description: 'Gerencie sua base de clientes',
+  description: 'Gerencie sua base de clientes e histórico',
 }
 
 export default function ClientesPage() {

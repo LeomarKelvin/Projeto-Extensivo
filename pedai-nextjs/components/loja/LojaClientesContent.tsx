@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 interface ClienteResumo {
-  id: string // ID do perfil ou chave única
+  id: string
   nome: string
   telefone: string
   email: string
   total_gasto: number
   qtd_pedidos: number
   ultima_compra: string
+  origem: 'App' | 'PDV'
 }
 
 export default function LojaClientesContent() {
@@ -19,7 +20,6 @@ export default function LojaClientesContent() {
   const [loading, setLoading] = useState(true)
   const [clientes, setClientes] = useState<ClienteResumo[]>([])
   const [busca, setBusca] = useState('')
-  const [lojaId, setLojaId] = useState<number | null>(null)
   const [lojaNome, setLojaNome] = useState('')
 
   useEffect(() => {
@@ -35,13 +35,16 @@ export default function LojaClientesContent() {
       return
     }
 
-    const { data: loja } = await supabase.from('lojas').select('id, nome_loja').eq('user_id', user.id).single()
+    const { data: loja } = await supabase
+      .from('lojas')
+      .select('id, nome_loja')
+      .eq('user_id', user.id)
+      .single()
     
     if (loja) {
-      setLojaId(loja.id)
       setLojaNome(loja.nome_loja)
       
-      // Buscar todos os pedidos da loja para montar o CRM
+      // Busca todos os pedidos não cancelados
       const { data: pedidos } = await supabase
         .from('pedidos')
         .select(`
@@ -49,7 +52,7 @@ export default function LojaClientesContent() {
           perfil:perfis(id, nome_completo, telefone, email)
         `)
         .eq('loja_id', loja.id)
-        .neq('status', 'cancelado') // Ignorar cancelados no cálculo de valor
+        .neq('status', 'cancelado')
         .order('created_at', { ascending: false })
 
       if (pedidos) {
@@ -60,75 +63,82 @@ export default function LojaClientesContent() {
   }
 
   const processarClientes = (pedidos: any[]) => {
-    const mapaClientes = new Map<string, ClienteResumo>()
+    const mapa = new Map<string, ClienteResumo>()
 
     pedidos.forEach(p => {
-      // Tenta identificar o cliente (Perfil > Nome Avulso > "Desconhecido")
-      let idUnico = ''
-      let nome = 'Cliente Desconhecido'
-      let telefone = ''
-      let email = ''
+      // Define a chave única e os dados base
+      let key = ''
+      let dados: Partial<ClienteResumo> = {}
 
       if (p.perfil) {
-        // Cliente cadastrado no app
-        idUnico = `perfil-${p.perfil.id}`
-        nome = p.perfil.nome_completo
-        telefone = p.perfil.telefone || ''
-        email = p.perfil.email || ''
+        // Cliente do App (Logado)
+        key = `app-${p.perfil.id}`
+        dados = {
+          id: key,
+          nome: p.perfil.nome_completo,
+          telefone: p.perfil.telefone || '',
+          email: p.perfil.email || '',
+          origem: 'App'
+        }
       } else {
-        // Cliente avulso (PDV)
-        // Usa o nome+telefone como chave única
-        nome = p.cliente_nome || 'Cliente Balcão'
-        telefone = p.cliente_telefone || ''
-        idUnico = `pdv-${nome}-${telefone}`
+        // Cliente do PDV (Avulso)
+        // Usa telefone como chave principal, ou nome se não tiver telefone
+        const tel = p.cliente_telefone?.replace(/\D/g, '') || ''
+        const nome = p.cliente_nome || 'Cliente Balcão'
+        key = tel ? `pdv-tel-${tel}` : `pdv-nome-${nome.toLowerCase().trim()}`
+        
+        dados = {
+          id: key,
+          nome: nome,
+          telefone: p.cliente_telefone || '',
+          email: '',
+          origem: 'PDV'
+        }
       }
 
-      // Se não tiver telefone, não adianta muito pro CRM, mas mantemos na lista
-      
-      const atual = mapaClientes.get(idUnico) || {
-        id: idUnico,
-        nome,
-        telefone,
-        email,
+      // Se já existe, atualiza. Se não, cria.
+      const atual = mapa.get(key) || {
+        ...dados,
         total_gasto: 0,
         qtd_pedidos: 0,
-        ultima_compra: p.created_at // Como ordenamos por data desc, o primeiro que aparecer é o último
-      }
+        ultima_compra: p.created_at // Inicializa com a data deste pedido
+      } as ClienteResumo
 
-      // Atualiza totais (soma acumulada)
+      // Acumula valores
       atual.total_gasto += p.total
       atual.qtd_pedidos += 1
       
-      // A data da última compra é a mais recente encontrada (a primeira do loop)
-      // Se já existe no mapa, mantém a data que já estava (que é mais recente)
-      if (!mapaClientes.has(idUnico)) {
+      // Mantém sempre a data mais recente (pedidos já vêm ordenados, mas garantimos)
+      if (new Date(p.created_at) > new Date(atual.ultima_compra)) {
         atual.ultima_compra = p.created_at
       }
 
-      mapaClientes.set(idUnico, atual)
+      mapa.set(key, atual)
     })
 
-    // Converte Mapa para Array e ordena por última compra
-    setClientes(Array.from(mapaClientes.values()))
+    // Converte para array e ordena por última compra (mais recentes primeiro)
+    const listaFinal = Array.from(mapa.values()).sort((a, b) => 
+      new Date(b.ultima_compra).getTime() - new Date(a.ultima_compra).getTime()
+    )
+
+    setClientes(listaFinal)
   }
 
-  const falarNoZap = (cliente: ClienteResumo) => {
+  const enviarZap = (cliente: ClienteResumo) => {
     if (!cliente.telefone) return alert('Cliente sem telefone cadastrado.')
     
-    // Limpa o número
     const num = cliente.telefone.replace(/\D/g, '')
-    const texto = `Olá ${cliente.nome}, aqui é do ${lojaNome}! Tudo bem? 😃`
+    const msg = `Olá ${cliente.nome}, aqui é do ${lojaNome}! Tudo bem? 😃`
     
-    window.open(`https://api.whatsapp.com/send?phone=55${num}&text=${encodeURIComponent(texto)}`, '_blank')
+    window.open(`https://api.whatsapp.com/send?phone=55${num}&text=${encodeURIComponent(msg)}`, '_blank')
   }
 
-  // Filtro de busca
   const clientesFiltrados = clientes.filter(c => 
     c.nome.toLowerCase().includes(busca.toLowerCase()) ||
     c.telefone.includes(busca)
   )
 
-  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Carregando clientes...</div>
+  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Carregando base de clientes...</div>
 
   return (
     <div className="min-h-screen bg-gray-900 p-4 md:p-8">
@@ -139,31 +149,43 @@ export default function LojaClientesContent() {
             <button onClick={() => router.push('/loja/dashboard')} className="text-gray-400 hover:text-white text-2xl">←</button>
             <div>
               <h1 className="text-3xl font-bold text-white">Meus Clientes</h1>
-              <p className="text-gray-400 text-sm">Histórico e contato direto</p>
+              <p className="text-gray-400 text-sm">Gestão de relacionamento e histórico</p>
             </div>
           </div>
 
           <div className="w-full md:w-auto">
             <input 
               placeholder="🔍 Buscar por nome ou telefone..." 
-              className="w-full md:w-64 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
+              className="w-full md:w-72 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-primary outline-none"
               value={busca}
               onChange={e => setBusca(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Lista de Clientes */}
+        {/* Cards Resumo */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-blue-500">
+            <p className="text-gray-400 text-xs">Total Clientes</p>
+            <p className="text-2xl font-bold text-white">{clientes.length}</p>
+          </div>
+          <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-green-500">
+            <p className="text-gray-400 text-xs">Vendas Totais (LTV)</p>
+            <p className="text-2xl font-bold text-white">R$ {clientes.reduce((acc, c) => acc + c.total_gasto, 0).toFixed(0)}</p>
+          </div>
+        </div>
+
+        {/* Tabela */}
         <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase">
                 <tr>
                   <th className="p-4">Cliente</th>
-                  <th className="p-4">Contato</th>
+                  <th className="p-4 hidden md:table-cell">Contato</th>
                   <th className="p-4 text-center">Pedidos</th>
                   <th className="p-4 text-right">Total Gasto</th>
-                  <th className="p-4 text-right">Última Compra</th>
+                  <th className="p-4 text-right hidden md:table-cell">Última Compra</th>
                   <th className="p-4 text-center">Ação</th>
                 </tr>
               </thead>
@@ -173,39 +195,39 @@ export default function LojaClientesContent() {
                     <td colSpan={6} className="p-8 text-center text-gray-500">Nenhum cliente encontrado.</td>
                   </tr>
                 ) : (
-                  clientesFiltrados.map((cliente) => (
-                    <tr key={cliente.id} className="hover:bg-gray-700/30 transition-colors group">
+                  clientesFiltrados.map((c) => (
+                    <tr key={c.id} className="hover:bg-gray-700/30 transition-colors group">
                       <td className="p-4">
-                        <p className="font-bold text-white">{cliente.nome}</p>
-                        <span className="text-xs text-gray-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-700">
-                          {cliente.id.startsWith('pdv') ? 'Presencial/Tel' : 'App PedeAí'}
+                        <p className="font-bold text-white">{c.nome}</p>
+                        <span className={`text-[10px] px-2 py-0.5 rounded border ${c.origem === 'App' ? 'bg-blue-900/30 border-blue-800 text-blue-300' : 'bg-gray-700 border-gray-600 text-gray-400'}`}>
+                          {c.origem}
                         </span>
                       </td>
-                      <td className="p-4 text-sm text-gray-300">
-                        {cliente.telefone || '---'}
+                      <td className="p-4 text-sm text-gray-300 hidden md:table-cell">
+                        {c.telefone || '-'}
                       </td>
                       <td className="p-4 text-center">
-                        <span className="bg-blue-900/30 text-blue-400 px-2 py-1 rounded-full text-xs font-bold">
-                          {cliente.qtd_pedidos}
+                        <span className="bg-gray-700 text-white px-2 py-1 rounded-md text-xs font-bold">
+                          {c.qtd_pedidos}
                         </span>
                       </td>
                       <td className="p-4 text-right text-green-400 font-bold">
-                        R$ {cliente.total_gasto.toFixed(2)}
+                        R$ {c.total_gasto.toFixed(2)}
                       </td>
-                      <td className="p-4 text-right text-sm text-gray-400">
-                        {new Date(cliente.ultima_compra).toLocaleDateString('pt-BR')}
+                      <td className="p-4 text-right text-sm text-gray-400 hidden md:table-cell">
+                        {new Date(c.ultima_compra).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="p-4 text-center">
-                        {cliente.telefone ? (
+                        {c.telefone ? (
                           <button 
-                            onClick={() => falarNoZap(cliente)}
-                            className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-lg transition-transform hover:scale-110"
-                            title="Chamar no WhatsApp"
+                            onClick={() => enviarZap(c)}
+                            className="bg-green-600 hover:bg-green-500 text-white p-2 rounded-lg transition-transform hover:scale-110 shadow-lg"
+                            title="Conversar no WhatsApp"
                           >
                             💬
                           </button>
                         ) : (
-                          <span className="text-gray-600 text-xs">Sem zap</span>
+                          <span className="text-gray-600 text-xs">--</span>
                         )}
                       </td>
                     </tr>
@@ -215,11 +237,6 @@ export default function LojaClientesContent() {
             </table>
           </div>
         </div>
-        
-        <div className="mt-4 text-center text-gray-500 text-xs">
-          <p>* A lista inclui clientes cadastrados no app e clientes lançados via PDV.</p>
-        </div>
-
       </div>
     </div>
   )
