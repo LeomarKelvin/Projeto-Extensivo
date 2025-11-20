@@ -175,6 +175,12 @@ export default function LojaDashboard() {
             <h3 className="text-xl font-bold text-white mb-2">Robô & Automação</h3>
             <p className="text-gray-400">Configure mensagens e sons</p>
           </button>
+
+          <button onClick={() => router.push('/loja/caixa')} className="bg-gray-800 rounded-xl p-6 hover:bg-gray-700 transition-colors text-left group border border-gray-700 hover:border-primary">
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">💵</div>
+            <h3 className="text-xl font-bold text-white mb-2">Frente de Caixa</h3>
+            <p className="text-gray-400">Abrir/Fechar, Sangria e Suprimento</p>
+          </button>
         </div>
       </div>
     </div>

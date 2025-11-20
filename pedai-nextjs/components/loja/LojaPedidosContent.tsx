@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LojaPDVModal from './LojaPDVModal'
+import { imprimirComanda } from '@/lib/utils/printReceipt'
 
 // --- INTERFACES ---
 interface Pedido {
@@ -18,7 +19,6 @@ interface Pedido {
   observacoes: string | null
   created_at: string
   tipo_entrega: 'delivery' | 'retirada'
-  // Cliente pode vir como objeto ou array do Supabase
   cliente_nome?: string
   cliente_telefone?: string
   perfil?: {
@@ -54,13 +54,11 @@ export default function LojaPedidosContent() {
   const [storeName, setStoreName] = useState('')
   const [viewMode, setViewMode] = useState<'kanban' | 'historico'>('kanban')
   
-  // Filtros e Busca
   const [filterType, setFilterType] = useState<'todos' | 'delivery' | 'retirada'>('todos')
   const [searchId, setSearchId] = useState('')
   const [searchClient, setSearchClient] = useState('')
   const [autoAccept, setAutoAccept] = useState(false)
 
-  // Modais
   const [showPDV, setShowPDV] = useState(false)
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null)
 
@@ -72,7 +70,6 @@ export default function LojaPedidosContent() {
       await audio.play()
     } catch (e) {}
     
-    document.title = "🔔 NOVO PEDIDO! - PedeAí"
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('NOVO PEDIDO! 📦', { body: 'Verifique o painel agora.', requireInteraction: true })
     }
@@ -187,8 +184,7 @@ export default function LojaPedidosContent() {
 
   const finalizeAll = async () => {
     if (colunas.transito.length === 0) return
-    if (!confirm(`Finalizar todos os ${colunas.transito.length} pedidos da coluna 'Em Trânsito'?`)) return
-
+    
     const supabase = createClient()
     const ids = colunas.transito.map(p => p.id)
     await supabase.from('pedidos').update({ status: 'entregue' }).in('id', ids)
@@ -284,7 +280,6 @@ export default function LojaPedidosContent() {
              </button>
           )}
           
-          {/* BOTÃO VER DETALHES */}
           <button 
             onClick={() => setSelectedPedido(p)} 
             className="w-full text-sm font-bold text-yellow-500 hover:text-yellow-400 underline mt-2"
@@ -340,6 +335,7 @@ export default function LojaPedidosContent() {
       {/* --- KANBAN --- */}
       {viewMode === 'kanban' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0">
+          
           <div className="bg-gray-800/30 rounded-xl border border-gray-700 flex flex-col h-full overflow-hidden">
             <div className="p-3 border-b border-gray-700 bg-gray-800/90 flex flex-col gap-2 sticky top-0 z-10">
               <div className="flex justify-between items-center">
@@ -473,14 +469,22 @@ export default function LojaPedidosContent() {
               </div>
             </div>
             <div className="p-6 bg-gray-900 border-t border-gray-700 flex justify-end gap-3">
+               {/* BOTÃO DE IMPRIMIR */}
+               <button 
+                 onClick={() => imprimirComanda(selectedPedido, storeName)} 
+                 className="px-6 py-3 rounded-lg bg-gray-700 text-white font-bold hover:bg-gray-600 transition flex items-center gap-2"
+               >
+                 🖨️ Imprimir
+               </button>
+
                {selectedPedido.status === 'pendente' && (
                  <>
                    <button onClick={() => { updateStatus(selectedPedido.id, 'cancelado'); setSelectedPedido(null) }} className="px-6 py-3 rounded-lg bg-red-900/50 text-red-400 font-bold hover:bg-red-900 transition">Recusar</button>
-                   <button onClick={() => { updateStatus(selectedPedido.id, 'aceito'); setSelectedPedido(null) }} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition shadow-lg shadow-green-900/20">ACEITAR PEDIDO</button>
+                   <button onClick={() => { updateStatus(selectedPedido.id, 'aceito'); setSelectedPedido(null) }} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition shadow-lg shadow-green-900/20">ACEITAR</button>
                  </>
                )}
                {['pronto', 'em_entrega'].includes(selectedPedido.status) && (
-                 <button onClick={() => sendToWhatsApp(selectedPedido)} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition">Enviar no WhatsApp</button>
+                 <button onClick={() => sendToWhatsApp(selectedPedido)} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition">WhatsApp</button>
                )}
                <button onClick={() => setSelectedPedido(null)} className="px-6 py-3 rounded-lg bg-gray-700 text-white font-bold hover:bg-gray-600 transition border border-gray-600">Fechar</button>
             </div>
@@ -488,18 +492,8 @@ export default function LojaPedidosContent() {
         </div>
       )}
 
-      {/* --- MODAL PDV (Novo Pedido) --- */}
-      {showPDV && lojaId && (
-        <LojaPDVModal 
-          lojaId={lojaId} 
-          onClose={() => setShowPDV(false)} 
-          onSuccess={() => {
-            setShowPDV(false)
-            loadPedidos(lojaId)
-          }} 
-        />
-      )}
-
+      {/* MODAL PDV */}
+      {showPDV && lojaId && <LojaPDVModal lojaId={lojaId} onClose={() => setShowPDV(false)} onSuccess={() => { setShowPDV(false); loadPedidos(lojaId) }} />}
     </div>
   )
 }

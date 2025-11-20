@@ -24,14 +24,27 @@ interface VendaDiaria {
 export default function LojaRelatoriosContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [periodo, setPeriodo] = useState<'7' | '30'>('7')
+  // Adicionei '15' nas opções de tipo
+  const [periodo, setPeriodo] = useState<'7' | '15' | '30'>('7')
+  
+  // Novo estado para guardar os dados brutos (Cache Local)
+  const [dadosBrutos, setDadosBrutos] = useState<any[]>([])
+  
   const [stats, setStats] = useState<Stats>({ faturamento: 0, pedidos: 0, ticketMedio: 0 })
   const [topProdutos, setTopProdutos] = useState<TopProduto[]>([])
   const [graficoDados, setGraficoDados] = useState<VendaDiaria[]>([])
 
+  // 1. Carrega dados UMA VEZ só (Mount)
   useEffect(() => {
     loadRelatorios()
-  }, [periodo])
+  }, [])
+
+  // 2. Quando mudar o período, reprocessa instantaneamente sem ir no banco
+  useEffect(() => {
+    if (dadosBrutos.length > 0 || !loading) {
+      processarDados(dadosBrutos, parseInt(periodo))
+    }
+  }, [periodo, dadosBrutos])
 
   const formatarDataSimples = (dataISO: Date | string) => {
     const d = new Date(dataISO)
@@ -53,7 +66,8 @@ export default function LojaRelatoriosContent() {
     const { data: loja } = await supabase.from('lojas').select('id').eq('user_id', user.id).single()
     
     if (loja) {
-      const diasAtras = parseInt(periodo)
+      // Busca SEMPRE 30 dias para ter massa de dados na memória
+      const diasAtras = 30
       const dataLimite = new Date()
       dataLimite.setDate(dataLimite.getDate() - diasAtras)
       dataLimite.setHours(0, 0, 0, 0)
@@ -74,21 +88,31 @@ export default function LojaRelatoriosContent() {
         .order('created_at', { ascending: true })
 
       if (pedidos) {
-        processarDados(pedidos, diasAtras)
+        setDadosBrutos(pedidos) // Salva no cache local
+        processarDados(pedidos, 7) // Inicia mostrando 7 dias
       }
     }
     setLoading(false)
   }
 
-  const processarDados = (pedidos: any[], dias: number) => {
-    const faturamento = pedidos.reduce((acc, p) => acc + p.total, 0)
-    const totalPedidos = pedidos.length
+  const processarDados = (todosPedidos: any[], dias: number) => {
+    // Filtra localmente os pedidos dentro do período selecionado
+    const dataCorte = new Date()
+    dataCorte.setDate(dataCorte.getDate() - dias)
+    dataCorte.setHours(0, 0, 0, 0)
+
+    const pedidosFiltrados = todosPedidos.filter(p => new Date(p.created_at) >= dataCorte)
+
+    // 1. KPIs
+    const faturamento = pedidosFiltrados.reduce((acc, p) => acc + p.total, 0)
+    const totalPedidos = pedidosFiltrados.length
     const ticketMedio = totalPedidos > 0 ? faturamento / totalPedidos : 0
 
     setStats({ faturamento, pedidos: totalPedidos, ticketMedio })
 
+    // 2. Ranking
     const produtosMap = new Map<string, TopProduto>()
-    pedidos.forEach(p => {
+    pedidosFiltrados.forEach(p => {
       p.pedido_itens?.forEach((item: any) => {
         const nome = item.produto?.nome || 'Item removido'
         const atual = produtosMap.get(nome) || { nome, qtd: 0, total: 0 }
@@ -106,6 +130,7 @@ export default function LojaRelatoriosContent() {
 
     setTopProdutos(ranking)
 
+    // 3. Gráfico
     const vendasMap = new Map<string, number>()
     const hoje = new Date()
     const diasArray = []
@@ -118,7 +143,7 @@ export default function LojaRelatoriosContent() {
       diasArray.push(key)
     }
 
-    pedidos.forEach(p => {
+    pedidosFiltrados.forEach(p => {
       const key = formatarDataSimples(p.created_at)
       if (vendasMap.has(key)) {
         vendasMap.set(key, (vendasMap.get(key) || 0) + p.total)
@@ -133,9 +158,13 @@ export default function LojaRelatoriosContent() {
     setGraficoDados(grafico)
   }
 
-  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Calculando...</div>
+  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Carregando dados...</div>
 
   const maxValorGrafico = Math.max(...graficoDados.map(d => d.valor), 10)
+  
+  // Ajuste dinâmico de largura das barras
+  const barWidth = periodo === '7' ? 8 : periodo === '15' ? 4 : 2
+  const gap = periodo === '7' ? 5 : periodo === '15' ? 2 : 1
 
   return (
     <div className="min-h-screen bg-gray-900 p-4 md:p-8">
@@ -150,9 +179,17 @@ export default function LojaRelatoriosContent() {
             </div>
           </div>
 
+          {/* Botões de Filtro */}
           <div className="flex bg-gray-800 p-1 rounded-lg">
-            <button onClick={() => setPeriodo('7')} className={`px-6 py-2 rounded-md text-sm font-bold transition-all ${periodo === '7' ? 'bg-primary text-secondary' : 'text-gray-400 hover:text-white'}`}>7 Dias</button>
-            <button onClick={() => setPeriodo('30')} className={`px-6 py-2 rounded-md text-sm font-bold transition-all ${periodo === '30' ? 'bg-primary text-secondary' : 'text-gray-400 hover:text-white'}`}>30 Dias</button>
+            {['7', '15', '30'].map((d) => (
+              <button 
+                key={d}
+                onClick={() => setPeriodo(d as any)} 
+                className={`px-6 py-2 rounded-md text-sm font-bold transition-all ${periodo === d ? 'bg-primary text-secondary' : 'text-gray-400 hover:text-white'}`}
+              >
+                {d} Dias
+              </button>
+            ))}
           </div>
         </div>
 
@@ -173,26 +210,30 @@ export default function LojaRelatoriosContent() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           
-          {/* GRÁFICO HTML/CSS PURO (Sem SVG para evitar bugs de texto) */}
+          {/* GRÁFICO HTML/CSS PURO */}
           <div className="lg:col-span-2 bg-gray-800 p-6 rounded-xl border border-gray-700">
             <h3 className="text-xl font-bold text-white mb-6">Evolução de Vendas</h3>
             
-            <div className="h-64 flex items-end gap-1 sm:gap-2 w-full">
+            <div className="h-64 flex items-end gap-1 sm:gap-2 w-full relative">
               {graficoDados.map((dia, i) => {
-                // Calcula altura percentual
-                const altura = Math.max((dia.valor / maxValorGrafico) * 100, 2) // Mínimo 2%
+                const altura = Math.max((dia.valor / maxValorGrafico) * 100, 2)
                 
-                // Lógica para mostrar datas sem encavalar (ex: 1, 5, 10...)
-                const mostrarData = periodo === '7' || i % 4 === 0 || i === graficoDados.length - 1;
+                // Lógica para mostrar datas sem encavalar
+                // 7 dias: Mostra tudo
+                // 15 dias: Mostra dia sim, dia não
+                // 30 dias: Mostra a cada 4 dias
+                const mostrarData = periodo === '7' || 
+                                   (periodo === '15' && i % 2 === 0) || 
+                                   (periodo === '30' && i % 4 === 0) || 
+                                   i === graficoDados.length - 1;
 
                 return (
                   <div key={i} className="flex-1 flex flex-col justify-end h-full group relative">
                     
-                    {/* Tooltip Flutuante (HTML padrão, z-index alto) */}
+                    {/* Tooltip Flutuante */}
                     <div className="absolute bottom-[100%] left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs font-bold py-1 px-2 rounded border border-gray-600 whitespace-nowrap z-20 shadow-xl pointer-events-none">
                       <p className="text-gray-400 text-[10px] mb-0.5">{dia.data}</p>
                       <p className="text-green-400">R$ {dia.valor.toFixed(2)}</p>
-                      {/* Setinha do tooltip */}
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-600"></div>
                     </div>
                     

@@ -40,7 +40,7 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
   const [selectedProduct, setSelectedProduct] = useState<Produto | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [observation, setObservation] = useState('')
-  const [showToast, setShowToast] = useState(false) // Estado para notificação visual
+  const [showToast, setShowToast] = useState(false) // Estado do Toast
 
   const openModal = (produto: Produto) => {
     if (!loja.aberta || !produto.disponivel) return
@@ -67,7 +67,7 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
 
     closeModal()
     
-    // Mostra feedback visual (Toast) em vez de alert/confirm
+    // Feedback visual elegante (Sem confirm)
     setShowToast(true)
     setTimeout(() => setShowToast(false), 3000)
   }
@@ -75,14 +75,14 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
   return (
     <div className="min-h-screen bg-gray-900 pb-20 relative">
       
-      {/* TOAST DE SUCESSO AO ADICIONAR */}
+      {/* TOAST DE SUCESSO */}
       {showToast && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-2xl animate-fade-in-down flex items-center gap-2 font-bold border-2 border-green-400">
-          <span>🛒</span> Produto adicionado ao carrinho!
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-xl animate-bounce flex items-center gap-2 font-bold border-2 border-green-400">
+          <span>🛒</span> Produto adicionado!
         </div>
       )}
 
-      {/* HEADER COM CAPA */}
+      {/* HEADER */}
       <div className="relative w-full h-48 md:h-64 bg-gray-800">
         {loja.url_capa ? (
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${loja.url_capa})` }}>
@@ -119,32 +119,28 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
         {loja.descricao && <div className="mt-6 bg-gray-800/50 p-4 rounded-xl border border-gray-700 text-gray-300 text-sm leading-relaxed max-w-3xl">{loja.descricao}</div>}
       </div>
 
-      {/* LISTA DE PRODUTOS */}
+      {/* CARDÁPIO */}
       <div className="container mx-auto px-4 pb-16">
         <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-tenant-primary pl-4">Cardápio</h2>
-        {produtos.length === 0 ? (
-          <div className="text-center py-16 bg-gray-800/30 rounded-2xl border border-gray-700 border-dashed"><p className="text-gray-500 text-lg">Nenhum produto disponível.</p></div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {produtos.map((produto) => {
-              const isBlocked = !loja.aberta || !produto.disponivel
-              return (
-                <div key={produto.id} onClick={() => !isBlocked && openModal(produto)} className={`bg-gray-800 rounded-xl overflow-hidden transition-all border border-gray-700 cursor-pointer flex ${isBlocked ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'hover:border-tenant-primary hover:shadow-xl hover:-translate-y-1'}`}>
-                  <div className="w-1/3 bg-gray-900 relative flex items-center justify-center overflow-hidden">
-                    {produto.imagem_url ? <img src={produto.imagem_url} alt={produto.nome} className="w-full h-full object-cover" /> : <span className="text-4xl">🍽️</span>}
-                  </div>
-                  <div className="w-2/3 p-4 flex flex-col justify-between">
-                    <div><h3 className="text-base font-bold text-white leading-tight mb-1">{produto.nome}</h3>{produto.descricao && <p className="text-gray-400 text-xs line-clamp-2 mb-2">{produto.descricao}</p>}</div>
-                    <div className="flex items-center justify-between mt-2"><span className="text-lg font-bold text-tenant-primary">R$ {produto.preco.toFixed(2)}</span>{!isBlocked && <span className="text-2xl text-tenant-primary">+</span>}</div>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {produtos.map((produto) => {
+            const isBlocked = !loja.aberta || !produto.disponivel
+            return (
+              <div key={produto.id} onClick={() => !isBlocked && openModal(produto)} className={`bg-gray-800 rounded-xl overflow-hidden transition-all border border-gray-700 cursor-pointer flex ${isBlocked ? 'opacity-60 grayscale cursor-not-allowed' : 'hover:border-tenant-primary hover:shadow-xl hover:-translate-y-1'}`}>
+                <div className="w-1/3 bg-gray-900 relative flex items-center justify-center overflow-hidden">
+                  {produto.imagem_url ? <img src={produto.imagem_url} className="w-full h-full object-cover" /> : <span className="text-4xl">🍽️</span>}
                 </div>
-              )
-            })}
-          </div>
-        )}
+                <div className="w-2/3 p-4 flex flex-col justify-between">
+                  <div><h3 className="text-base font-bold text-white leading-tight mb-1">{produto.nome}</h3>{produto.descricao && <p className="text-gray-400 text-xs line-clamp-2 mb-2">{produto.descricao}</p>}</div>
+                  <div className="flex items-center justify-between mt-2"><span className="text-lg font-bold text-tenant-primary">R$ {produto.preco.toFixed(2)}</span>{!isBlocked && <span className="text-2xl text-tenant-primary">+</span>}</div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      {/* MODAL PRODUTO */}
+      {/* MODAL DO PRODUTO */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 animate-fadeIn backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && closeModal()}>
           <div className="bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]">
@@ -156,7 +152,7 @@ export default function LojaDetalhesContent({ tenant, loja, produtos }: LojaDeta
               <h2 className="text-2xl font-bold text-white mb-1">{selectedProduct.nome}</h2>
               <p className="text-gray-400 text-sm mb-6">{selectedProduct.descricao}</p>
               
-              {/* CONDICIONAL: Só mostra campo de observação se o produto permitir */}
+              {/* CONDICIONAL DE OBSERVAÇÃO (ITEM 2) */}
               {selectedProduct.permite_observacao !== false && (
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-300 mb-2">Alguma observação?</label>
