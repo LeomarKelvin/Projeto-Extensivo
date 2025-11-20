@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import ClientLayout from '@/components/ClientLayout'
 import LojaPedidosContent from '@/components/loja/LojaPedidosContent'
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function PedidosPage() {
-  return <LojaPedidosContent />
+  return (
+    <ClientLayout showCart={false}>
+      <LojaPedidosContent />
+    </ClientLayout>
+  )
 }

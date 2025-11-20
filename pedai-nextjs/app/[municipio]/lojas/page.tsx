@@ -4,8 +4,9 @@ import { notFound } from 'next/navigation'
 import ClientLayout from '@/components/ClientLayout'
 import LojasContent from '@/components/clientes/LojasContent'
 import { createClient } from '@/lib/supabase/server'
-import { verificarLojaAberta } from '@/lib/utils/shopStatus'
+import { verificarLojaAberta } from '@/lib/utils/shopStatus' // <--- Importante
 
+// ISSO É CRUCIAL: Diz ao Next.js para não fazer cache dessa página
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -27,11 +28,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 async function getLojas(municipio: string) {
   const supabase = await createClient()
   
-  // REMOVI O FILTRO .eq('aprovada', true) PARA SUAS LOJAS APARECEREM
+  // Buscamos todas as lojas do município (aprovadas)
   const { data, error } = await supabase
     .from('lojas')
     .select('*')
     .eq('municipio', municipio)
+    .eq('aprovada', true) // Só mostra lojas aprovadas
     .order('nome_loja')
   
   if (error) {
@@ -39,18 +41,19 @@ async function getLojas(municipio: string) {
     return []
   }
 
-  // Recalcula status
-  const lojasAtualizadas = data?.map((loja: any) => {
+  // AQUI ESTÁ A MÁGICA: Recalcula o status "aberta" para cada loja
+  const lojasProcessadas = data.map((loja: any) => {
     const estaAberta = verificarLojaAberta(
-      loja.tipo_horario, 
-      loja.horarios_funcionamento, 
-      loja.aberta
+      loja.tipo_horario,
+      loja.horarios_funcionamento,
+      loja.aberta // Passa o status manual como fallback
     )
+    // Sobrescreve o valor do banco com o valor calculado
     return { ...loja, aberta: estaAberta }
   })
   
-  // Ordena: Abertas primeiro
-  return lojasAtualizadas.sort((a, b) => Number(b.aberta) - Number(a.aberta))
+  // Ordena: Lojas Abertas aparecem primeiro na lista
+  return lojasProcessadas.sort((a, b) => Number(b.aberta) - Number(a.aberta))
 }
 
 export default async function LojasPage({ params, searchParams }: PageProps) {

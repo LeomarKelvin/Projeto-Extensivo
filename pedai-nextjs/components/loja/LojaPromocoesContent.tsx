@@ -15,6 +15,16 @@ interface Cupom {
   ativo: boolean
 }
 
+// Interface flexível para o formulário (aceita string vazia durante a digitação)
+interface CupomForm {
+  codigo: string
+  tipo: 'percentual' | 'valor_fixo' | 'frete_gratis'
+  valor: number | string
+  valor_minimo_pedido: number | string
+  uso_maximo: number | string | null
+  ativo: boolean
+}
+
 export default function LojaPromocoesContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -22,12 +32,12 @@ export default function LojaPromocoesContent() {
   const [lojaId, setLojaId] = useState<number | null>(null)
   const [showModal, setShowModal] = useState(false)
   
-  const [formData, setFormData] = useState<Partial<Cupom>>({
+  const [formData, setFormData] = useState<CupomForm>({
     codigo: '',
     tipo: 'percentual',
     valor: 0,
     valor_minimo_pedido: 0,
-    uso_maximo: null,
+    uso_maximo: '',
     ativo: true
   })
 
@@ -60,12 +70,14 @@ export default function LojaPromocoesContent() {
     if (!lojaId) return
 
     const supabase = createClient()
+    
+    // Converte para número ao salvar. Se estiver vazio, assume 0 ou null.
     const payload = {
       loja_id: lojaId,
       codigo: formData.codigo?.toUpperCase(),
       tipo: formData.tipo,
-      valor: Number(formData.valor),
-      valor_minimo_pedido: Number(formData.valor_minimo_pedido),
+      valor: Number(formData.valor) || 0,
+      valor_minimo_pedido: Number(formData.valor_minimo_pedido) || 0,
       uso_maximo: formData.uso_maximo ? Number(formData.uso_maximo) : null,
       ativo: formData.ativo
     }
@@ -75,9 +87,15 @@ export default function LojaPromocoesContent() {
     if (error) alert('Erro ao criar cupom: ' + error.message)
     else {
       setShowModal(false)
-      setFormData({ codigo: '', tipo: 'percentual', valor: 0, valor_minimo_pedido: 0, ativo: true })
+      // Reseta o formulário
+      setFormData({ codigo: '', tipo: 'percentual', valor: 0, valor_minimo_pedido: 0, uso_maximo: '', ativo: true })
       loadData()
     }
+  }
+
+  // Função genérica para inputs numéricos (evita o NaN)
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof CupomForm) => {
+    setFormData({ ...formData, [field]: e.target.value })
   }
 
   // --- DELETE IMEDIATO (SEM CONFIRMAÇÃO) ---
@@ -205,7 +223,7 @@ export default function LojaPromocoesContent() {
                       type="number" 
                       disabled={formData.tipo === 'frete_gratis'}
                       value={formData.valor} 
-                      onChange={e => setFormData({...formData, valor: parseFloat(e.target.value)})} 
+                      onChange={(e) => handleNumberChange(e, 'valor')}
                       className="w-full bg-gray-900 text-white rounded-lg p-3 border border-gray-600 focus:border-primary outline-none disabled:opacity-50" 
                     />
                   </div>
@@ -216,7 +234,18 @@ export default function LojaPromocoesContent() {
                   <input 
                     type="number" 
                     value={formData.valor_minimo_pedido} 
-                    onChange={e => setFormData({...formData, valor_minimo_pedido: parseFloat(e.target.value)})} 
+                    onChange={(e) => handleNumberChange(e, 'valor_minimo_pedido')}
+                    className="w-full bg-gray-900 text-white rounded-lg p-3 border border-gray-600 focus:border-primary outline-none" 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">Limite de Usos (Opcional)</label>
+                  <input 
+                    type="number" 
+                    value={formData.uso_maximo || ''} // Usa string vazia se for null para não dar warning
+                    onChange={(e) => handleNumberChange(e, 'uso_maximo')}
+                    placeholder="Ex: 50 primeiros"
                     className="w-full bg-gray-900 text-white rounded-lg p-3 border border-gray-600 focus:border-primary outline-none" 
                   />
                 </div>

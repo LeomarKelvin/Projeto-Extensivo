@@ -5,8 +5,9 @@ import ClientLayout from '@/components/ClientLayout'
 import LojaDetalhesContent from '@/components/clientes/LojaDetalhesContent'
 import { getTenantBySlug, isTenantValid } from '@/lib/tenantConfig'
 import { createClient } from '@/lib/supabase/server'
-import { verificarLojaAberta } from '@/lib/utils/shopStatus'
+import { verificarLojaAberta } from '@/lib/utils/shopStatus' // <--- Importante
 
+// FORÇA DINÂMICO
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -24,22 +25,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 async function getLojaDetalhes(lojaId: string, municipio: string) {
   const supabase = await createClient()
   
-  // REMOVI O FILTRO .eq('aprovada', true)
+  // Busca a loja
   const { data: loja, error: lojaError } = await supabase
     .from('lojas')
     .select('*')
     .eq('id', lojaId)
     .eq('municipio', municipio)
+    .eq('aprovada', true) // Garante que está aprovada
     .single()
   
   if (lojaError || !loja) return null
 
-  // Verifica Horário
+  // CALCULA STATUS EM TEMPO REAL
   const estaAberta = verificarLojaAberta(
     loja.tipo_horario,
     loja.horarios_funcionamento,
     loja.aberta
   )
+  
+  // Sobrescreve o status para enviar ao componente
   const lojaAtualizada = { ...loja, aberta: estaAberta }
   
   const { data: produtos } = await supabase
@@ -49,7 +53,10 @@ async function getLojaDetalhes(lojaId: string, municipio: string) {
     .eq('disponivel', true)
     .order('nome')
   
-  return { loja: lojaAtualizada, produtos: produtos || [] }
+  return {
+    loja: lojaAtualizada,
+    produtos: produtos || []
+  }
 }
 
 export default async function LojaPage({ params }: PageProps) {
