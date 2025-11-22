@@ -5,9 +5,8 @@ import ClientLayout from '@/components/ClientLayout'
 import LojaDetalhesContent from '@/components/clientes/LojaDetalhesContent'
 import { getTenantBySlug, isTenantValid } from '@/lib/tenantConfig'
 import { createClient } from '@/lib/supabase/server'
-import { verificarLojaAberta } from '@/lib/utils/shopStatus' // <--- Importante
+import { verificarLojaAberta } from '@/lib/utils/shopStatus'
 
-// FORÇA DINÂMICO
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -22,34 +21,63 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title: `Loja - ${tenant.name} | PedeAí` }
 }
 
-async function getLojaDetalhes(lojaId: string, municipio: string) {
+async function getLojaDetalhes(identificador: string, municipio: string) {
   const supabase = await createClient()
   
-  // Busca a loja
-  const { data: loja, error: lojaError } = await supabase
+  // LÓGICA HÍBRIDA: Tenta achar por ID (se for número) OU por Slug
+  let query = supabase
     .from('lojas')
     .select('*')
-    .eq('id', lojaId)
     .eq('municipio', municipio)
-    .eq('aprovada', true) // Garante que está aprovada
+    .eq('aprovada', true) // Garante aprovada
+
+  // Verifica se é um ID numérico válido (apenas dígitos)
+  const isNumericId = /^\d+$/.test(identificador);
+
+  if (isNumericId) {
+     // Se for número, tenta buscar pelo ID
+     // Mas atenção: pode ser que o slug seja "123pizza", então o ideal é um OR
+     // Porém, o Supabase não suporta OR fácil nessa sintaxe encadeada.
+     // Vamos fazer duas tentativas para ser infalível.
+     
+     // Tentativa 1: Buscar por ID
+     const { data: lojaById } = await supabase
+       .from('lojas')
+       .select('*')
+       .eq('id', identificador)
+       .single()
+     
+     if (lojaById) return processarLoja(lojaById, supabase)
+  }
+
+  // Tentativa 2: Buscar por Slug (texto)
+  const { data: lojaBySlug } = await supabase
+    .from('lojas')
+    .select('*')
+    .eq('slug_catalogo', identificador)
+    .eq('municipio', municipio)
     .single()
   
-  if (lojaError || !loja) return null
+  if (lojaBySlug) return processarLoja(lojaBySlug, supabase)
 
-  // CALCULA STATUS EM TEMPO REAL
+  return null
+}
+
+// Função auxiliar para processar e buscar produtos
+async function processarLoja(loja: any, supabase: any) {
+  // Calcula Status
   const estaAberta = verificarLojaAberta(
     loja.tipo_horario,
     loja.horarios_funcionamento,
     loja.aberta
   )
-  
-  // Sobrescreve o status para enviar ao componente
   const lojaAtualizada = { ...loja, aberta: estaAberta }
   
+  // Busca Produtos
   const { data: produtos } = await supabase
     .from('produtos')
     .select('*')
-    .eq('loja_id', lojaId)
+    .eq('loja_id', loja.id)
     .eq('disponivel', true)
     .order('nome')
   
@@ -65,6 +93,7 @@ export default async function LojaPage({ params }: PageProps) {
   if (!isTenantValid(municipio)) notFound()
 
   const tenant = getTenantBySlug(municipio)!
+  // O 'id' aqui na verdade é o parametro da URL, que pode ser o slug
   const data = await getLojaDetalhes(id, tenant.slug)
 
   if (!data) notFound()

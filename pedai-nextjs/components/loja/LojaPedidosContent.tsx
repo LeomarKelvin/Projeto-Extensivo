@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LojaPDVModal from './LojaPDVModal'
@@ -52,6 +52,8 @@ export default function LojaPedidosContent() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [lojaId, setLojaId] = useState<number | null>(null)
   const [storeName, setStoreName] = useState('')
+  // Novo Estado para a Largura da Impressora
+  const [printerWidth, setPrinterWidth] = useState(80) 
   const [viewMode, setViewMode] = useState<'kanban' | 'historico'>('kanban')
   
   const [filterType, setFilterType] = useState<'todos' | 'delivery' | 'retirada'>('todos')
@@ -97,9 +99,10 @@ export default function LojaPedidosContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
 
+      // BUSCA TAMBÉM A LARGURA DA IMPRESSORA
       const { data: loja } = await supabase
         .from('lojas')
-        .select('id, nome_loja, aceite_automatico')
+        .select('id, nome_loja, aceite_automatico, impressora_largura')
         .eq('user_id', user.id)
         .single()
 
@@ -107,6 +110,8 @@ export default function LojaPedidosContent() {
         setLojaId(loja.id)
         setStoreName(loja.nome_loja)
         setAutoAccept(loja.aceite_automatico || false)
+        // Define a largura (padrão 80 se não tiver)
+        setPrinterWidth(loja.impressora_largura || 80)
         loadPedidos(loja.id)
       } else {
         router.push('/')
@@ -391,7 +396,7 @@ export default function LojaPedidosContent() {
         </div>
       )}
 
-      {/* --- MODAL DE DETALHES --- */}
+      {/* --- MODAL DE DETALHES (COM BOTÃO DE IMPRIMIR) --- */}
       {selectedPedido && (
         <div 
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn"
@@ -399,13 +404,11 @@ export default function LojaPedidosContent() {
         >
           <div className="bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-700 flex flex-col max-h-[90vh] relative">
             
-            {/* HEADER DO MODAL */}
             <div className="p-6 border-b border-gray-700 flex justify-between items-center bg-gray-900">
               <div>
                 <h2 className="text-2xl font-bold text-white">Pedido #{selectedPedido.id}</h2>
                 <p className="text-sm text-gray-400">{new Date(selectedPedido.created_at).toLocaleString()}</p>
               </div>
-              {/* BOTÃO DE FECHAR (X) GRANDE */}
               <button 
                 onClick={() => setSelectedPedido(null)} 
                 className="text-white bg-red-600 hover:bg-red-700 w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg transition-transform hover:scale-110"
@@ -468,10 +471,11 @@ export default function LojaPedidosContent() {
                 </div>
               </div>
             </div>
+            
             <div className="p-6 bg-gray-900 border-t border-gray-700 flex justify-end gap-3">
-               {/* BOTÃO DE IMPRIMIR */}
+               {/* BOTÃO DE IMPRIMIR (COM A LARGURA DA CONFIGURAÇÃO) */}
                <button 
-                 onClick={() => imprimirComanda(selectedPedido, storeName)} 
+                 onClick={() => imprimirComanda(selectedPedido, storeName, printerWidth)} 
                  className="px-6 py-3 rounded-lg bg-gray-700 text-white font-bold hover:bg-gray-600 transition flex items-center gap-2"
                >
                  🖨️ Imprimir
@@ -480,11 +484,11 @@ export default function LojaPedidosContent() {
                {selectedPedido.status === 'pendente' && (
                  <>
                    <button onClick={() => { updateStatus(selectedPedido.id, 'cancelado'); setSelectedPedido(null) }} className="px-6 py-3 rounded-lg bg-red-900/50 text-red-400 font-bold hover:bg-red-900 transition">Recusar</button>
-                   <button onClick={() => { updateStatus(selectedPedido.id, 'aceito'); setSelectedPedido(null) }} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition shadow-lg shadow-green-900/20">ACEITAR</button>
+                   <button onClick={() => { updateStatus(selectedPedido.id, 'aceito'); setSelectedPedido(null) }} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition shadow-lg shadow-green-900/20">ACEITAR PEDIDO</button>
                  </>
                )}
                {['pronto', 'em_entrega'].includes(selectedPedido.status) && (
-                 <button onClick={() => sendToWhatsApp(selectedPedido)} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition">WhatsApp</button>
+                 <button onClick={() => sendToWhatsApp(selectedPedido)} className="px-6 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500 transition">Enviar no WhatsApp</button>
                )}
                <button onClick={() => setSelectedPedido(null)} className="px-6 py-3 rounded-lg bg-gray-700 text-white font-bold hover:bg-gray-600 transition border border-gray-600">Fechar</button>
             </div>
@@ -492,8 +496,18 @@ export default function LojaPedidosContent() {
         </div>
       )}
 
-      {/* MODAL PDV */}
-      {showPDV && lojaId && <LojaPDVModal lojaId={lojaId} onClose={() => setShowPDV(false)} onSuccess={() => { setShowPDV(false); loadPedidos(lojaId) }} />}
+      {/* MODAL PDV (Novo Pedido) */}
+      {showPDV && lojaId && (
+        <LojaPDVModal 
+          lojaId={lojaId} 
+          onClose={() => setShowPDV(false)} 
+          onSuccess={() => {
+            setShowPDV(false)
+            loadPedidos(lojaId)
+          }} 
+        />
+      )}
+
     </div>
   )
 }

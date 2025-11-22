@@ -4,14 +4,13 @@ import { useState } from 'react'
 import Link from 'next/link'
 import type { TenantConfig } from '@/lib/types/tenant'
 
-// Interface completa com url_capa
 interface Loja {
   id: number
   nome_loja: string
   descricao?: string
   logo_url?: string
   url_imagem?: string
-  url_capa?: string // Adicionado
+  url_capa?: string
   categoria?: string
   nota_avaliacao?: number
   avaliacao?: number
@@ -20,6 +19,7 @@ interface Loja {
   pedido_minimo?: number
   municipio?: string
   aberta?: boolean
+  slug_catalogo?: string // Campo novo
 }
 
 interface LojasContentProps {
@@ -106,8 +106,14 @@ export default function LojasContent({ tenant, initialLojas, categoriaInicial = 
             {lojasFiltradas.map((loja) => {
               const imagem = loja.url_capa || loja.url_imagem || loja.logo_url
               const estaAberta = loja.aberta !== false
+              
+              // Lógica do Link: Usa slug se tiver, senão usa ID
+              const linkLoja = loja.slug_catalogo 
+                ? `/${tenant.slug}/loja/${loja.slug_catalogo}` 
+                : `/${tenant.slug}/loja/${loja.id}`
+
               return (
-                <Link key={loja.id} href={`/${tenant.slug}/loja/${loja.id}`} className={`group bg-gray-800 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-gray-700 flex flex-col h-full ${!estaAberta ? 'grayscale opacity-80' : 'hover:border-tenant-primary/50'}`}>
+                <Link key={loja.id} href={linkLoja} className={`group bg-gray-800 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-gray-700 flex flex-col h-full ${!estaAberta ? 'grayscale opacity-80' : 'hover:border-tenant-primary/50'}`}>
                   <div className="aspect-video bg-gray-900 flex items-center justify-center text-6xl relative overflow-hidden">
                     {imagem ? <img src={imagem} alt={loja.nome_loja} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" /> : '🏪'}
                     <div className="absolute top-2 right-2 z-10">
